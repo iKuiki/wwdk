@@ -10,7 +10,6 @@ import (
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/tool"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"time"
@@ -118,7 +117,7 @@ type wxInitRequestBody struct {
 	BaseRequest *wxInitBaseRequest
 }
 
-func wxInit(cookie wechatCookie, deviceId string) (resp datastruct.WxInitRespond, err error) {
+func wxInit(cookie *wechatCookie, deviceId string) (resp datastruct.WxInitRespond, err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit")
 	body := wxInitRequestBody{
 		BaseRequest: &wxInitBaseRequest{
@@ -131,13 +130,9 @@ func wxInit(cookie wechatCookie, deviceId string) (resp datastruct.WxInitRespond
 	req.Header("Content-Type", "application/json")
 	req.Header("charset", "UTF-8")
 	req.Param("r", tool.GetWxTimeStamp())
-	req.SetCookie(&http.Cookie{Name: "wxsid", Value: cookie.Wxsid})
-	req.SetCookie(&http.Cookie{Name: "webwx_data_ticket", Value: cookie.DataTicket})
-	req.SetCookie(&http.Cookie{Name: "webwxuvid", Value: cookie.Uvid})
-	req.SetCookie(&http.Cookie{Name: "webwx_auth_ticket", Value: cookie.AuthTicket})
-	req.SetCookie(&http.Cookie{Name: "wxuin", Value: cookie.Wxuin})
-	data, err := json.Marshal(body)
+	setWechatCookie(req, cookie)
 	resp = datastruct.WxInitRespond{}
+	data, err := json.Marshal(body)
 	if err != nil {
 		return resp, errors.New("json.Marshal error: " + err.Error())
 	}
@@ -155,6 +150,26 @@ func wxInit(cookie wechatCookie, deviceId string) (resp datastruct.WxInitRespond
 		return resp, errors.New(fmt.Sprintf("respond ret error: %d", resp.BaseResponse.Ret))
 	}
 	return resp, nil
+}
+
+func getContactList(cookie *wechatCookie, deviceId string) (contactList []*datastruct.Contact, err error) {
+	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact")
+	req.Param("r", tool.GetWxTimeStamp())
+	setWechatCookie(req, cookie)
+	req.Body([]byte("{}"))
+	resp := datastruct.GetContactRespond{}
+	r, err := req.Bytes()
+	if err != nil {
+		return nil, errors.New("request error: " + err.Error())
+	}
+	err = json.Unmarshal(r, &resp)
+	if err != nil {
+		return nil, errors.New("respond json Unmarshal to struct fail: " + err.Error())
+	}
+	if resp.BaseResponse.Ret != 0 {
+		return nil, errors.New(fmt.Sprintf("respond ret error: %d", resp.BaseResponse.Ret))
+	}
+	return resp.MemberList, nil
 }
 
 func (this *WechatWeb) Login() (err error) {
@@ -175,16 +190,18 @@ func (this *WechatWeb) Login() (err error) {
 	if err != nil {
 		return errors.New("getCookie error: " + err.Error())
 	}
-	this.cookie = cookie
-	initResp, err := wxInit(cookie, this.deviceId)
+	this.cookie = &cookie
+	initResp, err := wxInit(&cookie, this.deviceId)
 	if err != nil {
 		return errors.New("wxInit error: " + err.Error())
 	}
-	for _, v := range initResp.ContactList {
-		this.contactList = append(this.contactList, v)
-	}
+	// this.contactList = initResp.ContactList
 	this.user = initResp.User
 	this.syncKey = initResp.SyncKey
-	log.Printf("User %s has Login Success\n", this.user.NickName)
+	this.contactList, err = getContactList(&cookie, this.deviceId)
+	if err != nil {
+		return errors.New("getContactList error: " + err.Error())
+	}
+	log.Printf("User %s has Login Success, total %d contacts\n", this.user.NickName, len(this.contactList))
 	return nil
 }

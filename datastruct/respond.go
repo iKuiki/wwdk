@@ -1,10 +1,12 @@
 package datastruct
 
+type BaseResponse struct {
+	ErrMsg string `json:"ErrMsg"`
+	Ret    int64  `json:"Ret"`
+}
+
 type WxInitRespond struct {
-	BaseResponse struct {
-		ErrMsg string `json:"ErrMsg"`
-		Ret    int64  `json:"Ret"`
-	} `json:"BaseResponse"`
+	BaseResponse        BaseResponse  `json:"BaseResponse"`
 	ChatSet             string        `json:"ChatSet"`
 	ClickReportInterval int64         `json:"ClickReportInterval"`
 	ClientVersion       int64         `json:"ClientVersion"`
@@ -18,4 +20,11 @@ type WxInitRespond struct {
 	SyncKey             *SyncKey      `json:"SyncKey"`
 	SystemTime          int64         `json:"SystemTime"`
 	User                *User         `json:"User"`
+}
+
+type GetContactRespond struct {
+	BaseResponse BaseResponse `json:"BaseResponse"`
+	MemberCount  int64        `json:"MemberCount"`
+	MemberList   []*Contact   `json:"MemberList"`
+	Seq          int64        `json:"Seq"`
 }
