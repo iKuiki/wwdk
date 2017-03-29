@@ -11,4 +11,5 @@ func main() {
 	if err != nil {
 		log.Printf("WxWeb Login error: %s\n", err.Error())
 	}
+	wx.StartServe()
 }

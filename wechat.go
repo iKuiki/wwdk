@@ -23,6 +23,7 @@ type WechatWeb struct {
 	contactList []*datastruct.Contact
 	user        *datastruct.User
 	syncKey     *datastruct.SyncKey
+	sKey        string
 }
 
 func NewWechatWeb() (wxweb WechatWeb) {

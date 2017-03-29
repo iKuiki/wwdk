@@ -28,3 +28,8 @@ type GetContactRespond struct {
 	MemberList   []*Contact   `json:"MemberList"`
 	Seq          int64        `json:"Seq"`
 }
+
+type SyncCheckRespond struct {
+	Retcode  string `json:" retcode"`
+	Selector string `json:"selector"`
+}

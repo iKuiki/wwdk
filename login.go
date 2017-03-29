@@ -198,6 +198,7 @@ func (this *WechatWeb) Login() (err error) {
 	// this.contactList = initResp.ContactList
 	this.user = initResp.User
 	this.syncKey = initResp.SyncKey
+	this.sKey = initResp.SKey
 	this.contactList, err = getContactList(&cookie, this.deviceId)
 	if err != nil {
 		return errors.New("getContactList error: " + err.Error())
