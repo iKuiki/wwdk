@@ -1,6 +1,7 @@
 package wxweb
 
 import (
+	"errors"
 	"github.com/astaxie/beego/httplib"
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/tool"
@@ -14,6 +15,7 @@ type wechatCookie struct {
 	Uvid       string
 	DataTicket string
 	AuthTicket string
+	PassTicket string
 }
 
 type WechatWeb struct {
@@ -39,4 +41,13 @@ func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie *wechatCookie) {
 	request.SetCookie(&http.Cookie{Name: "webwxuvid", Value: cookie.Uvid})
 	request.SetCookie(&http.Cookie{Name: "webwx_auth_ticket", Value: cookie.AuthTicket})
 	request.SetCookie(&http.Cookie{Name: "wxuin", Value: cookie.Wxuin})
+}
+
+func (this *WechatWeb) getContact(username string) (contact *datastruct.Contact, err error) {
+	for _, v := range this.contactList {
+		if v.UserName == username {
+			return v, nil
+		}
+	}
+	return nil, errors.New("User not found")
 }

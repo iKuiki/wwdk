@@ -2,6 +2,7 @@ package wxweb
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego/httplib"
@@ -9,6 +10,7 @@ import (
 	"github.com/yinhui87/wechat-web/conf"
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/tool"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -96,6 +98,16 @@ func getCookie(redirectUrl, userAgent string) (cookie wechatCookie, err error) {
 	for _, c := range resp.Cookies() {
 		cookies[c.Name] = c.Value
 	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return wechatCookie{}, errors.New("Read respond body error: " + err.Error())
+	}
+	var bodyResp datastruct.GetCookieRespond
+	err = xml.Unmarshal(body, &bodyResp)
+	if err != nil {
+		return wechatCookie{}, errors.New("Unmarshal respond xml error: " + err.Error())
+	}
+	cookie.PassTicket = bodyResp.PassTicket
 	cookie = wechatCookie{
 		Wxuin:      cookies["wxuin"],
 		Wxsid:      cookies["wxsid"],
@@ -106,21 +118,10 @@ func getCookie(redirectUrl, userAgent string) (cookie wechatCookie, err error) {
 	return cookie, nil
 }
 
-type wxInitBaseRequest struct {
-	Uin      string
-	Sid      string
-	Skey     string
-	DeviceID string
-}
-
-type wxInitRequestBody struct {
-	BaseRequest *wxInitBaseRequest
-}
-
 func wxInit(cookie *wechatCookie, deviceId string) (resp datastruct.WxInitRespond, err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit")
-	body := wxInitRequestBody{
-		BaseRequest: &wxInitBaseRequest{
+	body := datastruct.WxInitRequestBody{
+		BaseRequest: &datastruct.BaseRequest{
 			Uin:      cookie.Wxuin,
 			Sid:      cookie.Wxsid,
 			Skey:     cookie.Skey,
