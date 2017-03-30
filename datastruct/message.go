@@ -1,8 +1,18 @@
 package datastruct
 
-type MessageTypd int64
+type MessageType int64
 
-const ()
+const (
+	TEXT_MSG               MessageType = 1     // 文字消息
+	PICTURE_MSG            MessageType = 3     // 图片消息
+	AUDIO_MSG              MessageType = 34    // 音频消息
+	CONTACT_CARD_MSG       MessageType = 42    // 名片
+	LITTLE_VIDEO_MSG       MessageType = 43    // 小视频消息
+	ANIMATION_EMOTIONS_MSG MessageType = 47    // 动画表情
+	LINK_MSG               MessageType = 49    // 链接消息类型，已知有转账、开始共享实时位置、合并转发聊天记录
+	APPEND_MSG             MessageType = 10000 // 拓展消息类型，已知有红包、停止共享实时位置
+	RECALL_MSG             MessageType = 10002 // 撤回消息
+)
 
 type Message struct {
 	AppInfo *struct {
