@@ -43,6 +43,15 @@ func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie *wechatCookie) {
 	request.SetCookie(&http.Cookie{Name: "wxuin", Value: cookie.Wxuin})
 }
 
+func getBaseRequest(cookie *wechatCookie, deviceId string) (baseRequest *datastruct.BaseRequest) {
+	return &datastruct.BaseRequest{
+		Uin:      cookie.Wxuin,
+		Sid:      cookie.Wxsid,
+		Skey:     cookie.Skey,
+		DeviceID: deviceId,
+	}
+}
+
 func (this *WechatWeb) getContact(username string) (contact *datastruct.Contact, err error) {
 	for _, v := range this.contactList {
 		if v.UserName == username {

@@ -24,3 +24,29 @@ type StatusNotifyRequest struct {
 	FromUserName string       `json:"FromUserName"`
 	ToUserName   string       `json:"ToUserName"`
 }
+
+// 用SendMessage也一样
+type TextMessage struct {
+	ClientMsgID  string      `json:"ClientMsgId"`
+	Content      string      `json:"Content"`
+	FromUserName string      `json:"FromUserName"`
+	LocalID      string      `json:"LocalID"`
+	ToUserName   string      `json:"ToUserName"`
+	Type         MessageType `json:"Type"`
+}
+
+type SendMessage struct {
+	ClientMsgID  string      `json:"ClientMsgId"`
+	Content      string      `json:"Content"`
+	FromUserName string      `json:"FromUserName"`
+	LocalID      string      `json:"LocalID"`
+	MediaID      string      `json:"MediaId"`
+	ToUserName   string      `json:"ToUserName"`
+	Type         MessageType `json:"Type"`
+}
+
+type SendMessageRequest struct {
+	BaseRequest *BaseRequest `json:"BaseRequest"`
+	Msg         *SendMessage `json:"Msg"`
+	Scene       int64        `json:"Scene"`
+}

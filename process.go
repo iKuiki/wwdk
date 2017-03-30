@@ -17,12 +17,7 @@ func statusNotify(cookie *wechatCookie, deviceId string, fromUserName, toUserNam
 	setWechatCookie(req, cookie)
 	msgId, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
 	reqBody := datastruct.StatusNotifyRequest{
-		BaseRequest: &datastruct.BaseRequest{
-			DeviceID: deviceId,
-			Sid:      cookie.Wxsid,
-			Skey:     cookie.Skey,
-			Uin:      cookie.Wxuin,
-		},
+		BaseRequest:  getBaseRequest(cookie, deviceId),
 		ClientMsgID:  msgId,
 		Code:         1,
 		FromUserName: fromUserName,
@@ -52,8 +47,13 @@ func messageProcesser(cookie *wechatCookie, deviceId string, msg *datastruct.Mes
 	switch msg.MsgType {
 	case datastruct.TEXT_MSG:
 		log.Printf("Recived a text msg from %s: %s", from.NickName, msg.Content)
+		// reply the same message
+		err := sendTextMessage(cookie, deviceId, msg.ToUserName, msg.FromUserName, msg.Content)
+		if err != nil {
+			return errors.New("sendTextMessage error: " + err.Error())
+		}
 		// Set message to readed at phone
-		err := statusNotify(cookie, deviceId, msg.ToUserName, msg.FromUserName)
+		err = statusNotify(cookie, deviceId, msg.ToUserName, msg.FromUserName)
 		if err != nil {
 			return errors.New("StatusNotify error: " + err.Error())
 		}

@@ -69,14 +69,9 @@ func getMessage(cookie *wechatCookie, syncKey *datastruct.SyncKey, deviceId stri
 	setWechatCookie(req, cookie)
 	gmResp = datastruct.GetMessageRespond{}
 	reqBody := datastruct.GetMessageRequest{
-		BaseRequest: &datastruct.BaseRequest{
-			Sid:      cookie.Wxsid,
-			Uin:      cookie.Wxuin,
-			DeviceID: deviceId,
-			Skey:     cookie.Skey,
-		},
-		SyncKey: syncKey,
-		Rr:      ^time.Now().Unix() + 1,
+		BaseRequest: getBaseRequest(cookie, deviceId),
+		SyncKey:     syncKey,
+		Rr:          ^time.Now().Unix() + 1,
 	}
 	body, err := json.Marshal(reqBody)
 	if err != nil {

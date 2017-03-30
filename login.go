@@ -121,12 +121,7 @@ func getCookie(redirectUrl, userAgent string) (cookie wechatCookie, err error) {
 func wxInit(cookie *wechatCookie, deviceId string) (resp datastruct.WxInitRespond, err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit")
 	body := datastruct.WxInitRequestBody{
-		BaseRequest: &datastruct.BaseRequest{
-			Uin:      cookie.Wxuin,
-			Sid:      cookie.Wxsid,
-			Skey:     cookie.Skey,
-			DeviceID: deviceId,
-		},
+		BaseRequest: getBaseRequest(cookie, deviceId),
 	}
 	req.Header("Content-Type", "application/json")
 	req.Header("charset", "UTF-8")

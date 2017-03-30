@@ -124,3 +124,9 @@ type StatusNotifyRespond struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
 	MsgID        string        `json:"MsgID"`
 }
+
+type SendMessageRespond struct {
+	BaseResponse *BaseResponse `json:"BaseResponse"`
+	LocalID      string        `json:"LocalID"`
+	MsgID        string        `json:"MsgID"`
+}
