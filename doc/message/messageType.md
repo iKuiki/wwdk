@@ -20,6 +20,15 @@
 | ImgWidth | 67 |
 | Status | 3 |
 
+### Type47 Detail
+| SpecialField | UseFor |
+|--------------|--------|
+| Content | html转义的xml，记录了表情地址 |
+| ImgHeight | 100 |
+| ImgWidth | 100 |
+| ImgStatus | 2 |
+| Status | 3 |
+
 ### Type 49 Detail
 
 #### 收到文件
