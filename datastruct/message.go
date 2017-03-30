@@ -19,23 +19,23 @@ type Message struct {
 		AppID string `json:"AppID"`
 		Type  int64  `json:"Type"`
 	} `json:"AppInfo"`
-	AppMsgType    int64  `json:"AppMsgType"`
-	Content       string `json:"Content"`
-	CreateTime    int64  `json:"CreateTime"`
-	FileName      string `json:"FileName"`
-	FileSize      string `json:"FileSize"`
-	ForwardFlag   int64  `json:"ForwardFlag"`
-	FromUserName  string `json:"FromUserName"`
-	HasProductID  int64  `json:"HasProductId"`
-	ImgHeight     int64  `json:"ImgHeight"`
-	ImgStatus     int64  `json:"ImgStatus"`
-	ImgWidth      int64  `json:"ImgWidth"`
-	MediaID       string `json:"MediaId"`
-	MsgID         string `json:"MsgId"`
-	MsgType       int64  `json:"MsgType"`
-	NewMsgID      int64  `json:"NewMsgId"`
-	OriContent    string `json:"OriContent"`
-	PlayLength    int64  `json:"PlayLength"`
+	AppMsgType    int64       `json:"AppMsgType"`
+	Content       string      `json:"Content"`
+	CreateTime    int64       `json:"CreateTime"`
+	FileName      string      `json:"FileName"`
+	FileSize      string      `json:"FileSize"`
+	ForwardFlag   int64       `json:"ForwardFlag"`
+	FromUserName  string      `json:"FromUserName"`
+	HasProductID  int64       `json:"HasProductId"`
+	ImgHeight     int64       `json:"ImgHeight"`
+	ImgStatus     int64       `json:"ImgStatus"`
+	ImgWidth      int64       `json:"ImgWidth"`
+	MediaID       string      `json:"MediaId"`
+	MsgID         string      `json:"MsgId"`
+	MsgType       MessageType `json:"MsgType"`
+	NewMsgID      int64       `json:"NewMsgId"`
+	OriContent    string      `json:"OriContent"`
+	PlayLength    int64       `json:"PlayLength"`
 	RecommendInfo *struct {
 		Alias      string `json:"Alias"`
 		AttrStatus int64  `json:"AttrStatus"`

@@ -3,6 +3,7 @@ package wxweb
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/astaxie/beego/httplib"
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/tool"
@@ -49,15 +50,15 @@ func statusNotify(cookie *wechatCookie, deviceId string, fromUserName, toUserNam
 
 func messageProcesser(cookie *wechatCookie, deviceId string, msg *datastruct.Message, from *datastruct.Contact) (err error) {
 	switch msg.MsgType {
-	case 1:
-		log.Printf("Recived a msg from %s: %s", from.NickName, msg.Content)
+	case datastruct.TEXT_MSG:
+		log.Printf("Recived a text msg from %s: %s", from.NickName, msg.Content)
 		// Set message to readed at phone
 		err := statusNotify(cookie, deviceId, msg.ToUserName, msg.FromUserName)
 		if err != nil {
 			return errors.New("StatusNotify error: " + err.Error())
 		}
 	default:
-		return errors.New("Unknown MsgType: " + strconv.FormatInt(msg.MsgType, 10))
+		return errors.New(fmt.Sprintf("Unknown MsgType %v: %#v", msg.MsgType, msg))
 	}
 	return nil
 }
