@@ -20,13 +20,13 @@
 | ImgStatus | 2 |
 | ImgWidth | 67 |
 | Status | 3 |
-若需要获取图片本身，则需要访问一下地址获得：
+若需要获取图片本身，则需要访问以下地址获得：
 | GetImgMessage | |
 |---------------|-|
 | Url | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg |
 | Method | Get |
 | Cookie | Need |
-| Param | MsgID(webwxsync接口拿到的)<br>skey(wxinit接口拿到的)<br>type:slave |
+| Param | MsgID(webwxsync接口拿到的)<br>skey(wxinit接口拿到的)<br>type:代表图片大小，已知的可选项为slave、big |
 
 ### Type47 Detail
 | SpecialField | UseFor |

@@ -96,6 +96,20 @@ func (this *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 	return gmResp, nil
 }
 
+func (this *WechatWeb) SaveMessageImage(msgId string) (filename string, err error) {
+	req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg")
+	req.Param("MsgID", msgId)
+	req.Param("skey", this.sKey)
+	// req.Param("type", "slave")
+	setWechatCookie(req, this.cookie)
+	filename = msgId
+	err = req.ToFile(filename)
+	if err != nil {
+		return "", errors.New("request error: " + err.Error())
+	}
+	return filename, nil
+}
+
 func (this *WechatWeb) StartServe() {
 	for true {
 		selector, err := this.syncCheck()
