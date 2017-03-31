@@ -2,13 +2,17 @@ package wxweb
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego/httplib"
 	"github.com/yinhui87/wechat-web/datastruct"
+	"github.com/yinhui87/wechat-web/datastruct/appmsg"
 	"github.com/yinhui87/wechat-web/tool"
+	"html"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -63,6 +67,16 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message, from *datastruc
 			time.Sleep(10 * time.Second)
 			this.SendRevokeMessage(smResp.MsgID, smResp.LocalID, msg.FromUserName)
 		}()
+	case datastruct.IMAGE_MSG:
+		log.Printf("Recived a image msg from %s", from.NickName)
+		msgContent := html.UnescapeString(msg.Content)
+		msgContent = strings.Replace(msgContent, "<br/>", "", -1)
+		var imgContent appmsg.ImageMsgContent
+		err := xml.Unmarshal([]byte(msgContent), &imgContent)
+		if err != nil {
+			return errors.New("Unmarshal message content to struct: " + err.Error())
+		}
+		fmt.Println("aeskey: ", imgContent.Img.AesKey)
 	default:
 		return errors.New(fmt.Sprintf("Unknown MsgType %v: %#v", msg.MsgType, msg))
 	}
