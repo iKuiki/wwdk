@@ -11,13 +11,13 @@ import (
 	"strconv"
 )
 
-func statusNotify(cookie *wechatCookie, deviceId string, fromUserName, toUserName string) (err error) {
+func (this *WechatWeb) statusNotify(fromUserName, toUserName string) (err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify")
-	req.Param("pass_ticket", cookie.PassTicket)
-	setWechatCookie(req, cookie)
+	req.Param("pass_ticket", this.cookie.PassTicket)
+	setWechatCookie(req, this.cookie)
 	msgId, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
 	reqBody := datastruct.StatusNotifyRequest{
-		BaseRequest:  getBaseRequest(cookie, deviceId),
+		BaseRequest:  getBaseRequest(this.cookie, this.deviceId),
 		ClientMsgID:  msgId,
 		Code:         1,
 		FromUserName: fromUserName,
@@ -43,17 +43,18 @@ func statusNotify(cookie *wechatCookie, deviceId string, fromUserName, toUserNam
 	return nil
 }
 
-func messageProcesser(cookie *wechatCookie, deviceId string, msg *datastruct.Message, from *datastruct.Contact) (err error) {
+func (this *WechatWeb) messageProcesser(msg *datastruct.Message, from *datastruct.Contact) (err error) {
 	switch msg.MsgType {
 	case datastruct.TEXT_MSG:
 		log.Printf("Recived a text msg from %s: %s", from.NickName, msg.Content)
 		// reply the same message
-		err := sendTextMessage(cookie, deviceId, msg.ToUserName, msg.FromUserName, msg.Content)
+		smResp, err := this.SendTextMessage(msg.FromUserName, msg.Content)
 		if err != nil {
 			return errors.New("sendTextMessage error: " + err.Error())
 		}
+		log.Println("messageSent, msgId: " + smResp.MsgID + ", Local ID: " + smResp.LocalID)
 		// Set message to readed at phone
-		err = statusNotify(cookie, deviceId, msg.ToUserName, msg.FromUserName)
+		err = this.statusNotify(msg.ToUserName, msg.FromUserName)
 		if err != nil {
 			return errors.New("StatusNotify error: " + err.Error())
 		}

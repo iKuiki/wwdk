@@ -38,16 +38,16 @@ func analysisSyncResp(syncResp string) (result datastruct.SyncCheckRespond) {
 	return result
 }
 
-func syncCheck(sKey, deviceId string, cookie *wechatCookie, syncKey *datastruct.SyncKey) (selector string, err error) {
+func (this *WechatWeb) syncCheck() (selector string, err error) {
 	req := httplib.Get("https://webpush.wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck")
 	req.Param("r", tool.GetWxTimeStamp())
-	req.Param("skey", sKey)
-	req.Param("sid", cookie.Wxsid)
-	req.Param("uin", cookie.Wxuin)
-	req.Param("deviceid", deviceId)
-	req.Param("synckey", assembleSyncKey(syncKey))
+	req.Param("skey", this.sKey)
+	req.Param("sid", this.cookie.Wxsid)
+	req.Param("uin", this.cookie.Wxuin)
+	req.Param("deviceid", this.deviceId)
+	req.Param("synckey", assembleSyncKey(this.syncKey))
 	req.Param("_", tool.GetWxTimeStamp())
-	setWechatCookie(req, cookie)
+	setWechatCookie(req, this.cookie)
 	resp, err := req.String()
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
@@ -61,16 +61,16 @@ func syncCheck(sKey, deviceId string, cookie *wechatCookie, syncKey *datastruct.
 	return ret.Selector, nil
 }
 
-func getMessage(cookie *wechatCookie, syncKey *datastruct.SyncKey, deviceId string) (gmResp datastruct.GetMessageRespond, err error) {
+func (this *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync")
-	req.Param("sid", cookie.Wxsid)
-	req.Param("skey", cookie.Skey)
-	req.Param("pass_ticket", cookie.PassTicket)
-	setWechatCookie(req, cookie)
+	req.Param("sid", this.cookie.Wxsid)
+	req.Param("skey", this.cookie.Skey)
+	req.Param("pass_ticket", this.cookie.PassTicket)
+	setWechatCookie(req, this.cookie)
 	gmResp = datastruct.GetMessageRespond{}
 	reqBody := datastruct.GetMessageRequest{
-		BaseRequest: getBaseRequest(cookie, deviceId),
-		SyncKey:     syncKey,
+		BaseRequest: getBaseRequest(this.cookie, this.deviceId),
+		SyncKey:     this.syncKey,
 		Rr:          ^time.Now().Unix() + 1,
 	}
 	body, err := json.Marshal(reqBody)
@@ -96,13 +96,9 @@ func getMessage(cookie *wechatCookie, syncKey *datastruct.SyncKey, deviceId stri
 	return gmResp, nil
 }
 
-func getContact(cookie *wechatCookie, deviceId string) (err error) {
-	return nil
-}
-
 func (this *WechatWeb) StartServe() {
 	for true {
-		selector, err := syncCheck(this.sKey, this.deviceId, this.cookie, this.syncKey)
+		selector, err := this.syncCheck()
 		if err != nil {
 			log.Printf("SyncCheck error: %s\n", err.Error())
 			continue
@@ -110,20 +106,19 @@ func (this *WechatWeb) StartServe() {
 		switch selector {
 		case "7":
 			// log.Println("SyncCheck 7")
-			gmResp, err := getMessage(this.cookie, this.syncKey, this.deviceId)
+			gmResp, err := this.getMessage()
 			if err != nil {
 				log.Printf("GetMessage error: %s\n", err.Error())
 				continue
 			}
 			this.syncKey = gmResp.SyncKey
-			// log.Printf("gmResp.AddMsgCount: %d, gmResp.AddMsgList len: %d\n", gmResp.AddMsgCount, len(gmResp.AddMsgList))
 			for _, msg := range gmResp.AddMsgList {
 				from, err := this.getContact(msg.FromUserName)
 				if err != nil {
 					log.Printf("getContact error: %s\n", err.Error())
 					continue
 				}
-				err = messageProcesser(this.cookie, this.deviceId, msg, from)
+				err = this.messageProcesser(msg, from)
 				if err != nil {
 					log.Printf("MessageProcesser error: %s\n", err.Error())
 					continue
