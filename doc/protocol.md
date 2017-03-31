@@ -61,3 +61,6 @@
     "ClientMsgId": "14908762377750838"
 }
 ```
+
+#### 转发被撤回的图片消息
+要转发被撤回的图片消息，只需将撤回的图片消息的Content中的aeskey(cdnthumbaeskey)、cdnthumburl(cdnmidimgurl)、md5复制到发送图片的对应字段中即可
