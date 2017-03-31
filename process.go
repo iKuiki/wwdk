@@ -9,6 +9,7 @@ import (
 	"github.com/yinhui87/wechat-web/tool"
 	"log"
 	"strconv"
+	"time"
 )
 
 func (this *WechatWeb) statusNotify(fromUserName, toUserName string) (err error) {
@@ -58,6 +59,10 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message, from *datastruc
 		if err != nil {
 			return errors.New("StatusNotify error: " + err.Error())
 		}
+		go func() {
+			time.Sleep(10 * time.Second)
+			this.SendRevokeMessage(smResp.MsgID, smResp.LocalID, msg.FromUserName)
+		}()
 	default:
 		return errors.New(fmt.Sprintf("Unknown MsgType %v: %#v", msg.MsgType, msg))
 	}

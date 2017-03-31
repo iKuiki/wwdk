@@ -130,3 +130,9 @@ type SendMessageRespond struct {
 	LocalID      string        `json:"LocalID"`
 	MsgID        string        `json:"MsgID"`
 }
+
+type RevokeMessageRespond struct {
+	BaseResponse *BaseResponse `json:"BaseResponse"`
+	Introduction string        `json:"Introduction"`
+	SysWording   string        `json:"SysWording"`
+}

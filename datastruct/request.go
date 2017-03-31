@@ -50,3 +50,10 @@ type SendMessageRequest struct {
 	Msg         *SendMessage `json:"Msg"`
 	Scene       int64        `json:"Scene"`
 }
+
+type RevokeMessageRequest struct {
+	BaseRequest *BaseRequest `json:"BaseRequest"`
+	ClientMsgID string       `json:"ClientMsgId"`
+	SvrMsgID    string       `json:"SvrMsgId"`
+	ToUserName  string       `json:"ToUserName"`
+}
