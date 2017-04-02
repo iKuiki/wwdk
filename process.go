@@ -10,13 +10,11 @@ import (
 	"github.com/yinhui87/wechat-web/datastruct/appmsg"
 	"github.com/yinhui87/wechat-web/tool"
 	"html"
-	"log"
 	"strconv"
 	"strings"
-	"time"
 )
 
-func (this *WechatWeb) statusNotify(fromUserName, toUserName string) (err error) {
+func (this *WechatWeb) StatusNotify(fromUserName, toUserName string) (err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify")
 	req.Param("pass_ticket", this.cookie.PassTicket)
 	setWechatCookie(req, this.cookie)
@@ -48,35 +46,33 @@ func (this *WechatWeb) statusNotify(fromUserName, toUserName string) (err error)
 	return nil
 }
 
-func (this *WechatWeb) messageProcesser(msg *datastruct.Message, from *datastruct.Contact) (err error) {
+func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
+	context := Context{App: this, hasStop: false}
 	switch msg.MsgType {
 	case datastruct.TEXT_MSG:
-		log.Printf("Recived a text msg from %s: %s", from.NickName, msg.Content)
-		// reply the same message
-		smResp, err := this.SendTextMessage(msg.FromUserName, msg.Content)
-		if err != nil {
-			return errors.New("sendTextMessage error: " + err.Error())
+		for _, v := range this.messageHook[datastruct.TEXT_MSG] {
+			if f, ok := v.(TextMessageHook); ok {
+				f(&context, *msg)
+			}
+			if context.hasStop {
+				break
+			}
 		}
-		log.Println("messageSent, msgId: " + smResp.MsgID + ", Local ID: " + smResp.LocalID)
-		// Set message to readed at phone
-		err = this.statusNotify(msg.ToUserName, msg.FromUserName)
-		if err != nil {
-			return errors.New("StatusNotify error: " + err.Error())
-		}
-		go func() {
-			time.Sleep(10 * time.Second)
-			this.SendRevokeMessage(smResp.MsgID, smResp.LocalID, msg.FromUserName)
-		}()
 	case datastruct.IMAGE_MSG:
-		log.Printf("Recived a image msg from %s", from.NickName)
-		msgContent := html.UnescapeString(msg.Content)
-		msgContent = strings.Replace(msgContent, "<br/>", "", -1)
+		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		var imgContent appmsg.ImageMsgContent
-		err := xml.Unmarshal([]byte(msgContent), &imgContent)
+		err = xml.Unmarshal([]byte(msg.Content), &imgContent)
 		if err != nil {
 			return errors.New("Unmarshal message content to struct: " + err.Error())
 		}
-		fmt.Println("aeskey: ", imgContent.Img.AesKey)
+		for _, v := range this.messageHook[datastruct.IMAGE_MSG] {
+			if f, ok := v.(ImageMessageHook); ok {
+				f(&context, *msg, imgContent)
+			}
+			if context.hasStop {
+				break
+			}
+		}
 	default:
 		return errors.New(fmt.Sprintf("Unknown MsgType %v: %#v", msg.MsgType, msg))
 	}

@@ -127,12 +127,7 @@ func (this *WechatWeb) StartServe() {
 			}
 			this.syncKey = gmResp.SyncKey
 			for _, msg := range gmResp.AddMsgList {
-				from, err := this.getContact(msg.FromUserName)
-				if err != nil {
-					log.Printf("getContact error: %s\n", err.Error())
-					continue
-				}
-				err = this.messageProcesser(msg, from)
+				err = this.messageProcesser(msg)
 				if err != nil {
 					log.Printf("MessageProcesser error: %s\n", err.Error())
 					continue

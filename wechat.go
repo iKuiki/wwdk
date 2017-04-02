@@ -26,12 +26,14 @@ type WechatWeb struct {
 	user        *datastruct.User
 	syncKey     *datastruct.SyncKey
 	sKey        string
+	messageHook map[datastruct.MessageType][]interface{}
 }
 
 func NewWechatWeb() (wxweb WechatWeb) {
 	return WechatWeb{
-		userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
-		deviceId:  "e" + tool.GetRandomStringFromNum(15),
+		userAgent:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
+		deviceId:    "e" + tool.GetRandomStringFromNum(15),
+		messageHook: make(map[datastruct.MessageType][]interface{}),
 	}
 }
 
@@ -52,7 +54,7 @@ func getBaseRequest(cookie *wechatCookie, deviceId string) (baseRequest *datastr
 	}
 }
 
-func (this *WechatWeb) getContact(username string) (contact *datastruct.Contact, err error) {
+func (this *WechatWeb) GetContact(username string) (contact *datastruct.Contact, err error) {
 	for _, v := range this.contactList {
 		if v.UserName == username {
 			return v, nil
