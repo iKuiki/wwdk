@@ -20,6 +20,10 @@ func main() {
 	if err != nil {
 		panic("RegisterMessageHook ImageMessageHook: " + err.Error())
 	}
+	err = wx.RegisterMessageHook(wxweb.EmotionMessageHook(ProcessEmojiMessage))
+	if err != nil {
+		panic("RegisterMessageHook ImageMessageHook: " + err.Error())
+	}
 	err = wx.Login()
 	if err != nil {
 		panic("WxWeb Login error: " + err.Error())
@@ -58,6 +62,14 @@ func (this *testServ) ProcessImageMessage(ctx *wxweb.Context, msg datastruct.Mes
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
 	}
-	log.Printf("Recived a image msg from %s", from.NickName)
+	log.Printf("Recived a image msg from %s\n", from.NickName)
 	fmt.Println("aeskey: ", imgContent.Img.AesKey)
+}
+
+func ProcessEmojiMessage(ctx *wxweb.Context, msg datastruct.Message, emojiContent appmsg.EmotionMsgContent) {
+	from, err := ctx.App.GetContact(msg.FromUserName)
+	if err != nil {
+		log.Println("getContact error: " + err.Error())
+	}
+	log.Printf("Recived a emotion from %s url: %s\n", from.NickName, emojiContent.Emoji.CdnUrl)
 }

@@ -73,6 +73,21 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 				break
 			}
 		}
+	case datastruct.ANIMATION_EMOTIONS_MSG:
+		msg.Content = html.UnescapeString(msg.Content)
+		var emojiContent appmsg.EmotionMsgContent
+		err := xml.Unmarshal([]byte(msg.Content), &emojiContent)
+		if err != nil {
+			return errors.New("Unmarshal message content to struct: " + err.Error())
+		}
+		for _, v := range this.messageHook[datastruct.ANIMATION_EMOTIONS_MSG] {
+			if f, ok := v.(EmotionMessageHook); ok {
+				f(&context, *msg, emojiContent)
+			}
+			if context.hasStop {
+				break
+			}
+		}
 	default:
 		return errors.New(fmt.Sprintf("Unknown MsgType %v: %#v", msg.MsgType, msg))
 	}
