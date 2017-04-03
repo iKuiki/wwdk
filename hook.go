@@ -12,6 +12,8 @@ type ImageMessageHook func(*Context, datastruct.Message, appmsg.ImageMsgContent)
 
 type EmotionMessageHook func(*Context, datastruct.Message, appmsg.EmotionMsgContent)
 
+type RevokeMessageHook func(*Context, datastruct.Message, appmsg.RevokeMsgContent)
+
 func (this *WechatWeb) RegisterMessageHook(hook interface{}) error {
 	switch hook.(type) {
 	case TextMessageHook:
@@ -20,6 +22,8 @@ func (this *WechatWeb) RegisterMessageHook(hook interface{}) error {
 		this.messageHook[datastruct.IMAGE_MSG] = append(this.messageHook[datastruct.IMAGE_MSG], hook)
 	case EmotionMessageHook:
 		this.messageHook[datastruct.ANIMATION_EMOTIONS_MSG] = append(this.messageHook[datastruct.ANIMATION_EMOTIONS_MSG], hook)
+	case RevokeMessageHook:
+		this.messageHook[datastruct.REVOKE_MSG] = append(this.messageHook[datastruct.REVOKE_MSG], hook)
 	default:
 		return errors.New("Unknown hook function")
 	}

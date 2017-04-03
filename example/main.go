@@ -24,6 +24,10 @@ func main() {
 	if err != nil {
 		panic("RegisterMessageHook ImageMessageHook: " + err.Error())
 	}
+	err = wx.RegisterMessageHook(wxweb.RevokeMessageHook(ProcessRevokeMessage))
+	if err != nil {
+		panic("RegisterMessageHook ImageMessageHook: " + err.Error())
+	}
 	err = wx.Login()
 	if err != nil {
 		panic("WxWeb Login error: " + err.Error())
@@ -72,4 +76,12 @@ func ProcessEmojiMessage(ctx *wxweb.Context, msg datastruct.Message, emojiConten
 		log.Println("getContact error: " + err.Error())
 	}
 	log.Printf("Recived a emotion from %s url: %s\n", from.NickName, emojiContent.Emoji.CdnUrl)
+}
+
+func ProcessRevokeMessage(ctx *wxweb.Context, msg datastruct.Message, revokeContent appmsg.RevokeMsgContent) {
+	from, err := ctx.App.GetContact(msg.FromUserName)
+	if err != nil {
+		log.Println("getContact error: " + err.Error())
+	}
+	log.Printf("With %s chat: %s", from.NickName, revokeContent.RevokeMsg.ReplaceMsg)
 }

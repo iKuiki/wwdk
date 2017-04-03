@@ -88,6 +88,21 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 				break
 			}
 		}
+	case datastruct.REVOKE_MSG:
+		msg.Content = html.UnescapeString(msg.Content)
+		var revokeContent appmsg.RevokeMsgContent
+		err := xml.Unmarshal([]byte(msg.Content), &revokeContent)
+		if err != nil {
+			return errors.New("Unmarshal message content to struct: " + err.Error())
+		}
+		for _, v := range this.messageHook[datastruct.REVOKE_MSG] {
+			if f, ok := v.(RevokeMessageHook); ok {
+				f(&context, *msg, revokeContent)
+			}
+			if context.hasStop {
+				break
+			}
+		}
 	default:
 		return errors.New(fmt.Sprintf("Unknown MsgType %v: %#v", msg.MsgType, msg))
 	}

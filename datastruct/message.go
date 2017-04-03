@@ -11,7 +11,7 @@ const (
 	ANIMATION_EMOTIONS_MSG MessageType = 47    // 动画表情
 	LINK_MSG               MessageType = 49    // 链接消息类型，已知有转账、开始共享实时位置、合并转发聊天记录
 	APPEND_MSG             MessageType = 10000 // 拓展消息类型，已知有红包、停止共享实时位置
-	RECALL_MSG             MessageType = 10002 // 撤回消息
+	REVOKE_MSG             MessageType = 10002 // 撤回消息
 )
 
 type AppMessageType int64
