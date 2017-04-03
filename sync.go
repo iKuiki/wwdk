@@ -102,11 +102,22 @@ func (this *WechatWeb) SaveMessageImage(msgId string) (filename string, err erro
 	req.Param("skey", this.sKey)
 	// req.Param("type", "slave")
 	setWechatCookie(req, this.cookie)
-	filename = msgId
+	filename = msgId + ".jpg"
 	err = req.ToFile(filename)
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
+	return filename, nil
+}
+
+func (this *WechatWeb) SaveMessageVideo(msgId string) (filename string, err error) {
+	req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo")
+	req.Param("msgid", msgId)
+	req.Param("skey", this.sKey)
+	setWechatCookie(req, this.cookie)
+	req.Header("Range", "bytes=0-")
+	filename = msgId + ".mp4"
+	err = req.ToFile(filename)
 	return filename, nil
 }
 

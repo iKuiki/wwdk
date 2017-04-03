@@ -22,11 +22,15 @@ func main() {
 	}
 	err = wx.RegisterMessageHook(wxweb.EmotionMessageHook(ProcessEmojiMessage))
 	if err != nil {
-		panic("RegisterMessageHook ImageMessageHook: " + err.Error())
+		panic("RegisterMessageHook EmotionMessageHook: " + err.Error())
 	}
 	err = wx.RegisterMessageHook(wxweb.RevokeMessageHook(ProcessRevokeMessage))
 	if err != nil {
-		panic("RegisterMessageHook ImageMessageHook: " + err.Error())
+		panic("RegisterMessageHook RevokeMessageHook: " + err.Error())
+	}
+	err = wx.RegisterMessageHook(wxweb.VideoMessageHook(ProcessVideoMessage))
+	if err != nil {
+		panic("RegisterMessageHook VideoMessageHook: " + err.Error())
 	}
 	err = wx.Login()
 	if err != nil {
@@ -84,4 +88,12 @@ func ProcessRevokeMessage(ctx *wxweb.Context, msg datastruct.Message, revokeCont
 		log.Println("getContact error: " + err.Error())
 	}
 	log.Printf("With %s chat: %s", from.NickName, revokeContent.RevokeMsg.ReplaceMsg)
+}
+
+func ProcessVideoMessage(ctx *wxweb.Context, msg datastruct.Message, videoContent appmsg.VideoMsgContent) {
+	from, err := ctx.App.GetContact(msg.FromUserName)
+	if err != nil {
+		log.Println("getContact error: " + err.Error())
+	}
+	log.Printf("Recived video from %s: %s", from.NickName, videoContent.VideoMsg.AesKey)
 }

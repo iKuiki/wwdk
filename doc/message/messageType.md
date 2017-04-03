@@ -43,7 +43,8 @@
 | Url | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo |
 | Method | Get |
 | Cookie | Need |
-| Param | MsgID(webwxsync接口拿到的)<br>skey(wxinit接口拿到的) |
+| Header | Range: bytes=0- |
+| Param | msgid(webwxsync接口拿到的)<br>skey(wxinit接口拿到的) |
 
 ### Type47 Detail
 | SpecialField | UseFor |
