@@ -2,9 +2,11 @@ package wxweb
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"github.com/astaxie/beego/httplib"
 	"github.com/yinhui87/wechat-web/datastruct"
+	"github.com/yinhui87/wechat-web/datastruct/appmsg"
 	"github.com/yinhui87/wechat-web/tool"
 	"log"
 	"net/url"
@@ -110,14 +112,40 @@ func (this *WechatWeb) SaveMessageImage(msgId string) (filename string, err erro
 	return filename, nil
 }
 
-func (this *WechatWeb) SaveMessageVideo(msgId string) (filename string, err error) {
+func (this *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string, err error) {
+	if msg.MsgType != datastruct.LITTLE_VIDEO_MSG {
+		return "", errors.New("Message type wrong")
+	}
+	var videoContent appmsg.VideoMsgContent
+	err = xml.Unmarshal([]byte(msg.Content), &videoContent)
+	if err != nil {
+		return "", errors.New("Unmarshal message content to struct: " + err.Error())
+	}
 	req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo")
-	req.Param("msgid", msgId)
+	req.Param("msgid", msg.MsgID)
 	req.Param("skey", this.sKey)
 	setWechatCookie(req, this.cookie)
 	req.Header("Range", "bytes=0-")
-	filename = msgId + ".mp4"
-	err = req.ToFile(filename)
+	filename = msg.MsgID + ".mp4"
+	// err = req.ToFile(filename)
+	resp, err := req.Response()
+	if err != nil {
+		return "", errors.New("request error: " + err.Error())
+	}
+	length, err := strconv.ParseInt(videoContent.VideoMsg.Length, 10, 64)
+	if err != nil {
+		return "", errors.New("Parse Video Content Length error: " + err.Error())
+	}
+	if resp.ContentLength != length {
+		return "", errors.New("Respond content length wrong")
+	}
+	n, err := tool.WriteToFile(filename, resp.Body)
+	if err != nil {
+		return "", errors.New("WriteToFile error: " + err.Error())
+	}
+	if int64(n) != length {
+		return filename, errors.New("File size wrong")
+	}
 	return filename, nil
 }
 
