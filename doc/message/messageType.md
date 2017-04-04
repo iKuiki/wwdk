@@ -29,6 +29,23 @@
 | Cookie | Need |
 | Param | MsgID(webwxsync接口拿到的)<br>skey(wxinit接口拿到的)<br>type:代表图片大小，已知的可选项为slave、big |
 
+### Type 34 Detail
+| SpecialField | UseFor |
+|--------------|--------|
+| Content | html转译的xml，记录了语音转发所需的信息 |
+| ImgHeight | 0 |
+| ImgStatus | 1 |
+| ImgWidth | 0 |
+| Status | 3 |
+若需要获取语音本身，则需要访问以下地址获得：
+| GetImgMessage | |
+|---------------|-|
+| Url | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice |
+| Method | Get |
+| Cookie | Need |
+| Header | Range: bytes=0- |
+| Param | msgid(webwxsync接口拿到的)<br>skey(wxinit接口拿到的) |
+
 ### Type 43 Detail
 | SpecialField | UseFor |
 |--------------|--------|
