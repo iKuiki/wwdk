@@ -32,6 +32,10 @@ func main() {
 	if err != nil {
 		panic("RegisterMessageHook VideoMessageHook: " + err.Error())
 	}
+	err = wx.RegisterMessageHook(wxweb.VoiceMessageHook(ProcessVoiceMessage))
+	if err != nil {
+		panic("RegisterMessageHook VoiceMessageHook: " + err.Error())
+	}
 	err = wx.Login()
 	if err != nil {
 		panic("WxWeb Login error: " + err.Error())
@@ -96,4 +100,12 @@ func ProcessVideoMessage(ctx *wxweb.Context, msg datastruct.Message, videoConten
 		log.Println("getContact error: " + err.Error())
 	}
 	log.Printf("Recived video from %s: %s", from.NickName, videoContent.VideoMsg.AesKey)
+}
+
+func ProcessVoiceMessage(ctx *wxweb.Context, msg datastruct.Message, voiceContent appmsg.VoiceMsgContent) {
+	from, err := ctx.App.GetContact(msg.FromUserName)
+	if err != nil {
+		log.Println("getContact error: " + err.Error())
+	}
+	log.Printf("Recived voice from %s, length %s ms", from.NickName, voiceContent.VoiceMsg.VoiceLength)
 }

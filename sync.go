@@ -112,6 +112,23 @@ func (this *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 	return filename, nil
 }
 
+func (this *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string, err error) {
+	if msg.MsgType != datastruct.VOICE_MSG {
+		return "", errors.New("Message type wrong")
+	}
+	req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice")
+	req.Param("msgid", msg.MsgID)
+	req.Param("skey", this.sKey)
+	setWechatCookie(req, this.cookie)
+	filename = msg.MsgID + ".mp3"
+	err = req.ToFile(filename)
+	if err != nil {
+
+		return "", errors.New("request error: " + err.Error())
+	}
+	return filename, nil
+}
+
 func (this *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string, err error) {
 	if msg.MsgType != datastruct.LITTLE_VIDEO_MSG {
 		return "", errors.New("Message type wrong")

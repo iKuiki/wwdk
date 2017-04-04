@@ -5,7 +5,7 @@ type MessageType int64
 const (
 	TEXT_MSG               MessageType = 1     // 文字消息
 	IMAGE_MSG              MessageType = 3     // 图片消息
-	AUDIO_MSG              MessageType = 34    // 音频消息
+	VOICE_MSG              MessageType = 34    // 音频消息
 	CONTACT_CARD_MSG       MessageType = 42    // 名片
 	LITTLE_VIDEO_MSG       MessageType = 43    // 小视频消息
 	ANIMATION_EMOTIONS_MSG MessageType = 47    // 动画表情
