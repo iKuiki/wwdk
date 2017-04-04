@@ -21,8 +21,10 @@
 | ImgStatus | 2 |
 | ImgWidth | 67 |
 | Status | 3 |
+
 若需要获取图片本身，则需要访问以下地址获得：
-| GetImgMessage | |
+
+| GetImgMessage | value |
 |---------------|-|
 | Url | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg |
 | Method | Get |
@@ -37,8 +39,10 @@
 | ImgStatus | 1 |
 | ImgWidth | 0 |
 | Status | 3 |
+
 若需要获取语音本身，则需要访问以下地址获得：
-| GetImgMessage | |
+
+| GetVoiceMessage | value |
 |---------------|-|
 | Url | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice |
 | Method | Get |
@@ -54,8 +58,10 @@
 | ImgStatus | 1 |
 | ImgWidth | 944 |
 | Status | 3 |
+
 若需要获取视频本身，则需要访问以下地址获得：
-| GetImgMessage | |
+
+| GetVideoMessage | value |
 |---------------|-|
 | Url | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo |
 | Method | Get |
