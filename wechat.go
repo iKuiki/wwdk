@@ -62,3 +62,25 @@ func (this *WechatWeb) GetContact(username string) (contact *datastruct.Contact,
 	}
 	return nil, errors.New("User not found")
 }
+
+func (this *WechatWeb) GetContactByAlias(alias string) (contact *datastruct.Contact, err error) {
+	for _, v := range this.contactList {
+		if v.Alias == alias {
+			return v, nil
+		}
+	}
+	return nil, errors.New("User not found")
+}
+
+func (this *WechatWeb) GetContactByNickname(nickname string) (contact *datastruct.Contact, err error) {
+	for _, v := range this.contactList {
+		if v.NickName == nickname {
+			return v, nil
+		}
+	}
+	return nil, errors.New("User not found")
+}
+
+func (this *WechatWeb) GetContactList() (contacts []*datastruct.Contact) {
+	return this.contactList
+}

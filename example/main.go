@@ -40,6 +40,15 @@ func main() {
 	if err != nil {
 		panic("WxWeb Login error: " + err.Error())
 	}
+	contacts := wx.GetContactList()
+	for _, v := range contacts {
+		if v.IsStar() {
+			fmt.Println("Star Friend: " + v.NickName)
+		}
+		if v.IsTop() {
+			fmt.Println("Top Friend: " + v.NickName)
+		}
+	}
 	wx.StartServe()
 }
 
