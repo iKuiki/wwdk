@@ -14,12 +14,12 @@
 ---
 
 #### 发送消息
-| Key | Value |
-|-----|-------|
+| Key         | Value                                               |
+|:------------|:----------------------------------------------------|
 | Request URL | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg |
-| Method | POST |
-| Cookie | Need |
-| Param | pass_ticket |
+| Method      | POST                                                |
+| Cookie      | Need                                                |
+| Param       | pass_ticket                                         |
 ###### Body (Json):
 ``` json
 {
@@ -43,11 +43,11 @@
 
 
 #### 撤回消息
-| Key | Value |
-|-----|-------|
+| Key         | Value                                                 |
+|:------------|:------------------------------------------------------|
 | Request URL | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg |
-| Method | POST |
-| Cookie | Need |
+| Method      | POST                                                  |
+| Cookie      | Need                                                  |
 ###### Body (Json):
 ``` json
 {
