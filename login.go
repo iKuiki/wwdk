@@ -34,6 +34,7 @@ func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
 	return ret["window.QRLogin.uuid"], nil
 }
 
+// getQrCode 通过uuid生成二维码并输出到控制台
 func (wxwb *WechatWeb) getQrCode(uuid string) (err error) {
 	req := httplib.Post("https://login.weixin.qq.com/qrcode/" + uuid)
 	req.Param("t", "webwx")
@@ -46,6 +47,7 @@ func (wxwb *WechatWeb) getQrCode(uuid string) (err error) {
 	return nil
 }
 
+// waitForScan 等待用户扫描二维码登陆
 func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) {
 	var ret map[string]string
 	req := httplib.Get("https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login")
