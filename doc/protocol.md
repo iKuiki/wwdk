@@ -3,19 +3,19 @@
 
 请求中凡需要Cookie的，都需要包含以下Cookie字段
 
-| 需要的Cookie |
-|-------------|
-| webwxuvid |
+| 需要的Cookie      |
+| ----------------- |
+| webwxuvid         |
 | webwx_auth_ticket |
-| wxuin |
-| wxsid |
+| wxuin             |
+| wxsid             |
 | webwx_data_ticket |
 
 ---
 
 #### 发送消息
 | Key         | Value                                               |
-|:------------|:----------------------------------------------------|
+| :---------- | :-------------------------------------------------- |
 | Request URL | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg |
 | Method      | POST                                                |
 | Cookie      | Need                                                |
@@ -44,7 +44,7 @@
 
 #### 撤回消息
 | Key         | Value                                                 |
-|:------------|:------------------------------------------------------|
+| :---------- | :---------------------------------------------------- |
 | Request URL | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg |
 | Method      | POST                                                  |
 | Cookie      | Need                                                  |

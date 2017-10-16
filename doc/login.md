@@ -20,7 +20,7 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "gfNHoe0rgA==";
 其中包含两个值：
 
 | Key                 | Value        |
-|:--------------------|:-------------|
+| ------------------- | ------------ |
 | window.QRLogin.code | 200          |
 | window.QRLogin.uuid | gfNHoe0rgA== |
 
@@ -32,7 +32,7 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "gfNHoe0rgA==";
 ### API流程
 
 | api path | response      | remark |
-|:---------|:--------------|:-------|
+| -------- | ------------- | ------ |
 | jslogin  | code<br/>uuid |        |
 | login    | code          |        |
 
@@ -41,21 +41,21 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "gfNHoe0rgA==";
 
 #### 获取uuid
 
-| Key         | Value                           | Remark              |
-|:------------|:--------------------------------|:--------------------|
-| Request URL | https://login.wx.qq.com/jslogin |                     |
-| Method      | Get                             |                     |
-| Cookie      | No                              |                     |
+| Key         | Value                           | Remark               |
+| ----------- | ------------------------------- | -------------------- |
+| Request URL | https://login.wx.qq.com/jslogin |                      |
+| Method      | Get                             |                      |
+| Cookie      | No                              |                      |
 | Param       | appid                           | 填wx782c26e4c19acffb |
 | Param       | fun                             | 填new                |
 | Param       | lang                            | zh_CN或en_US         |
-| Param       | _                               | 13位unix时间戳          |
+| Param       | _                               | 13位unix时间戳       |
 
 Response:
 
-| Key                 | Value | Remark    |
-|:--------------------|:------|:----------|
-| window.QRLogin.code | 200   |           |
+| Key                 | Value | Remark         |
+| ------------------- | ----- | -------------- |
+| window.QRLogin.code | 200   |                |
 | window.QRLogin.uuid | xxx   | 当前会话的uuid |
 
 Example:
@@ -65,20 +65,20 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "gfNHoe0rgA==";
 
 #### 轮询用户扫码
 
-| Key         | Value                                              | Remark          |
-|:------------|:---------------------------------------------------|:----------------|
-| Request URL | https://login.wx2.qq.com/cgi-bin/mmwebwx-bin/login |                 |
-| Method      | Get                                                |                 |
-| Param       | loginicon                                          | 填true           |
-| Param       | uuid                                               | 之前获取的uuid       |
-| Param       | tip                                                | 1-未扫描 0-已扫描     |
+| Key         | Value                                              | Remark                     |
+| ----------- | -------------------------------------------------- | -------------------------- |
+| Request URL | https://login.wx2.qq.com/cgi-bin/mmwebwx-bin/login |                            |
+| Method      | Get                                                |                            |
+| Param       | loginicon                                          | 填true                     |
+| Param       | uuid                                               | 之前获取的uuid             |
+| Param       | tip                                                | 1-未扫描 0-已扫描          |
 | Param       | r                                                  | 13位时间戳取反(貌似可省略) |
-| Param       | _                                                  | 13位unix时间戳      |
+| Param       | _                                                  | 13位unix时间戳             |
 
 Response:
 
-| Key         | Value                       | Remark                                |
-|:------------|:----------------------------|:--------------------------------------|
+| Key         | Value                       | Remark                                                    |
+| ----------- | --------------------------- | --------------------------------------------------------- |
 | window.code | 200<br/>201<br/>400<br/>408 | 确认登陆<br/>已扫码<br/>登陆超时(二维码失效)<br/>等待登陆 |
 
 Example:
