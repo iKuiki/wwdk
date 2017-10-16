@@ -6,32 +6,39 @@ import (
 	"github.com/yinhui87/wechat-web/datastruct/appmsg"
 )
 
+// TextMessageHook 文字消息处理器接口
 type TextMessageHook func(*Context, datastruct.Message)
 
+// ImageMessageHook 图片消息处理器接口
 type ImageMessageHook func(*Context, datastruct.Message, appmsg.ImageMsgContent)
 
+// EmotionMessageHook 表情消息处理器接口
 type EmotionMessageHook func(*Context, datastruct.Message, appmsg.EmotionMsgContent)
 
+// RevokeMessageHook 撤回消息处理器接口
 type RevokeMessageHook func(*Context, datastruct.Message, appmsg.RevokeMsgContent)
 
+// VideoMessageHook 视频消息处理器接口
 type VideoMessageHook func(*Context, datastruct.Message, appmsg.VideoMsgContent)
 
+// VoiceMessageHook 语音消息处理器接口
 type VoiceMessageHook func(*Context, datastruct.Message, appmsg.VoiceMsgContent)
 
-func (this *WechatWeb) RegisterMessageHook(hook interface{}) error {
+// RegisterMessageHook 注册消息处理器，需要传入消息处理器接口类型，会自动识别
+func (wxwb *WechatWeb) RegisterMessageHook(hook interface{}) error {
 	switch hook.(type) {
 	case TextMessageHook:
-		this.messageHook[datastruct.TEXT_MSG] = append(this.messageHook[datastruct.TEXT_MSG], hook)
+		wxwb.messageHook[datastruct.TextMsg] = append(wxwb.messageHook[datastruct.TextMsg], hook)
 	case ImageMessageHook:
-		this.messageHook[datastruct.IMAGE_MSG] = append(this.messageHook[datastruct.IMAGE_MSG], hook)
+		wxwb.messageHook[datastruct.ImageMsg] = append(wxwb.messageHook[datastruct.ImageMsg], hook)
 	case EmotionMessageHook:
-		this.messageHook[datastruct.ANIMATION_EMOTIONS_MSG] = append(this.messageHook[datastruct.ANIMATION_EMOTIONS_MSG], hook)
+		wxwb.messageHook[datastruct.AnimationEmotionsMsg] = append(wxwb.messageHook[datastruct.AnimationEmotionsMsg], hook)
 	case RevokeMessageHook:
-		this.messageHook[datastruct.REVOKE_MSG] = append(this.messageHook[datastruct.REVOKE_MSG], hook)
+		wxwb.messageHook[datastruct.RevokeMsg] = append(wxwb.messageHook[datastruct.RevokeMsg], hook)
 	case VideoMessageHook:
-		this.messageHook[datastruct.LITTLE_VIDEO_MSG] = append(this.messageHook[datastruct.LITTLE_VIDEO_MSG], hook)
+		wxwb.messageHook[datastruct.LittleVideoMsg] = append(wxwb.messageHook[datastruct.LittleVideoMsg], hook)
 	case VoiceMessageHook:
-		this.messageHook[datastruct.VOICE_MSG] = append(this.messageHook[datastruct.VOICE_MSG], hook)
+		wxwb.messageHook[datastruct.VoiceMsg] = append(wxwb.messageHook[datastruct.VoiceMsg], hook)
 	default:
 		return errors.New("Unknown hook function")
 	}

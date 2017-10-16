@@ -1,5 +1,6 @@
 package datastruct
 
+// User 当前登陆用户的结构体
 type User struct {
 	AppAccountFlag    int64  `json:"AppAccountFlag"`
 	ContactFlag       int64  `json:"ContactFlag"`

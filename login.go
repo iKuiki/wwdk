@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func (this *WechatWeb) getUUID() (uuid string, err error) {
+func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
 	req := httplib.Get("https://login.weixin.qq.com/jslogin")
 	req.Param("appid", conf.APP_ID)
 	req.Param("fun", "new")
@@ -34,7 +34,7 @@ func (this *WechatWeb) getUUID() (uuid string, err error) {
 	return ret["window.QRLogin.uuid"], nil
 }
 
-func (this *WechatWeb) getQrCode(uuid string) (err error) {
+func (wxwb *WechatWeb) getQrCode(uuid string) (err error) {
 	req := httplib.Post("https://login.weixin.qq.com/qrcode/" + uuid)
 	req.Param("t", "webwx")
 	req.Param("_", tool.GetWxTimeStamp())
@@ -46,7 +46,7 @@ func (this *WechatWeb) getQrCode(uuid string) (err error) {
 	return nil
 }
 
-func (this *WechatWeb) waitForScan(uuid string) (redirectUrl string, err error) {
+func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) {
 	var ret map[string]string
 	req := httplib.Get("https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login")
 	req.Param("tip", "1")
@@ -77,8 +77,8 @@ func (this *WechatWeb) waitForScan(uuid string) (redirectUrl string, err error) 
 	return ret["window.redirect_uri"], nil
 }
 
-func (this *WechatWeb) getCookie(redirectUrl, userAgent string) (err error) {
-	u, err := url.Parse(redirectUrl)
+func (wxwb *WechatWeb) getCookie(redirectURL, userAgent string) (err error) {
+	u, err := url.Parse(redirectURL)
 	if err != nil {
 		return errors.New("redirect_url parse fail: " + err.Error())
 	}
@@ -107,7 +107,7 @@ func (this *WechatWeb) getCookie(redirectUrl, userAgent string) (err error) {
 	if err != nil {
 		return errors.New("Unmarshal respond xml error: " + err.Error())
 	}
-	this.cookie = &wechatCookie{
+	wxwb.cookie = &wechatCookie{
 		Wxuin:      cookies["wxuin"],
 		Wxsid:      cookies["wxsid"],
 		Uvid:       cookies["webwxuvid"],
@@ -118,15 +118,15 @@ func (this *WechatWeb) getCookie(redirectUrl, userAgent string) (err error) {
 	return nil
 }
 
-func (this *WechatWeb) wxInit() (err error) {
+func (wxwb *WechatWeb) wxInit() (err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit")
 	body := datastruct.WxInitRequestBody{
-		BaseRequest: getBaseRequest(this.cookie, this.deviceId),
+		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.deviceID),
 	}
 	req.Header("Content-Type", "application/json")
 	req.Header("charset", "UTF-8")
 	req.Param("r", tool.GetWxTimeStamp())
-	setWechatCookie(req, this.cookie)
+	setWechatCookie(req, wxwb.cookie)
 	resp := datastruct.WxInitRespond{}
 	data, err := json.Marshal(body)
 	if err != nil {
@@ -143,18 +143,18 @@ func (this *WechatWeb) wxInit() (err error) {
 		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
 	}
 	if resp.BaseResponse.Ret != 0 {
-		return errors.New(fmt.Sprintf("respond ret error: %d", resp.BaseResponse.Ret))
+		return fmt.Errorf("respond ret error: %d", resp.BaseResponse.Ret)
 	}
-	this.user = resp.User
-	this.syncKey = resp.SyncKey
-	this.sKey = resp.SKey
+	wxwb.user = resp.User
+	wxwb.syncKey = resp.SyncKey
+	wxwb.sKey = resp.SKey
 	return nil
 }
 
-func (this *WechatWeb) getContactList() (err error) {
+func (wxwb *WechatWeb) getContactList() (err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact")
 	req.Param("r", tool.GetWxTimeStamp())
-	setWechatCookie(req, this.cookie)
+	setWechatCookie(req, wxwb.cookie)
 	req.Body([]byte("{}"))
 	resp := datastruct.GetContactRespond{}
 	r, err := req.Bytes()
@@ -166,38 +166,39 @@ func (this *WechatWeb) getContactList() (err error) {
 		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
 	}
 	if resp.BaseResponse.Ret != 0 {
-		return errors.New(fmt.Sprintf("respond ret error: %d", resp.BaseResponse.Ret))
+		return fmt.Errorf("respond ret error: %d", resp.BaseResponse.Ret)
 	}
-	this.contactList = resp.MemberList
+	wxwb.contactList = resp.MemberList
 	return nil
 }
 
-func (this *WechatWeb) Login() (err error) {
-	uuid, err := this.getUUID()
+// Login 登陆方法总成
+func (wxwb *WechatWeb) Login() (err error) {
+	uuid, err := wxwb.getUUID()
 	if err != nil {
 		return errors.New("Get UUID fail: " + err.Error())
 	}
-	err = this.getQrCode(uuid)
+	err = wxwb.getQrCode(uuid)
 	if err != nil {
 		return errors.New("Get QrCode fail: " + err.Error())
 	}
-	redirectUrl, err := this.waitForScan(uuid)
+	redirectURL, err := wxwb.waitForScan(uuid)
 	if err != nil {
 		return errors.New("waitForScan error: " + err.Error())
 	}
 	// panic(redirectUrl)
-	err = this.getCookie(redirectUrl, this.userAgent)
+	err = wxwb.getCookie(redirectURL, wxwb.userAgent)
 	if err != nil {
 		return errors.New("getCookie error: " + err.Error())
 	}
-	err = this.wxInit()
+	err = wxwb.wxInit()
 	if err != nil {
 		return errors.New("wxInit error: " + err.Error())
 	}
-	err = this.getContactList()
+	err = wxwb.getContactList()
 	if err != nil {
 		return errors.New("getContactList error: " + err.Error())
 	}
-	log.Printf("User %s has Login Success, total %d contacts\n", this.user.NickName, len(this.contactList))
+	log.Printf("User %s has Login Success, total %d contacts\n", wxwb.user.NickName, len(wxwb.contactList))
 	return nil
 }

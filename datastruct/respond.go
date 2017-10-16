@@ -1,10 +1,12 @@
 package datastruct
 
+// BaseResponse 服务器响应的基本结构体，通用
 type BaseResponse struct {
 	ErrMsg string `json:"ErrMsg"`
 	Ret    int64  `json:"Ret"`
 }
 
+// GetCookieRespond 获取Cookie的返回
 type GetCookieRespond struct {
 	Ret         int64  `xml:"ret"`
 	Message     string `xml:"message"`
@@ -15,6 +17,7 @@ type GetCookieRespond struct {
 	Isgrayscale int64  `xml:"isgrayscale"`
 }
 
+// WxInitRespond 初始化请求的返回
 type WxInitRespond struct {
 	BaseResponse        BaseResponse  `json:"BaseResponse"`
 	ChatSet             string        `json:"ChatSet"`
@@ -32,6 +35,7 @@ type WxInitRespond struct {
 	User                *User         `json:"User"`
 }
 
+// GetContactRespond 获取联系人的返回
 type GetContactRespond struct {
 	BaseResponse BaseResponse `json:"BaseResponse"`
 	MemberCount  int64        `json:"MemberCount"`
@@ -39,11 +43,13 @@ type GetContactRespond struct {
 	Seq          int64        `json:"Seq"`
 }
 
+// SyncCheckRespond 同步消息轮询的返回
 type SyncCheckRespond struct {
 	Retcode  string `json:" retcode"`
 	Selector string `json:"selector"`
 }
 
+// GetMessageRespond 取回消息的返回
 type GetMessageRespond struct {
 	BaseResponse    *BaseResponse `json:"BaseResponse"`
 	AddMsgCount     int64         `json:"AddMsgCount"`
@@ -120,17 +126,20 @@ type GetMessageRespond struct {
 	SyncKey      *SyncKey `json:"SyncKey"`
 }
 
+// StatusNotifyRespond 状态通知请求的返回
 type StatusNotifyRespond struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
 	MsgID        string        `json:"MsgID"`
 }
 
+// SendMessageRespond 发送消息的返回
 type SendMessageRespond struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
 	LocalID      string        `json:"LocalID"`
 	MsgID        string        `json:"MsgID"`
 }
 
+// RevokeMessageRespond 撤回消息的返回
 type RevokeMessageRespond struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
 	Introduction string        `json:"Introduction"`

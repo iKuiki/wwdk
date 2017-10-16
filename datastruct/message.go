@@ -1,28 +1,44 @@
 package datastruct
 
+// MessageType 消息类型
 type MessageType int64
 
 const (
-	TEXT_MSG               MessageType = 1     // 文字消息
-	IMAGE_MSG              MessageType = 3     // 图片消息
-	VOICE_MSG              MessageType = 34    // 音频消息
-	CONTACT_CARD_MSG       MessageType = 42    // 名片
-	LITTLE_VIDEO_MSG       MessageType = 43    // 小视频消息
-	ANIMATION_EMOTIONS_MSG MessageType = 47    // 动画表情
-	LINK_MSG               MessageType = 49    // 链接消息类型，已知有转账、开始共享实时位置、合并转发聊天记录
-	APPEND_MSG             MessageType = 10000 // 拓展消息类型，已知有红包、停止共享实时位置
-	REVOKE_MSG             MessageType = 10002 // 撤回消息
+	// TextMsg 文字消息
+	TextMsg MessageType = 1
+	// ImageMsg 图片消息
+	ImageMsg MessageType = 3
+	// VoiceMsg 音频消息
+	VoiceMsg MessageType = 34
+	// ContactCardMsg 名片
+	ContactCardMsg MessageType = 42
+	// LittleVideoMsg 小视频消息
+	LittleVideoMsg MessageType = 43
+	// AnimationEmotionsMsg 动画表情
+	AnimationEmotionsMsg MessageType = 47
+	// LinkMsg 链接消息类型，已知有转账、开始共享实时位置、合并转发聊天记录
+	LinkMsg MessageType = 49
+	// AppendMsg 拓展消息类型，已知有红包、停止共享实时位置
+	AppendMsg MessageType = 10000
+	// RevokeMsg 撤回消息
+	RevokeMsg MessageType = 10002
 )
 
+// AppMessageType 应用消息类型
 type AppMessageType int64
 
 const (
-	UNKNOWN_APPMSG         AppMessageType = 0
-	RECIVE_FILE_APPMSG     AppMessageType = 6
-	START_SHARE_LOCATION   AppMessageType = 17
-	RECIVE_TRANSFER_APPMSG AppMessageType = 2000
+	// UnknownAppmsg 未知消息类型
+	UnknownAppmsg AppMessageType = 0
+	// ReciveFileAppmsg 接收文件
+	ReciveFileAppmsg AppMessageType = 6
+	// StartShareLocation 共享位置
+	StartShareLocation AppMessageType = 17
+	// ReciveTransferAppmsg 收到转账
+	ReciveTransferAppmsg AppMessageType = 2000
 )
 
+// Message 微信消息结构体
 type Message struct {
 	AppInfo *struct {
 		AppID string `json:"AppID"`

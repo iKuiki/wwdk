@@ -9,20 +9,21 @@ import (
 	"strconv"
 )
 
-func (this *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageRespond *datastruct.SendMessageRespond, err error) {
+// SendTextMessage 发送消息
+func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageRespond *datastruct.SendMessageRespond, err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg")
-	req.Param("pass_ticket", this.cookie.PassTicket)
-	setWechatCookie(req, this.cookie)
+	req.Param("pass_ticket", wxwb.cookie.PassTicket)
+	setWechatCookie(req, wxwb.cookie)
 	msgReq := datastruct.SendMessageRequest{
-		BaseRequest: getBaseRequest(this.cookie, this.deviceId),
+		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.deviceID),
 		Msg: &datastruct.SendMessage{
 
 			ClientMsgID:  tool.GetWxTimeStamp(),
 			Content:      content,
-			FromUserName: this.user.UserName,
+			FromUserName: wxwb.user.UserName,
 			LocalID:      tool.GetWxTimeStamp(),
 			ToUserName:   toUserName,
-			Type:         datastruct.TEXT_MSG,
+			Type:         datastruct.TextMsg,
 		},
 	}
 	body, err := json.Marshal(msgReq)
@@ -45,13 +46,14 @@ func (this *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 	return &smResp, nil
 }
 
-func (this *WechatWeb) SendRevokeMessage(svrMsgId, clientMsgId, toUserName string) (revokeMessageRespond *datastruct.RevokeMessageRespond, err error) {
+// SendRevokeMessage 撤回消息
+func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName string) (revokeMessageRespond *datastruct.RevokeMessageRespond, err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg")
-	setWechatCookie(req, this.cookie)
+	setWechatCookie(req, wxwb.cookie)
 	srmReq := datastruct.RevokeMessageRequest{
-		BaseRequest: getBaseRequest(this.cookie, this.deviceId),
-		ClientMsgID: clientMsgId,
-		SvrMsgID:    svrMsgId,
+		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.deviceID),
+		ClientMsgID: clientMsgID,
+		SvrMsgID:    svrMsgID,
 		ToUserName:  toUserName,
 	}
 	body, err := json.Marshal(srmReq)

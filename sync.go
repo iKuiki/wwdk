@@ -40,16 +40,16 @@ func analysisSyncResp(syncResp string) (result datastruct.SyncCheckRespond) {
 	return result
 }
 
-func (this *WechatWeb) syncCheck() (selector string, err error) {
+func (wxwb *WechatWeb) syncCheck() (selector string, err error) {
 	req := httplib.Get("https://webpush.wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck")
 	req.Param("r", tool.GetWxTimeStamp())
-	req.Param("skey", this.sKey)
-	req.Param("sid", this.cookie.Wxsid)
-	req.Param("uin", this.cookie.Wxuin)
-	req.Param("deviceid", this.deviceId)
-	req.Param("synckey", assembleSyncKey(this.syncKey))
+	req.Param("skey", wxwb.sKey)
+	req.Param("sid", wxwb.cookie.Wxsid)
+	req.Param("uin", wxwb.cookie.Wxuin)
+	req.Param("deviceid", wxwb.deviceID)
+	req.Param("synckey", assembleSyncKey(wxwb.syncKey))
 	req.Param("_", tool.GetWxTimeStamp())
-	setWechatCookie(req, this.cookie)
+	setWechatCookie(req, wxwb.cookie)
 	resp, err := req.String()
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
@@ -63,16 +63,16 @@ func (this *WechatWeb) syncCheck() (selector string, err error) {
 	return ret.Selector, nil
 }
 
-func (this *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err error) {
+func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync")
-	req.Param("sid", this.cookie.Wxsid)
-	req.Param("skey", this.cookie.Skey)
-	req.Param("pass_ticket", this.cookie.PassTicket)
-	setWechatCookie(req, this.cookie)
+	req.Param("sid", wxwb.cookie.Wxsid)
+	req.Param("skey", wxwb.cookie.Skey)
+	req.Param("pass_ticket", wxwb.cookie.PassTicket)
+	setWechatCookie(req, wxwb.cookie)
 	gmResp = datastruct.GetMessageRespond{}
 	reqBody := datastruct.GetMessageRequest{
-		BaseRequest: getBaseRequest(this.cookie, this.deviceId),
-		SyncKey:     this.syncKey,
+		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.deviceID),
+		SyncKey:     wxwb.syncKey,
 		Rr:          ^time.Now().Unix() + 1,
 	}
 	body, err := json.Marshal(reqBody)
@@ -98,12 +98,13 @@ func (this *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 	return gmResp, nil
 }
 
-func (this *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string, err error) {
+// SaveMessageImage 保存消息图片到指定位置
+func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string, err error) {
 	req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg")
 	req.Param("MsgID", msg.MsgID)
-	req.Param("skey", this.sKey)
+	req.Param("skey", wxwb.sKey)
 	// req.Param("type", "slave")
-	setWechatCookie(req, this.cookie)
+	setWechatCookie(req, wxwb.cookie)
 	filename = msg.MsgID + ".jpg"
 	err = req.ToFile(filename)
 	if err != nil {
@@ -112,14 +113,15 @@ func (this *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 	return filename, nil
 }
 
-func (this *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string, err error) {
-	if msg.MsgType != datastruct.VOICE_MSG {
+// SaveMessageVoice 保存消息声音到置顶位置
+func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string, err error) {
+	if msg.MsgType != datastruct.VoiceMsg {
 		return "", errors.New("Message type wrong")
 	}
 	req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice")
 	req.Param("msgid", msg.MsgID)
-	req.Param("skey", this.sKey)
-	setWechatCookie(req, this.cookie)
+	req.Param("skey", wxwb.sKey)
+	setWechatCookie(req, wxwb.cookie)
 	filename = msg.MsgID + ".mp3"
 	err = req.ToFile(filename)
 	if err != nil {
@@ -129,8 +131,9 @@ func (this *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string
 	return filename, nil
 }
 
-func (this *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string, err error) {
-	if msg.MsgType != datastruct.LITTLE_VIDEO_MSG {
+// SaveMessageVideo 保存消息视频到指定位置
+func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string, err error) {
+	if msg.MsgType != datastruct.LittleVideoMsg {
 		return "", errors.New("Message type wrong")
 	}
 	var videoContent appmsg.VideoMsgContent
@@ -140,8 +143,8 @@ func (this *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 	}
 	req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo")
 	req.Param("msgid", msg.MsgID)
-	req.Param("skey", this.sKey)
-	setWechatCookie(req, this.cookie)
+	req.Param("skey", wxwb.sKey)
+	setWechatCookie(req, wxwb.cookie)
 	req.Header("Range", "bytes=0-")
 	filename = msg.MsgID + ".mp4"
 	// err = req.ToFile(filename)
@@ -166,9 +169,10 @@ func (this *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 	return filename, nil
 }
 
-func (this *WechatWeb) StartServe() {
+// StartServe 启动消息同步服务
+func (wxwb *WechatWeb) StartServe() {
 	for true {
-		selector, err := this.syncCheck()
+		selector, err := wxwb.syncCheck()
 		if err != nil {
 			log.Printf("SyncCheck error: %s\n", err.Error())
 			continue
@@ -176,14 +180,14 @@ func (this *WechatWeb) StartServe() {
 		switch selector {
 		case "7":
 			// log.Println("SyncCheck 7")
-			gmResp, err := this.getMessage()
+			gmResp, err := wxwb.getMessage()
 			if err != nil {
 				log.Printf("GetMessage error: %s\n", err.Error())
 				continue
 			}
-			this.syncKey = gmResp.SyncKey
+			wxwb.syncKey = gmResp.SyncKey
 			for _, msg := range gmResp.AddMsgList {
-				err = this.messageProcesser(msg)
+				err = wxwb.messageProcesser(msg)
 				if err != nil {
 					log.Printf("MessageProcesser error: %s\n", err.Error())
 					continue

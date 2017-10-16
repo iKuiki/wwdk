@@ -14,14 +14,15 @@ import (
 	"strings"
 )
 
-func (this *WechatWeb) StatusNotify(fromUserName, toUserName string) (err error) {
+// StatusNotify 消息通知
+func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string) (err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify")
-	req.Param("pass_ticket", this.cookie.PassTicket)
-	setWechatCookie(req, this.cookie)
-	msgId, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
+	req.Param("pass_ticket", wxwb.cookie.PassTicket)
+	setWechatCookie(req, wxwb.cookie)
+	msgID, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
 	reqBody := datastruct.StatusNotifyRequest{
-		BaseRequest:  getBaseRequest(this.cookie, this.deviceId),
-		ClientMsgID:  msgId,
+		BaseRequest:  getBaseRequest(wxwb.cookie, wxwb.deviceID),
+		ClientMsgID:  msgID,
 		Code:         1,
 		FromUserName: fromUserName,
 		ToUserName:   toUserName,
@@ -46,11 +47,11 @@ func (this *WechatWeb) StatusNotify(fromUserName, toUserName string) (err error)
 	return nil
 }
 
-func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
-	context := Context{App: this, hasStop: false}
+func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
+	context := Context{App: wxwb, hasStop: false}
 	switch msg.MsgType {
-	case datastruct.TEXT_MSG:
-		for _, v := range this.messageHook[datastruct.TEXT_MSG] {
+	case datastruct.TextMsg:
+		for _, v := range wxwb.messageHook[datastruct.TextMsg] {
 			if f, ok := v.(TextMessageHook); ok {
 				f(&context, *msg)
 			}
@@ -58,14 +59,14 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 				break
 			}
 		}
-	case datastruct.IMAGE_MSG:
+	case datastruct.ImageMsg:
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		var imgContent appmsg.ImageMsgContent
 		err = xml.Unmarshal([]byte(msg.Content), &imgContent)
 		if err != nil {
 			return errors.New("Unmarshal message content to struct: " + err.Error())
 		}
-		for _, v := range this.messageHook[datastruct.IMAGE_MSG] {
+		for _, v := range wxwb.messageHook[datastruct.ImageMsg] {
 			if f, ok := v.(ImageMessageHook); ok {
 				f(&context, *msg, imgContent)
 			}
@@ -73,14 +74,14 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 				break
 			}
 		}
-	case datastruct.ANIMATION_EMOTIONS_MSG:
+	case datastruct.AnimationEmotionsMsg:
 		msg.Content = html.UnescapeString(msg.Content)
 		var emojiContent appmsg.EmotionMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &emojiContent)
 		if err != nil {
 			return errors.New("Unmarshal message content to struct: " + err.Error())
 		}
-		for _, v := range this.messageHook[datastruct.ANIMATION_EMOTIONS_MSG] {
+		for _, v := range wxwb.messageHook[datastruct.AnimationEmotionsMsg] {
 			if f, ok := v.(EmotionMessageHook); ok {
 				f(&context, *msg, emojiContent)
 			}
@@ -88,14 +89,14 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 				break
 			}
 		}
-	case datastruct.REVOKE_MSG:
+	case datastruct.RevokeMsg:
 		msg.Content = html.UnescapeString(msg.Content)
 		var revokeContent appmsg.RevokeMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &revokeContent)
 		if err != nil {
 			return errors.New("Unmarshal message content to struct: " + err.Error())
 		}
-		for _, v := range this.messageHook[datastruct.REVOKE_MSG] {
+		for _, v := range wxwb.messageHook[datastruct.RevokeMsg] {
 			if f, ok := v.(RevokeMessageHook); ok {
 				f(&context, *msg, revokeContent)
 			}
@@ -103,14 +104,14 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 				break
 			}
 		}
-	case datastruct.LITTLE_VIDEO_MSG:
+	case datastruct.LittleVideoMsg:
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		var videoContent appmsg.VideoMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &videoContent)
 		if err != nil {
 			return errors.New("Unmarshal message content to struct: " + err.Error())
 		}
-		for _, v := range this.messageHook[datastruct.LITTLE_VIDEO_MSG] {
+		for _, v := range wxwb.messageHook[datastruct.LittleVideoMsg] {
 			if f, ok := v.(VideoMessageHook); ok {
 				f(&context, *msg, videoContent)
 			}
@@ -118,14 +119,14 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 				break
 			}
 		}
-	case datastruct.VOICE_MSG:
+	case datastruct.VoiceMsg:
 		msg.Content = html.UnescapeString(msg.Content)
 		var voiceContent appmsg.VoiceMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &voiceContent)
 		if err != nil {
 			return errors.New("Unmarshal message content to struct: " + err.Error())
 		}
-		for _, v := range this.messageHook[datastruct.VOICE_MSG] {
+		for _, v := range wxwb.messageHook[datastruct.VoiceMsg] {
 			if f, ok := v.(VoiceMessageHook); ok {
 				f(&context, *msg, voiceContent)
 			}
@@ -134,7 +135,7 @@ func (this *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	default:
-		return errors.New(fmt.Sprintf("Unknown MsgType %v: %#v", msg.MsgType, msg))
+		return fmt.Errorf("Unknown MsgType %v: %#v", msg.MsgType, msg)
 	}
 	return nil
 }

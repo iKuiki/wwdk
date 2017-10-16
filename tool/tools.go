@@ -10,10 +10,12 @@ import (
 	"time"
 )
 
+// GetWxTimeStamp 获取web微信使用的13位时间戳
 func GetWxTimeStamp() string {
 	return strconv.FormatInt(time.Now().UnixNano(), 10)[:13]
 }
 
+// GetRandomStringFromNum 获取指定长度的随机数字
 func GetRandomStringFromNum(length int) string {
 	bytes := []byte("0123456789")
 	result := []byte{}
@@ -24,6 +26,7 @@ func GetRandomStringFromNum(length int) string {
 	return string(result)
 }
 
+// WriteToFile 将io流写入文件
 func WriteToFile(filename string, data io.ReadCloser) (n int, err error) {
 	f, err := os.Create(filename)
 	if err != nil {

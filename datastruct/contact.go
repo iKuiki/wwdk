@@ -1,15 +1,22 @@
 package datastruct
 
+// ContactFlag 联系人标志
 type ContactFlag int64
 
 const (
-	ContactFlagStar            ContactFlag = 64
-	ContactFlagNoShareMoments  ContactFlag = 256
-	ContactFlagQuiet           ContactFlag = 512
-	ContactFlagTop             ContactFlag = 2048
+	// ContactFlagStar 星标联系人
+	ContactFlagStar ContactFlag = 64
+	// ContactFlagNoShareMoments 不分享朋友圈的联系人
+	ContactFlagNoShareMoments ContactFlag = 256
+	// ContactFlagQuiet 屏蔽新消息提示的联系人
+	ContactFlagQuiet ContactFlag = 512
+	// ContactFlagTop 置顶联系人
+	ContactFlagTop ContactFlag = 2048
+	// ContactFlagNoFollowMoments 不查看其朋友圈的联系人
 	ContactFlagNoFollowMoments ContactFlag = 65536
 )
 
+// Contact 联系人结构
 type Contact struct {
 	Alias            string        `json:"Alias"` // 微信号
 	AppAccountFlag   int64         `json:"AppAccountFlag"`
@@ -44,18 +51,27 @@ type Contact struct {
 	VerifyFlag       int64         `json:"VerifyFlag"`
 }
 
-func (this Contact) IsStar() bool {
-	return this.ContactFlag&int64(ContactFlagStar) > 0
+// IsStar 返回联系人是否为星标联系人
+func (contact Contact) IsStar() bool {
+	return contact.ContactFlag&int64(ContactFlagStar) > 0
 }
-func (this Contact) IsNoShareMoments() bool {
-	return this.ContactFlag&int64(ContactFlagNoShareMoments) > 0
+
+// IsNoShareMoments 返回是否为不分享朋友圈的联系人
+func (contact Contact) IsNoShareMoments() bool {
+	return contact.ContactFlag&int64(ContactFlagNoShareMoments) > 0
 }
-func (this Contact) IsQuiet() bool {
-	return this.ContactFlag&int64(ContactFlagQuiet) > 0
+
+// IsQuiet 返回是否屏蔽该联系人的新消息提醒
+func (contact Contact) IsQuiet() bool {
+	return contact.ContactFlag&int64(ContactFlagQuiet) > 0
 }
-func (this Contact) IsTop() bool {
-	return this.ContactFlag&int64(ContactFlagTop) > 0
+
+// IsTop 返回该联系人是否置顶
+func (contact Contact) IsTop() bool {
+	return contact.ContactFlag&int64(ContactFlagTop) > 0
 }
-func (this Contact) IsNoFollowMoments() bool {
-	return this.ContactFlag&int64(ContactFlagStar) > 0
+
+// IsNoFollowMoments 返回是否不查看该联系人的朋友圈
+func (contact Contact) IsNoFollowMoments() bool {
+	return contact.ContactFlag&int64(ContactFlagStar) > 0
 }
