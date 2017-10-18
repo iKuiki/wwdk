@@ -128,6 +128,7 @@ func (wxwb *WechatWeb) getCookie(redirectURL, userAgent string) (err error) {
 		AuthTicket: cookies["webwx_auth_ticket"],
 		PassTicket: bodyResp.PassTicket,
 	}
+	wxwb.sKey = bodyResp.Skey
 	return nil
 }
 
@@ -160,7 +161,7 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 	}
 	wxwb.user = resp.User
 	wxwb.syncKey = resp.SyncKey
-	wxwb.sKey = resp.SKey
+	// wxwb.sKey = resp.SKey
 	return nil
 }
 

@@ -31,12 +31,14 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "gfNHoe0rgA==";
 ---
 ### API流程
 
-| api path | response      | remark |
-| -------- | ------------- | ------ |
-| jslogin  | code<br/>uuid |        |
-| login    | code          |        |
+| api path          | response                             | remark  |
+| ----------------- | ------------------------------------ | ------- |
+| jslogin           | code<br/>uuid                        |         |
+| login             | code                                 |         |
+| webwxnewloginpage | skey<br/>sid<br/>uin<br/>pass_ticket | xml格式 |
 
 ---
+
 ### API详情
 
 #### 获取uuid
@@ -63,6 +65,8 @@ Example:
 window.QRLogin.code = 200; window.QRLogin.uuid = "gfNHoe0rgA==";
 ```
 
+---
+
 #### 轮询用户扫码
 
 | Key         | Value                                              | Remark                     |
@@ -77,15 +81,68 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "gfNHoe0rgA==";
 
 Response:
 
-| Key         | Value                       | Remark                                                    |
-| ----------- | --------------------------- | --------------------------------------------------------- |
-| window.code | 200<br/>201<br/>400<br/>408 | 确认登陆<br/>已扫码<br/>登陆超时(二维码失效)<br/>等待登陆 |
+| Key               | Value                       | Remark                                                    |
+| ----------------- | --------------------------- | --------------------------------------------------------- |
+| window.code       | 200<br/>201<br/>400<br/>408 | 确认登陆<br/>已扫码<br/>登陆超时(二维码失效)<br/>等待登陆 |
+| window.userAvatar | data:img/jpeg;base64        | base64编码的用户头像，仅当code=200时才有                  |
 
 Example:
-```
-window.code=408;
+```javascript
+window.code=408;window.userAvatar='data:img/jpeg;base64,iVBORw...'
 ```
 
 **若用户取消登陆，返回仍为408，旧的二维码仍可重复使用，用户重新扫旧的二维码后会再次返回201**
 
 *注：当登陆超时（二维码失效）后，重新调用获取uuid的方法即可重新拿到二维码*
+
+---
+
+#### 获取登陆参数
+
+| Key         | Value                                                    | Remark                 |
+| ----------- | -------------------------------------------------------- | ---------------------- |
+| Request URL | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage |                        |
+| Method      | Get                                                      |                        |
+| Param       | ticket                                                   |                        |
+| Param       | uuid                                                     |                        |
+| Param       | scan                                                     | 扫描成功后返回的时间戳 |
+
+Response:
+| Key               | Type    | Remark         |
+| ----------------- | ------- | -------------- |
+| wxsid             | Cookie  |                |
+| wxuin             | Cookie  |                |
+| webwxuvid         | Cookie  |                |
+| webwx_auth_ticket | Cookie  |                |
+| webwx_data_ticket | Cookie  |                |
+| skey              | BodyXml |                |
+| wxsid             | BodyXml | same as cookie |
+| wxuin             | BodyXml | same as cookie |
+| pass_ticket       | BodyXml |                |
+
+---
+
+#### 初始化
+
+| Key         | Value                                            | Remark                              |
+| ----------- | ------------------------------------------------ | ----------------------------------- |
+| Request URL | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit |                                     |
+| Method      | Post                                             |                                     |
+| Param       | r                                                | 13位时间戳取反                      |
+| Param       | pass_ticket                                      | 获取登陆参数时获取到的              |
+| Param       | BaseRequest JsonObject                           | json对象，其中唯一元素为BaseRequest |
+
+Json Example:
+```json
+{"BaseRequest":
+    {
+        "Uin":"216547950",
+        "Sid":"QQ9iwKokvmPs7c/7",
+        "Skey":"@crypt_a6a25b34_68efb91dcbec1fe990bf33d8fe770034",
+        "DeviceID":"e987736822175688"
+    }
+}
+```
+
+Response:
+返回为一个json对象，内包括用户信息、联系人(此列表不全，之后用获取联系人的接口获取完整联系人列表)等
