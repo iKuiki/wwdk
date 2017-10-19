@@ -18,16 +18,27 @@ import (
 )
 
 func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
-	req := httplib.Get("https://login.weixin.qq.com/jslogin")
-	req.Param("appid", conf.APP_ID)
-	req.Param("fun", "new")
-	req.Param("lang", "zh_CN")
-	req.Param("_", tool.GetWxTimeStamp())
-	resp, err := req.String()
+	// req := httplib.Get("https://login.weixin.qq.com/jslogin")
+	// req.Param("appid", conf.APP_ID)
+	// req.Param("fun", "new")
+	// req.Param("lang", "zh_CN")
+	// req.Param("_", tool.GetWxTimeStamp())
+	// resp, err := req.String()
+	// if err != nil {
+	// 	return "", errors.New("request error: " + err.Error())
+	// }
+	params := url.Values{}
+	params.Set("appid", conf.APP_ID)
+	params.Set("fun", "new")
+	params.Set("lang", "zh_CN")
+	params.Set("_", tool.GetWxTimeStamp())
+	resp, err := wxwb.client.Get("https://login.weixin.qq.com/jslogin?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
-	ret := tool.AnalysisWxWindowRespond(resp)
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	ret := tool.AnalysisWxWindowRespond(string(body))
 	if ret["window.QRLogin.code"] != "200" {
 		return "", errors.New("window.QRLogin.code = " + ret["window.QRLogin.code"])
 	}
@@ -36,10 +47,14 @@ func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
 
 // getQrCode 通过uuid生成二维码并输出到控制台
 func (wxwb *WechatWeb) getQrCode(uuid string) (err error) {
-	req := httplib.Get("https://login.weixin.qq.com/qrcode/" + uuid)
-	req.Param("t", "webwx")
-	req.Param("_", tool.GetWxTimeStamp())
-	_, err = req.String()
+	// req := httplib.Get("https://login.weixin.qq.com/qrcode/" + uuid)
+	// req.Param("t", "webwx")
+	// req.Param("_", tool.GetWxTimeStamp())
+	// _, err = req.String()
+	params := url.Values{}
+	params.Set("t", "webwx")
+	params.Set("_", tool.GetWxTimeStamp())
+	_, err = wxwb.client.Get("https://login.weixin.qq.com/qrcode/" + uuid + "?" + params.Encode())
 	if err != nil {
 		return err
 	}
@@ -59,35 +74,50 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 		false: "1",
 		true:  "0",
 	}
-OutLoop:
 	for true {
-		req := httplib.Get("https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login")
-		req.Param("tip", scaned2TipMap[scaned])
-		req.Param("uuid", uuid)
-		req.Param("_", tool.GetWxTimeStamp())
-		resp, err := req.String()
+		// req := httplib.Get("https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login")
+		// req.Param("tip", scaned2TipMap[scaned])
+		// req.Param("uuid", uuid)
+		// req.Param("_", tool.GetWxTimeStamp())
+		// resp, err := req.String()
+		redirectURL, err = func() (redirectURL string, err error) {
+			params := url.Values{}
+			params.Set("tip", scaned2TipMap[scaned])
+			params.Set("uuid", uuid)
+			params.Set("_", tool.GetWxTimeStamp())
+			resp, err := wxwb.client.Get("https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?" + params.Encode())
+			if err != nil {
+				log.Println("waitForScan request error: " + err.Error())
+				return "", nil // return nil error for continue
+			}
+			defer resp.Body.Close()
+			body, _ := ioutil.ReadAll(resp.Body)
+			ret = tool.AnalysisWxWindowRespond(string(body))
+			switch ret["window.code"] {
+			case "200": // 确认登陆
+				log.Println("Login success")
+				return ret["window.redirect_uri"], nil
+			case "201": // 用户已扫码
+				scaned = true
+				log.Println("Scan success, waiting for login")
+				return "", nil // continue
+			case "400": // 登陆失败(二维码失效)
+				return "", errors.New("Login fail: qrcode has run out")
+			case "408": // 等待登陆
+				time.Sleep(500 * time.Microsecond)
+			default:
+				return "", errors.New("Login fail: unknown response code: " + ret["window.code"])
+			}
+			return "", nil
+		}()
 		if err != nil {
-			log.Println("waitForScan request error: " + err.Error())
-			continue
+			return "", err
 		}
-		ret = tool.AnalysisWxWindowRespond(resp)
-		switch ret["window.code"] {
-		case "200": // 确认登陆
-			log.Println("Login success")
-			break OutLoop
-		case "201": // 用户已扫码
-			scaned = true
-			log.Println("Scan success, waiting for login")
-			continue
-		case "400": // 登陆失败(二维码失效)
-			return "", errors.New("Login fail: qrcode has run out")
-		case "408": // 等待登陆
-			time.Sleep(500 * time.Microsecond)
-		default:
-			return "", errors.New("Login fail: unknown response code: " + ret["window.code"])
+		if redirectURL != "" {
+			break
 		}
 	}
-	return ret["window.redirect_uri"], nil
+	return redirectURL, nil
 }
 
 func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {

@@ -189,6 +189,7 @@ Serve:
 			log.Printf("SyncCheck error: %s\n", err.Error())
 			continue
 		}
+		// log.Println("selector: ", selector)
 		switch selector {
 		case "7":
 			// log.Println("SyncCheck 7")

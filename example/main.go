@@ -10,9 +10,12 @@ import (
 )
 
 func main() {
-	wx := wxweb.NewWechatWeb()
+	wx, err := wxweb.NewWechatWeb()
+	if err != nil {
+		panic("Get new wechatweb client error: " + err.Error())
+	}
 	t := testServ{}
-	err := wx.RegisterMessageHook(wxweb.TextMessageHook(t.ProcessTextMessage))
+	err = wx.RegisterMessageHook(wxweb.TextMessageHook(t.ProcessTextMessage))
 	if err != nil {
 		panic("RegisterMessageHook TextMessageHook: " + err.Error())
 	}

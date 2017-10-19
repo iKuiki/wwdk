@@ -5,7 +5,10 @@ import (
 	"github.com/astaxie/beego/httplib"
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/tool"
+	"net"
 	"net/http"
+	"net/http/cookiejar"
+	"time"
 )
 
 // wechatCookie 微信登陆后的cookie凭据，登陆后的消息同步等操作需要此凭据
@@ -30,15 +33,29 @@ type WechatWeb struct {
 	sKey        string
 	messageHook map[datastruct.MessageType][]interface{}
 	baseRequest *datastruct.BaseRequest
+	client      *http.Client
 }
 
 // NewWechatWeb 生成微信网页版客户端实例
-func NewWechatWeb() (wxweb WechatWeb) {
+func NewWechatWeb() (wxweb WechatWeb, err error) {
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return WechatWeb{}, err
+	}
 	return WechatWeb{
 		userAgent:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
 		deviceID:    "e" + tool.GetRandomStringFromNum(15),
 		messageHook: make(map[datastruct.MessageType][]interface{}),
-	}
+		client: &http.Client{
+			Transport: &http.Transport{
+				Dial: (&net.Dialer{
+					Timeout: 1 * time.Minute,
+				}).Dial,
+				TLSHandshakeTimeout: 1 * time.Minute,
+			},
+			Jar: jar,
+		},
+	}, nil
 }
 
 // setWechatCookie 为http request设置cookie登陆凭据
