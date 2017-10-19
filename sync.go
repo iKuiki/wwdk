@@ -82,7 +82,7 @@ func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 	setWechatCookie(req, wxwb.cookie)
 	gmResp = datastruct.GetMessageRespond{}
 	reqBody := datastruct.GetMessageRequest{
-		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.sKey, wxwb.deviceID),
+		BaseRequest: wxwb.baseRequest,
 		SyncKey:     wxwb.syncKey,
 		Rr:          ^time.Now().Unix() + 1,
 	}

@@ -29,6 +29,7 @@ type WechatWeb struct {
 	syncKey     *datastruct.SyncKey
 	sKey        string
 	messageHook map[datastruct.MessageType][]interface{}
+	baseRequest *datastruct.BaseRequest
 }
 
 // NewWechatWeb 生成微信网页版客户端实例
@@ -47,16 +48,6 @@ func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie *wechatCookie) {
 	request.SetCookie(&http.Cookie{Name: "webwxuvid", Value: cookie.Uvid})
 	request.SetCookie(&http.Cookie{Name: "webwx_auth_ticket", Value: cookie.AuthTicket})
 	request.SetCookie(&http.Cookie{Name: "wxuin", Value: cookie.Wxuin})
-}
-
-// getBaseRequest 通过cookie与deviceID，生成请求中的基本请求体
-func getBaseRequest(cookie *wechatCookie, skey, deviceID string) (baseRequest *datastruct.BaseRequest) {
-	return &datastruct.BaseRequest{
-		Uin:      cookie.Wxuin,
-		Sid:      cookie.Wxsid,
-		Skey:     skey,
-		DeviceID: deviceID,
-	}
 }
 
 // GetContact 根据username获取联系人

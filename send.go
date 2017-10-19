@@ -16,7 +16,7 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 	setWechatCookie(req, wxwb.cookie)
 	msgID, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
 	reqBody := datastruct.StatusNotifyRequest{
-		BaseRequest:  getBaseRequest(wxwb.cookie, wxwb.sKey, wxwb.deviceID),
+		BaseRequest:  wxwb.baseRequest,
 		ClientMsgID:  msgID,
 		Code:         code,
 		FromUserName: fromUserName,
@@ -48,7 +48,7 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 	req.Param("pass_ticket", wxwb.cookie.PassTicket)
 	setWechatCookie(req, wxwb.cookie)
 	msgReq := datastruct.SendMessageRequest{
-		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.sKey, wxwb.deviceID),
+		BaseRequest: wxwb.baseRequest,
 		Msg: &datastruct.SendMessage{
 
 			ClientMsgID:  tool.GetWxTimeStamp(),
@@ -84,7 +84,7 @@ func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName strin
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg")
 	setWechatCookie(req, wxwb.cookie)
 	srmReq := datastruct.RevokeMessageRequest{
-		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.sKey, wxwb.deviceID),
+		BaseRequest: wxwb.baseRequest,
 		ClientMsgID: clientMsgID,
 		SvrMsgID:    svrMsgID,
 		ToUserName:  toUserName,

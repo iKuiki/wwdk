@@ -129,13 +129,19 @@ func (wxwb *WechatWeb) getCookie(redirectURL, userAgent string) (err error) {
 		PassTicket: bodyResp.PassTicket,
 	}
 	wxwb.sKey = bodyResp.Skey
+	wxwb.baseRequest = &datastruct.BaseRequest{
+		Uin:      wxwb.cookie.Wxuin,
+		Sid:      wxwb.cookie.Wxsid,
+		Skey:     wxwb.sKey,
+		DeviceID: wxwb.deviceID,
+	}
 	return nil
 }
 
 func (wxwb *WechatWeb) wxInit() (err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit")
 	body := datastruct.WxInitRequestBody{
-		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.sKey, wxwb.deviceID),
+		BaseRequest: wxwb.baseRequest,
 	}
 	req.Header("Content-Type", "application/json")
 	req.Header("charset", "UTF-8")
