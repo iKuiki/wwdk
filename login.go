@@ -90,7 +90,7 @@ OutLoop:
 	return ret["window.redirect_uri"], nil
 }
 
-func (wxwb *WechatWeb) getCookie(redirectURL, userAgent string) (err error) {
+func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {
 	u, err := url.Parse(redirectURL)
 	if err != nil {
 		return errors.New("redirect_url parse fail: " + err.Error())
@@ -102,7 +102,7 @@ func (wxwb *WechatWeb) getCookie(redirectURL, userAgent string) (err error) {
 	req.Param("lang", "zh_CN")
 	req.Param("scan", query.Get("scan"))
 	req.Param("fun", "new")
-	req.SetUserAgent(userAgent)
+	req.SetUserAgent(wxwb.userAgent)
 	resp, err := req.Response()
 	if err != nil {
 		return errors.New("getCookie request error: " + err.Error())
@@ -147,12 +147,12 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 	req.Header("charset", "UTF-8")
 	req.Param("r", tool.GetWxTimeStamp())
 	setWechatCookie(req, wxwb.cookie)
-	resp := datastruct.WxInitRespond{}
 	data, err := json.Marshal(body)
 	if err != nil {
 		return errors.New("json.Marshal error: " + err.Error())
 	}
 	req.Body(data)
+	resp := datastruct.WxInitRespond{}
 	// err = req.ToJSON(&resp)
 	r, err := req.Bytes()
 	if err != nil {
@@ -207,7 +207,7 @@ func (wxwb *WechatWeb) Login() (err error) {
 		return errors.New("waitForScan error: " + err.Error())
 	}
 	// panic(redirectUrl)
-	err = wxwb.getCookie(redirectURL, wxwb.userAgent)
+	err = wxwb.getCookie(redirectURL)
 	if err != nil {
 		return errors.New("getCookie error: " + err.Error())
 	}
