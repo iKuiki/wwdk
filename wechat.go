@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// wechatCookie 微信登陆后的cookie凭据，登陆后的消息同步等操作需要此凭据
 type wechatCookie struct {
 	Skey       string
 	Wxsid      string
@@ -39,6 +40,7 @@ func NewWechatWeb() (wxweb WechatWeb) {
 	}
 }
 
+// setWechatCookie 为http request设置cookie登陆凭据
 func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie *wechatCookie) {
 	request.SetCookie(&http.Cookie{Name: "wxsid", Value: cookie.Wxsid})
 	request.SetCookie(&http.Cookie{Name: "webwx_data_ticket", Value: cookie.DataTicket})
@@ -47,6 +49,7 @@ func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie *wechatCookie) {
 	request.SetCookie(&http.Cookie{Name: "wxuin", Value: cookie.Wxuin})
 }
 
+// getBaseRequest 通过cookie与deviceID，生成请求中的基本请求体
 func getBaseRequest(cookie *wechatCookie, deviceID string) (baseRequest *datastruct.BaseRequest) {
 	return &datastruct.BaseRequest{
 		Uin:      cookie.Wxuin,

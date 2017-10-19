@@ -113,7 +113,7 @@ func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 	return filename, nil
 }
 
-// SaveMessageVoice 保存消息声音到置顶位置
+// SaveMessageVoice 保存消息声音到指定位置
 func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string, err error) {
 	if msg.MsgType != datastruct.VoiceMsg {
 		return "", errors.New("Message type wrong")
