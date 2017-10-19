@@ -140,13 +140,12 @@ func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {
 
 func (wxwb *WechatWeb) wxInit() (err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit")
+	req.Header("Content-Type", "application/json;charset=UTF-8")
+	req.Param("r", tool.GetWxTimeStamp())
+	setWechatCookie(req, wxwb.cookie)
 	body := datastruct.WxInitRequestBody{
 		BaseRequest: wxwb.baseRequest,
 	}
-	req.Header("Content-Type", "application/json")
-	req.Header("charset", "UTF-8")
-	req.Param("r", tool.GetWxTimeStamp())
-	setWechatCookie(req, wxwb.cookie)
 	data, err := json.Marshal(body)
 	if err != nil {
 		return errors.New("json.Marshal error: " + err.Error())
