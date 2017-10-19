@@ -1,51 +1,14 @@
 package wxweb
 
 import (
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/astaxie/beego/httplib"
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/datastruct/appmsg"
-	"github.com/yinhui87/wechat-web/tool"
 	"html"
-	"strconv"
 	"strings"
 )
-
-// StatusNotify 消息通知
-func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string) (err error) {
-	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify")
-	req.Param("pass_ticket", wxwb.cookie.PassTicket)
-	setWechatCookie(req, wxwb.cookie)
-	msgID, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
-	reqBody := datastruct.StatusNotifyRequest{
-		BaseRequest:  getBaseRequest(wxwb.cookie, wxwb.deviceID),
-		ClientMsgID:  msgID,
-		Code:         1,
-		FromUserName: fromUserName,
-		ToUserName:   toUserName,
-	}
-	body, err := json.Marshal(reqBody)
-	if err != nil {
-		return errors.New("Marshal request body to json fail: " + err.Error())
-	}
-	req.Body(body)
-	resp, err := req.Bytes()
-	if err != nil {
-		return errors.New("request error: " + err.Error())
-	}
-	var snResp datastruct.StatusNotifyRespond
-	err = json.Unmarshal(resp, &snResp)
-	if err != nil {
-		return errors.New("Unmarshal respond json fail: " + err.Error())
-	}
-	if snResp.BaseResponse.Ret != 0 {
-		return errors.New("respond error ret: " + strconv.FormatInt(snResp.BaseResponse.Ret, 10))
-	}
-	return nil
-}
 
 func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 	context := Context{App: wxwb, hasStop: false}

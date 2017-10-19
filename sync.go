@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+// assembleSyncKey 组装synckey
+// 将同步需要的synckey组装为请求字符串
 func assembleSyncKey(syncKey *datastruct.SyncKey) string {
 	keys := make([]string, 0)
 	for _, v := range syncKey.List {
@@ -24,6 +26,8 @@ func assembleSyncKey(syncKey *datastruct.SyncKey) string {
 	return url.QueryEscape(ret)
 }
 
+// analysisSyncResp 解析同步状态返回值
+// 同步状态返回的接口
 func analysisSyncResp(syncResp string) (result datastruct.SyncCheckRespond) {
 	syncResp = strings.TrimPrefix(syncResp, "{")
 	syncResp = strings.TrimSuffix(syncResp, "}")
@@ -40,6 +44,8 @@ func analysisSyncResp(syncResp string) (result datastruct.SyncCheckRespond) {
 	return result
 }
 
+// syncCheck 同步状态
+// 轮询微信服务器，如果有新的状态，会通过此接口返回需要同步的信息
 func (wxwb *WechatWeb) syncCheck() (selector string, err error) {
 	req := httplib.Get("https://webpush.wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck")
 	req.Param("r", tool.GetWxTimeStamp())
@@ -58,20 +64,25 @@ func (wxwb *WechatWeb) syncCheck() (selector string, err error) {
 
 	ret := analysisSyncResp(retArr["window.synccheck"])
 	if ret.Retcode != "0" {
+		if ret.Retcode == "1101" {
+			return "Logout", nil
+		}
 		return "", errors.New("respond Retcode " + ret.Retcode)
 	}
 	return ret.Selector, nil
 }
 
+// getMessage 同步消息
+// 如果同步状态接口返回有新消息需要同步，通过此接口从服务器中获取新消息
 func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync")
 	req.Param("sid", wxwb.cookie.Wxsid)
-	req.Param("skey", wxwb.cookie.Skey)
+	req.Param("skey", wxwb.sKey)
 	req.Param("pass_ticket", wxwb.cookie.PassTicket)
 	setWechatCookie(req, wxwb.cookie)
 	gmResp = datastruct.GetMessageRespond{}
 	reqBody := datastruct.GetMessageRequest{
-		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.deviceID),
+		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.sKey, wxwb.deviceID),
 		SyncKey:     wxwb.syncKey,
 		Rr:          ^time.Now().Unix() + 1,
 	}
@@ -171,6 +182,7 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 
 // StartServe 启动消息同步服务
 func (wxwb *WechatWeb) StartServe() {
+Serve:
 	for true {
 		selector, err := wxwb.syncCheck()
 		if err != nil {
@@ -193,6 +205,9 @@ func (wxwb *WechatWeb) StartServe() {
 					continue
 				}
 			}
+		case "Logout":
+			log.Println("User has logout web wechat, exit...")
+			break Serve
 		default:
 			log.Printf("SyncCheck Unknow selector: %s\n", selector)
 		}

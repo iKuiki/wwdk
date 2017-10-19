@@ -10,20 +10,20 @@ import (
 
 // wechatCookie 微信登陆后的cookie凭据，登陆后的消息同步等操作需要此凭据
 type wechatCookie struct {
-	Skey       string
 	Wxsid      string
-	Wxuin      string
+	Wxuin      string // 应该是用户的唯一识别号，同一个用户每次登陆此字段都相同
 	Uvid       string
 	DataTicket string
 	AuthTicket string
 	PassTicket string
+	loadTime   string // 登陆时间(10位时间戳字符串)
 }
 
 // WechatWeb 微信网页版客户端实例
 type WechatWeb struct {
 	cookie      *wechatCookie
 	userAgent   string
-	deviceID    string
+	deviceID    string // 由客户端生成，为e+15位随机数
 	contactList []*datastruct.Contact
 	user        *datastruct.User
 	syncKey     *datastruct.SyncKey
@@ -50,11 +50,11 @@ func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie *wechatCookie) {
 }
 
 // getBaseRequest 通过cookie与deviceID，生成请求中的基本请求体
-func getBaseRequest(cookie *wechatCookie, deviceID string) (baseRequest *datastruct.BaseRequest) {
+func getBaseRequest(cookie *wechatCookie, skey, deviceID string) (baseRequest *datastruct.BaseRequest) {
 	return &datastruct.BaseRequest{
 		Uin:      cookie.Wxuin,
 		Sid:      cookie.Wxsid,
-		Skey:     cookie.Skey,
+		Skey:     skey,
 		DeviceID: deviceID,
 	}
 }

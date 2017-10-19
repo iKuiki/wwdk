@@ -68,7 +68,7 @@ func (serv *testServ) ProcessTextMessage(ctx *wxweb.Context, msg datastruct.Mess
 	}
 	log.Println("messageSent, msgId: " + smResp.MsgID + ", Local ID: " + smResp.LocalID)
 	// Set message to readed at phone
-	err = ctx.App.StatusNotify(msg.ToUserName, msg.FromUserName)
+	err = ctx.App.StatusNotify(msg.ToUserName, msg.FromUserName, 1)
 	if err != nil {
 		log.Println("StatusNotify error: " + err.Error())
 	}

@@ -135,7 +135,7 @@ func (wxwb *WechatWeb) getCookie(redirectURL, userAgent string) (err error) {
 func (wxwb *WechatWeb) wxInit() (err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit")
 	body := datastruct.WxInitRequestBody{
-		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.deviceID),
+		BaseRequest: getBaseRequest(wxwb.cookie, wxwb.sKey, wxwb.deviceID),
 	}
 	req.Header("Content-Type", "application/json")
 	req.Header("charset", "UTF-8")
@@ -208,6 +208,10 @@ func (wxwb *WechatWeb) Login() (err error) {
 	err = wxwb.wxInit()
 	if err != nil {
 		return errors.New("wxInit error: " + err.Error())
+	}
+	err = wxwb.StatusNotify(wxwb.user.UserName, wxwb.user.UserName, 3)
+	if err != nil {
+		return errors.New("StatusNotify error: " + err.Error())
 	}
 	err = wxwb.getContactList()
 	if err != nil {
