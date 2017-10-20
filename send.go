@@ -6,14 +6,19 @@ import (
 	"github.com/astaxie/beego/httplib"
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/tool"
+	"net/url"
 	"strconv"
+	"io/ioutil"
+	"bytes"
 )
 
 // StatusNotify 消息已读通知
 func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64) (err error) {
-	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify")
-	req.Param("pass_ticket", wxwb.cookie.PassTicket)
-	setWechatCookie(req, wxwb.cookie)
+	// req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify")
+	// req.Param("pass_ticket", wxwb.PassTicket)
+	// setWechatCookie(req, wxwb.cookie)
+	// req.Body(body)
+	// resp, err := req.Bytes()
 	msgID, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
 	reqBody := datastruct.StatusNotifyRequest{
 		BaseRequest:  wxwb.baseRequest,
@@ -22,17 +27,22 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 		FromUserName: fromUserName,
 		ToUserName:   toUserName,
 	}
-	body, err := json.Marshal(reqBody)
+	data, err := json.Marshal(reqBody)
 	if err != nil {
 		return errors.New("Marshal request body to json fail: " + err.Error())
 	}
-	req.Body(body)
-	resp, err := req.Bytes()
+	params := url.Values{}
+	params.Set("pass_ticket", wxwb.PassTicket)
+	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify?" + params.Encode(),
+		"application/json;charset=UTF-8",
+		bytes.NewReader(data))
 	if err != nil {
 		return errors.New("request error: " + err.Error())
 	}
+	defer resp.Body.Close()
+	body,_:=ioutil.ReadAll(resp.Body)
 	var snResp datastruct.StatusNotifyRespond
-	err = json.Unmarshal(resp, &snResp)
+	err = json.Unmarshal(body, &snResp)
 	if err != nil {
 		return errors.New("Unmarshal respond json fail: " + err.Error())
 	}
@@ -45,7 +55,7 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 // SendTextMessage 发送消息
 func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageRespond *datastruct.SendMessageRespond, err error) {
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg")
-	req.Param("pass_ticket", wxwb.cookie.PassTicket)
+	req.Param("pass_ticket", wxwb.PassTicket)
 	setWechatCookie(req, wxwb.cookie)
 	msgReq := datastruct.SendMessageRequest{
 		BaseRequest: wxwb.baseRequest,

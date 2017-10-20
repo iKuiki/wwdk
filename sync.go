@@ -1,6 +1,7 @@
 package wxweb
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/datastruct/appmsg"
 	"github.com/yinhui87/wechat-web/tool"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"strconv"
@@ -47,20 +49,31 @@ func analysisSyncResp(syncResp string) (result datastruct.SyncCheckRespond) {
 // syncCheck 同步状态
 // 轮询微信服务器，如果有新的状态，会通过此接口返回需要同步的信息
 func (wxwb *WechatWeb) syncCheck() (selector string, err error) {
-	req := httplib.Get("https://webpush.wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck")
-	req.Param("r", tool.GetWxTimeStamp())
-	req.Param("skey", wxwb.sKey)
-	req.Param("sid", wxwb.cookie.Wxsid)
-	req.Param("uin", wxwb.cookie.Wxuin)
-	req.Param("deviceid", wxwb.deviceID)
-	req.Param("synckey", assembleSyncKey(wxwb.syncKey))
-	req.Param("_", tool.GetWxTimeStamp())
-	setWechatCookie(req, wxwb.cookie)
-	resp, err := req.String()
+	// req := httplib.Get("https://webpush.wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck")
+	// req.Param("r", tool.GetWxTimeStamp())
+	// req.Param("skey", wxwb.sKey)
+	// req.Param("sid", wxwb.cookie.Wxsid)
+	// req.Param("uin", wxwb.cookie.Wxuin)
+	// req.Param("deviceid", wxwb.deviceID)
+	// req.Param("synckey", assembleSyncKey(wxwb.syncKey))
+	// req.Param("_", tool.GetWxTimeStamp())
+	// setWechatCookie(req, wxwb.cookie)
+	// resp, err := req.String()
+	params := url.Values{}
+	params.Set("r", tool.GetWxTimeStamp())
+	params.Set("skey", wxwb.sKey)
+	params.Set("sid", wxwb.cookie.Wxsid)
+	params.Set("uin", wxwb.cookie.Wxuin)
+	params.Set("deviceid", wxwb.deviceID)
+	params.Set("synckey", assembleSyncKey(wxwb.syncKey))
+	params.Set("_", tool.GetWxTimeStamp())
+	resp, err := wxwb.client.Get("https://webpush.wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
-	retArr := tool.AnalysisWxWindowRespond(resp)
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	retArr := tool.AnalysisWxWindowRespond(string(body))
 
 	ret := analysisSyncResp(retArr["window.synccheck"])
 	if ret.Retcode != "0" {
@@ -75,27 +88,35 @@ func (wxwb *WechatWeb) syncCheck() (selector string, err error) {
 // getMessage 同步消息
 // 如果同步状态接口返回有新消息需要同步，通过此接口从服务器中获取新消息
 func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err error) {
-	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync")
-	req.Param("sid", wxwb.cookie.Wxsid)
-	req.Param("skey", wxwb.sKey)
-	req.Param("pass_ticket", wxwb.cookie.PassTicket)
-	setWechatCookie(req, wxwb.cookie)
+	// req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync")
+	// req.Param("sid", wxwb.cookie.Wxsid)
+	// req.Param("skey", wxwb.sKey)
+	// req.Param("pass_ticket", wxwb.PassTicket)
+	// setWechatCookie(req, wxwb.cookie)
+	// req.Body(body)
+	// resp, err := req.Bytes()
 	gmResp = datastruct.GetMessageRespond{}
-	reqBody := datastruct.GetMessageRequest{
+	data, err := json.Marshal(datastruct.GetMessageRequest{
 		BaseRequest: wxwb.baseRequest,
 		SyncKey:     wxwb.syncKey,
 		Rr:          ^time.Now().Unix() + 1,
-	}
-	body, err := json.Marshal(reqBody)
+	})
 	if err != nil {
 		return gmResp, errors.New("Marshal request body to json fail: " + err.Error())
 	}
-	req.Body(body)
-	resp, err := req.Bytes()
+	params := url.Values{}
+	params.Set("sid", wxwb.cookie.Wxsid)
+	params.Set("skey", wxwb.sKey)
+	params.Set("pass_ticket", wxwb.PassTicket)
+	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync?"+params.Encode(),
+		"application/json;charset=UTF-8",
+		bytes.NewReader(data))
 	if err != nil {
 		return gmResp, errors.New("request error: " + err.Error())
 	}
-	err = json.Unmarshal(resp, &gmResp)
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(body, &gmResp)
 	if err != nil {
 		return gmResp, errors.New("Unmarshal respond json fail: " + err.Error())
 	}

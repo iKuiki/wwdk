@@ -18,19 +18,19 @@ type wechatCookie struct {
 	Uvid       string
 	DataTicket string
 	AuthTicket string
-	PassTicket string
-	loadTime   string // 登陆时间(10位时间戳字符串)
+	// loadTime   string // 登陆时间(10位时间戳字符串)
 }
 
 // WechatWeb 微信网页版客户端实例
 type WechatWeb struct {
-	cookie      *wechatCookie
+	cookie      wechatCookie
 	userAgent   string
 	deviceID    string // 由客户端生成，为e+15位随机数
 	contactList []*datastruct.Contact
 	user        *datastruct.User
 	syncKey     *datastruct.SyncKey
 	sKey        string
+	PassTicket  string
 	messageHook map[datastruct.MessageType][]interface{}
 	baseRequest *datastruct.BaseRequest
 	client      *http.Client
@@ -59,7 +59,7 @@ func NewWechatWeb() (wxweb WechatWeb, err error) {
 }
 
 // setWechatCookie 为http request设置cookie登陆凭据
-func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie *wechatCookie) {
+func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie wechatCookie) {
 	request.SetCookie(&http.Cookie{Name: "wxsid", Value: cookie.Wxsid})
 	request.SetCookie(&http.Cookie{Name: "webwx_data_ticket", Value: cookie.DataTicket})
 	request.SetCookie(&http.Cookie{Name: "webwxuvid", Value: cookie.Uvid})
@@ -100,4 +100,22 @@ func (wxwb *WechatWeb) GetContactByNickname(nickname string) (contact *datastruc
 // GetContactList 获取联系人列表
 func (wxwb *WechatWeb) GetContactList() (contacts []*datastruct.Contact) {
 	return wxwb.contactList
+}
+
+// refreshCookie 根据response更新cookie
+func (wxwb *WechatWeb) refreshCookie(cookies []*http.Cookie) {
+	for _, c := range cookies {
+		switch c.Name {
+		case "wxuin":
+			wxwb.cookie.Wxuin = c.Value
+		case "wxsid":
+			wxwb.cookie.Wxsid = c.Value
+		case "webwxuvid":
+			wxwb.cookie.Uvid = c.Value
+		case "webwx_data_ticket":
+			wxwb.cookie.DataTicket = c.Value
+		case "webwx_auth_ticket":
+			wxwb.cookie.AuthTicket = c.Value
+		}
+	}
 }
