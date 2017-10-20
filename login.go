@@ -171,7 +171,7 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 }
 
 func (wxwb *WechatWeb) getContactList() (err error) {
-	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact")
+	req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact")
 	req.Param("r", tool.GetWxTimeStamp())
 	setWechatCookie(req, wxwb.cookie)
 	req.Body([]byte("{}"))
