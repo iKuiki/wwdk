@@ -21,16 +21,16 @@ func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
 	// req := httplib.Get("https://login.weixin.qq.com/jslogin")
 	// req.Param("appid", conf.APP_ID)
 	// req.Param("fun", "new")
-	// req.Param("lang", "zh_CN")
+	// req.Param("lang", conf.Lang)
 	// req.Param("_", tool.GetWxTimeStamp())
 	// resp, err := req.String()
 	// if err != nil {
 	// 	return "", errors.New("request error: " + err.Error())
 	// }
 	params := url.Values{}
-	params.Set("appid", conf.APP_ID)
+	params.Set("appid", conf.AppID)
 	params.Set("fun", "new")
-	params.Set("lang", "zh_CN")
+	params.Set("lang", conf.Lang)
 	params.Set("_", tool.GetWxTimeStamp())
 	resp, err := wxwb.client.Get("https://login.weixin.qq.com/jslogin?" + params.Encode())
 	if err != nil {
@@ -126,7 +126,7 @@ func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {
 	// req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage")
 	// req.Param("ticket", query.Get("ticket"))
 	// req.Param("uuid", query.Get("uuid"))
-	// req.Param("lang", "zh_CN")
+	// req.Param("lang", conf.Lang)
 	// req.Param("scan", query.Get("scan"))
 	// req.Param("fun", "new")
 	// req.SetUserAgent(wxwb.userAgent)
