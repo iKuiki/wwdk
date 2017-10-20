@@ -1,6 +1,7 @@
 package wxweb
 
 import (
+	// "crypto/tls"
 	"errors"
 	"github.com/astaxie/beego/httplib"
 	"github.com/yinhui87/wechat-web/datastruct"
@@ -8,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/cookiejar"
+	// "net/url"
 	"time"
 )
 
@@ -52,6 +54,12 @@ func NewWechatWeb() (wxweb WechatWeb, err error) {
 					Timeout: 1 * time.Minute,
 				}).Dial,
 				TLSHandshakeTimeout: 1 * time.Minute,
+				// TLSClientConfig: &tls.Config{
+				// 	InsecureSkipVerify: true,
+				// },
+				// Proxy: func(_ *http.Request) (*url.URL, error) {
+				// 	return url.Parse("http://127.0.0.1:8888") //根据定义Proxy func(*Request) (*url.URL, error)这里要返回url.URL
+				// },
 			},
 			Jar: jar,
 		},
