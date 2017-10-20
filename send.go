@@ -1,15 +1,15 @@
 package wxweb
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"github.com/astaxie/beego/httplib"
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/tool"
+	"io/ioutil"
 	"net/url"
 	"strconv"
-	"io/ioutil"
-	"bytes"
 )
 
 // StatusNotify 消息已读通知
@@ -33,14 +33,14 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 	}
 	params := url.Values{}
 	params.Set("pass_ticket", wxwb.PassTicket)
-	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify?" + params.Encode(),
+	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify?"+params.Encode(),
 		"application/json;charset=UTF-8",
 		bytes.NewReader(data))
 	if err != nil {
 		return errors.New("request error: " + err.Error())
 	}
 	defer resp.Body.Close()
-	body,_:=ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 	var snResp datastruct.StatusNotifyRespond
 	err = json.Unmarshal(body, &snResp)
 	if err != nil {
