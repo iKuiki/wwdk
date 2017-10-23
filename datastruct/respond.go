@@ -19,7 +19,7 @@ type GetCookieRespond struct {
 
 // WxInitRespond 初始化请求的返回
 type WxInitRespond struct {
-	BaseResponse        BaseResponse  `json:"BaseResponse"`
+	BaseResponse        *BaseResponse `json:"BaseResponse"`
 	ChatSet             string        `json:"ChatSet"`
 	ClickReportInterval int64         `json:"ClickReportInterval"`
 	ClientVersion       int64         `json:"ClientVersion"`
@@ -37,10 +37,17 @@ type WxInitRespond struct {
 
 // GetContactRespond 获取联系人的返回
 type GetContactRespond struct {
-	BaseResponse BaseResponse `json:"BaseResponse"`
-	MemberCount  int64        `json:"MemberCount"`
-	MemberList   []*Contact   `json:"MemberList"`
-	Seq          int64        `json:"Seq"`
+	BaseResponse *BaseResponse `json:"BaseResponse"`
+	MemberCount  int64         `json:"MemberCount"`
+	MemberList   []*Contact    `json:"MemberList"`
+	Seq          int64         `json:"Seq"`
+}
+
+// GetBatchContactResponse 获取群组联系人的返回
+type GetBatchContactResponse struct {
+	BaseResponse *BaseResponse `json:"BaseResponse"`
+	ContactList  []*Contact    `json:"ContactList"`
+	Count        int64         `json:"Count"`
 }
 
 // SyncCheckRespond 同步消息轮询的返回
