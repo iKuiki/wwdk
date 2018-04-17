@@ -59,18 +59,21 @@ func (serv *testServ) ProcessTextMessage(ctx *wxweb.Context, msg datastruct.Mess
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
+		return
 	}
 	log.Printf("Recived a text msg from %s: %s", from.NickName, msg.Content)
 	// reply the same message
 	smResp, err := ctx.App.SendTextMessage(msg.FromUserName, msg.Content)
 	if err != nil {
 		log.Println("sendTextMessage error: " + err.Error())
+		return
 	}
 	log.Println("messageSent, msgId: " + smResp.MsgID + ", Local ID: " + smResp.LocalID)
 	// Set message to readed at phone
 	err = ctx.App.StatusNotify(msg.ToUserName, msg.FromUserName, 1)
 	if err != nil {
 		log.Println("StatusNotify error: " + err.Error())
+		return
 	}
 	go func() {
 		time.Sleep(10 * time.Second)
@@ -83,6 +86,7 @@ func (serv *testServ) ProcessImageMessage(ctx *wxweb.Context, msg datastruct.Mes
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
+		return
 	}
 	log.Printf("Recived a image msg from %s\n", from.NickName)
 	fmt.Println("aeskey: ", imgContent.Img.AesKey)
@@ -93,6 +97,7 @@ func ProcessEmojiMessage(ctx *wxweb.Context, msg datastruct.Message, emojiConten
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
+		return
 	}
 	log.Printf("Recived a emotion from %s url: %s\n", from.NickName, emojiContent.Emoji.CdnUrl)
 }
@@ -102,6 +107,7 @@ func ProcessRevokeMessage(ctx *wxweb.Context, msg datastruct.Message, revokeCont
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
+		return
 	}
 	log.Printf("With %s chat: %s", from.NickName, revokeContent.RevokeMsg.ReplaceMsg)
 }
@@ -111,6 +117,7 @@ func ProcessVideoMessage(ctx *wxweb.Context, msg datastruct.Message, videoConten
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
+		return
 	}
 	log.Printf("Recived video from %s: %s", from.NickName, videoContent.VideoMsg.AesKey)
 }
@@ -120,6 +127,7 @@ func ProcessVoiceMessage(ctx *wxweb.Context, msg datastruct.Message, voiceConten
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
+		return
 	}
 	log.Printf("Recived voice from %s, length %s ms", from.NickName, voiceContent.VoiceMsg.VoiceLength)
 }
