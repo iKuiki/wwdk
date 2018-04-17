@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -51,13 +52,13 @@ func (wxwb *WechatWeb) getQrCode(uuid string) (err error) {
 	// req.Param("t", "webwx")
 	// req.Param("_", tool.GetWxTimeStamp())
 	// _, err = req.String()
-	params := url.Values{}
-	params.Set("t", "webwx")
-	params.Set("_", tool.GetWxTimeStamp())
-	_, err = wxwb.client.Get("https://login.weixin.qq.com/qrcode/" + uuid + "?" + params.Encode())
-	if err != nil {
-		return err
-	}
+	// params := url.Values{}
+	// params.Set("t", "webwx")
+	// params.Set("_", tool.GetWxTimeStamp())
+	// _, err = wxwb.client.Get("https://login.weixin.qq.com/qrcode/" + uuid + "?" + params.Encode())
+	// if err != nil {
+	// 	return err
+	// }
 	if os.Getenv("DEBUG_PRINT_QRURL") == "true" {
 		log.Println("qrcode url: https://login.weixin.qq.com/l/" + uuid)
 	}
@@ -220,6 +221,54 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 	return nil
 }
 
+func (wxwb *WechatWeb) getBatchContact() (err error) {
+	dataStruct := datastruct.GetBatchContactRequest{
+		BaseRequest: wxwb.baseRequest,
+	}
+	for _, contact := range wxwb.contactList {
+		if strings.HasPrefix(contact.UserName, "@@") {
+			dataStruct.List = append(dataStruct.List, datastruct.GetBatchContactRequestListItem{
+				UserName: contact.UserName,
+			})
+		}
+	}
+	dataStruct.Count = int64(len(dataStruct.List))
+	if dataStruct.Count == 0 {
+		return nil
+	}
+	data, err := json.Marshal(dataStruct)
+	if err != nil {
+		return errors.New("json.Marshal error: " + err.Error())
+	}
+	params := url.Values{}
+	params.Set("type", "ex")
+	params.Set("r", tool.GetWxTimeStamp())
+	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?"+params.Encode(),
+		"application/json;charset=UTF-8",
+		bytes.NewReader(data))
+	if err != nil {
+		return errors.New("request error: " + err.Error())
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	respStruct := datastruct.GetBatchContactResponse{}
+	err = json.Unmarshal(body, &respStruct)
+	if err != nil {
+		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
+	}
+	if respStruct.BaseResponse.Ret != 0 {
+		return fmt.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
+	}
+	for _, contact := range respStruct.ContactList {
+		if c, e := wxwb.GetContact(contact.UserName); e == nil {
+			c.MemberCount = contact.MemberCount
+			c.MemberList = contact.MemberList
+			c.EncryChatRoomID = contact.EncryChatRoomID
+		}
+	}
+	return
+}
+
 // Login 登陆方法总成
 func (wxwb *WechatWeb) Login() (err error) {
 	uuid, err := wxwb.getUUID()
@@ -250,6 +299,10 @@ func (wxwb *WechatWeb) Login() (err error) {
 	err = wxwb.getContactList()
 	if err != nil {
 		return errors.New("getContactList error: " + err.Error())
+	}
+	err = wxwb.getBatchContact()
+	if err != nil {
+		return errors.New("getBatchContact error: " + err.Error())
 	}
 	log.Printf("User %s has Login Success, total %d contacts\n", wxwb.user.NickName, len(wxwb.contactList))
 	return nil
