@@ -61,13 +61,12 @@ func (wxwb *WechatWeb) syncCheck() (selector string, err error) {
 	// resp, err := req.String()
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
-	params.Set("skey", wxwb.sKey)
 	params.Set("sid", wxwb.cookie.Wxsid)
 	params.Set("uin", wxwb.cookie.Wxuin)
 	params.Set("deviceid", wxwb.deviceID)
 	params.Set("synckey", assembleSyncKey(wxwb.syncKey))
 	params.Set("_", tool.GetWxTimeStamp())
-	resp, err := wxwb.client.Get("https://webpush.wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck?" + params.Encode())
+	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
@@ -204,7 +203,7 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 // StartServe 启动消息同步服务
 func (wxwb *WechatWeb) StartServe() {
 Serve:
-	for true {
+	for {
 		selector, err := wxwb.syncCheck()
 		if err != nil {
 			log.Printf("SyncCheck error: %s\n", err.Error())
@@ -233,6 +232,6 @@ Serve:
 		default:
 			log.Printf("SyncCheck Unknow selector: %s\n", selector)
 		}
-		time.Sleep(100 * time.Microsecond)
+		time.Sleep(1000 * time.Millisecond)
 	}
 }

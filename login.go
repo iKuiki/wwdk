@@ -172,6 +172,8 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 		return errors.New("json.Marshal error: " + err.Error())
 	}
 	params := url.Values{}
+	params.Set("pass_ticket", wxwb.PassTicket)
+	params.Set("skey", wxwb.sKey)
 	params.Set("r", tool.GetWxTimeStamp())
 	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 		"application/json;charset=UTF-8",
@@ -292,10 +294,10 @@ func (wxwb *WechatWeb) Login() (err error) {
 	if err != nil {
 		return errors.New("wxInit error: " + err.Error())
 	}
-	err = wxwb.StatusNotify(wxwb.user.UserName, wxwb.user.UserName, 3)
-	if err != nil {
-		return errors.New("StatusNotify error: " + err.Error())
-	}
+	// err = wxwb.StatusNotify(wxwb.user.UserName, wxwb.user.UserName, 3)
+	// if err != nil {
+	// 	return errors.New("StatusNotify error: " + err.Error())
+	// }
 	err = wxwb.getContactList()
 	if err != nil {
 		return errors.New("getContactList error: " + err.Error())
@@ -305,5 +307,6 @@ func (wxwb *WechatWeb) Login() (err error) {
 		return errors.New("getBatchContact error: " + err.Error())
 	}
 	log.Printf("User %s has Login Success, total %d contacts\n", wxwb.user.NickName, len(wxwb.contactList))
+
 	return nil
 }
