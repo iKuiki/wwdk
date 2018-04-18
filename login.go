@@ -310,3 +310,20 @@ func (wxwb *WechatWeb) Login() (err error) {
 
 	return nil
 }
+
+// Logout 退出登录
+func (wxwb *WechatWeb) Logout() (err error) {
+	params := url.Values{}
+	params.Set("redirect", "0")
+	params.Set("type", "1")
+	params.Set("skey", wxwb.sKey)
+	form := url.Values{}
+	form.Set("sid", wxwb.cookie.Wxsid)
+	form.Set("uin", wxwb.cookie.Wxuin)
+	resp, err := wxwb.client.PostForm("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxlogout?"+params.Encode(), form)
+	if err != nil {
+		return errors.New("request error: " + err.Error())
+	}
+	defer resp.Body.Close()
+	return nil
+}

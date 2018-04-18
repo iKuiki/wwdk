@@ -140,4 +140,5 @@ func TestContact(t *testing.T) {
 	for _, v := range contacts {
 		fmt.Printf("%s VerifyFlag: %v\n", v.NickName, v.VerifyFlag)
 	}
+	wx.Logout()
 }
