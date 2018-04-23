@@ -1,5 +1,10 @@
 package datastruct
 
+import (
+	"errors"
+	"strings"
+)
+
 // MessageType 消息类型
 type MessageType int64
 
@@ -85,4 +90,42 @@ type Message struct {
 	ToUserName           string `json:"ToUserName"`
 	URL                  string `json:"Url"`
 	VoiceLength          int64  `json:"VoiceLength"`
+}
+
+// IsChatroom 返回消息是否为群组消息
+func (msg Message) IsChatroom() bool {
+	return strings.HasPrefix(msg.FromUserName, "@@")
+}
+
+// GetMemberUserName 获取群组消息的发件人
+func (msg Message) GetMemberUserName() (userName string, err error) {
+	if msg.IsChatroom() {
+		splitIndex := strings.Index(msg.Content, ":")
+		if splitIndex == -1 {
+			err = errors.New("userName not found")
+		} else {
+			userName = msg.Content[:splitIndex]
+		}
+	} else {
+		err = errors.New("this message is not chatroon message")
+	}
+	return
+}
+
+// GetMemberMsgContent 获取群组消息的内容
+func (msg Message) GetMemberMsgContent() (content string, err error) {
+	if msg.IsChatroom() {
+		splitIndex := strings.Index(msg.Content, ":")
+		if splitIndex == -1 {
+			err = errors.New("content not found")
+		} else {
+			content = msg.Content[splitIndex+1:]
+			if strings.HasPrefix(content, "<br/>") {
+				content = content[5:]
+			}
+		}
+	} else {
+		err = errors.New("this message is not chatroon message")
+	}
+	return
 }

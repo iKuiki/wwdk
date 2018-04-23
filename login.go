@@ -14,7 +14,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -230,7 +229,7 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 		BaseRequest: wxwb.baseRequest,
 	}
 	for _, contact := range wxwb.contactList {
-		if strings.HasPrefix(contact.UserName, "@@") {
+		if contact.IsChatroom() {
 			dataStruct.List = append(dataStruct.List, datastruct.GetBatchContactRequestListItem{
 				UserName: contact.UserName,
 			})
@@ -264,10 +263,11 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 		return fmt.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
 	}
 	for _, contact := range respStruct.ContactList {
-		if c, e := wxwb.GetContact(contact.UserName); e == nil {
+		if c, ok := wxwb.contactList[contact.UserName]; ok {
 			c.MemberCount = contact.MemberCount
 			c.MemberList = contact.MemberList
 			c.EncryChatRoomID = contact.EncryChatRoomID
+			wxwb.contactList[c.UserName] = c
 		}
 	}
 	return
