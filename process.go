@@ -11,6 +11,13 @@ import (
 )
 
 func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
+	defer func() {
+		// 防止外部方法导致的崩溃
+		if err := recover(); err != nil {
+			fmt.Println("messageProcesser panic: ", err)
+			fmt.Println("message data: ", msg)
+		}
+	}()
 	context := Context{App: wxwb, hasStop: false}
 	switch msg.MsgType {
 	case datastruct.TextMsg:
