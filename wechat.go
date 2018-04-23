@@ -39,12 +39,12 @@ type WechatWeb struct {
 }
 
 // NewWechatWeb 生成微信网页版客户端实例
-func NewWechatWeb() (wxweb WechatWeb, err error) {
+func NewWechatWeb() (wxweb *WechatWeb, err error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		return WechatWeb{}, err
+		return &WechatWeb{}, err
 	}
-	return WechatWeb{
+	return &WechatWeb{
 		contactList: make(map[string]datastruct.Contact),
 		userAgent:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
 		deviceID:    "e" + tool.GetRandomStringFromNum(15),
