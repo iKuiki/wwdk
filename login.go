@@ -219,7 +219,9 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 	if respStruct.BaseResponse.Ret != 0 {
 		return fmt.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
 	}
-	wxwb.contactList = respStruct.MemberList
+	for _, contact := range respStruct.MemberList {
+		wxwb.contactList[contact.UserName] = contact
+	}
 	return nil
 }
 

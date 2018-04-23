@@ -219,6 +219,12 @@ Serve:
 				continue
 			}
 			wxwb.syncKey = gmResp.SyncKey
+			// 处理新增联系人
+			for _, contact := range gmResp.ModContactList {
+				log.Println("Modify contact: ", contact.NickName)
+				wxwb.contactList[contact.UserName] = contact
+			}
+			// 新消息
 			for _, msg := range gmResp.AddMsgList {
 				err = wxwb.messageProcesser(msg)
 				if err != nil {

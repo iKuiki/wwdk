@@ -28,7 +28,7 @@ type WechatWeb struct {
 	cookie      wechatCookie
 	userAgent   string
 	deviceID    string // 由客户端生成，为e+15位随机数
-	contactList []*datastruct.Contact
+	contactList map[string]datastruct.Contact
 	user        *datastruct.User
 	syncKey     *datastruct.SyncKey
 	sKey        string
@@ -45,6 +45,7 @@ func NewWechatWeb() (wxweb WechatWeb, err error) {
 		return WechatWeb{}, err
 	}
 	return WechatWeb{
+		contactList: make(map[string]datastruct.Contact),
 		userAgent:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
 		deviceID:    "e" + tool.GetRandomStringFromNum(15),
 		messageHook: make(map[datastruct.MessageType][]interface{}),
@@ -76,38 +77,50 @@ func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie wechatCookie) {
 }
 
 // GetContact 根据username获取联系人
-func (wxwb *WechatWeb) GetContact(username string) (contact *datastruct.Contact, err error) {
-	for _, v := range wxwb.contactList {
-		if v.UserName == username {
-			return v, nil
-		}
+func (wxwb *WechatWeb) GetContact(username string) (contact datastruct.Contact, err error) {
+	contact, ok := wxwb.contactList[username]
+	if !ok {
+		err = errors.New("User not found")
 	}
-	return nil, errors.New("User not found")
+	return
 }
 
 // GetContactByAlias 根据备注获取联系人
-func (wxwb *WechatWeb) GetContactByAlias(alias string) (contact *datastruct.Contact, err error) {
+func (wxwb *WechatWeb) GetContactByAlias(alias string) (contact datastruct.Contact, err error) {
+	found := false
 	for _, v := range wxwb.contactList {
 		if v.Alias == alias {
-			return v, nil
+			contact = v
+			found = true
 		}
 	}
-	return nil, errors.New("User not found")
+	if !found {
+		err = errors.New("User not found")
+	}
+	return
 }
 
 // GetContactByNickname 根据昵称获取用户名
-func (wxwb *WechatWeb) GetContactByNickname(nickname string) (contact *datastruct.Contact, err error) {
+func (wxwb *WechatWeb) GetContactByNickname(nickname string) (contact datastruct.Contact, err error) {
+	found := false
 	for _, v := range wxwb.contactList {
 		if v.NickName == nickname {
-			return v, nil
+			contact = v
+			found = true
 		}
 	}
-	return nil, errors.New("User not found")
+	if !found {
+		err = errors.New("User not found")
+	}
+	return
 }
 
 // GetContactList 获取联系人列表
-func (wxwb *WechatWeb) GetContactList() (contacts []*datastruct.Contact) {
-	return wxwb.contactList
+func (wxwb *WechatWeb) GetContactList() (contacts []datastruct.Contact) {
+	for _, v := range wxwb.contactList {
+		contacts = append(contacts, v)
+	}
+	return
 }
 
 // refreshCookie 根据response更新cookie

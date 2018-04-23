@@ -23,7 +23,7 @@ type WxInitRespond struct {
 	ChatSet             string        `json:"ChatSet"`
 	ClickReportInterval int64         `json:"ClickReportInterval"`
 	ClientVersion       int64         `json:"ClientVersion"`
-	ContactList         []*Contact    `json:"ContactList"`
+	ContactList         []Contact     `json:"ContactList"`
 	Count               int64         `json:"Count"`
 	GrayScale           int64         `json:"GrayScale"`
 	InviteStartCount    int64         `json:"InviteStartCount"`
@@ -39,14 +39,14 @@ type WxInitRespond struct {
 type GetContactRespond struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
 	MemberCount  int64         `json:"MemberCount"`
-	MemberList   []*Contact    `json:"MemberList"`
+	MemberList   []Contact     `json:"MemberList"`
 	Seq          int64         `json:"Seq"`
 }
 
 // GetBatchContactResponse 获取群组联系人的返回
 type GetBatchContactResponse struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
-	ContactList  []*Contact    `json:"ContactList"`
+	ContactList  []Contact     `json:"ContactList"`
 	Count        int64         `json:"Count"`
 }
 
@@ -70,42 +70,8 @@ type GetMessageRespond struct {
 	ModChatRoomMemberCount int64         `json:"ModChatRoomMemberCount"`
 	ModChatRoomMemberList  []interface{} `json:"ModChatRoomMemberList"`
 	ModContactCount        int64         `json:"ModContactCount"`
-	ModContactList         []*struct {
-		Alias             string `json:"Alias"`
-		AttrStatus        int64  `json:"AttrStatus"`
-		ChatRoomOwner     string `json:"ChatRoomOwner"`
-		City              string `json:"City"`
-		ContactFlag       int64  `json:"ContactFlag"`
-		ContactType       int64  `json:"ContactType"`
-		HeadImgUpdateFlag int64  `json:"HeadImgUpdateFlag"`
-		HeadImgURL        string `json:"HeadImgUrl"`
-		HideInputBarFlag  int64  `json:"HideInputBarFlag"`
-		KeyWord           string `json:"KeyWord"`
-		MemberCount       int64  `json:"MemberCount"`
-		MemberList        []*struct {
-			AttrStatus      int64  `json:"AttrStatus"`
-			DisplayName     string `json:"DisplayName"`
-			KeyWord         string `json:"KeyWord"`
-			MemberStatus    int64  `json:"MemberStatus"`
-			NickName        string `json:"NickName"`
-			PYInitial       string `json:"PYInitial"`
-			PYQuanPin       string `json:"PYQuanPin"`
-			RemarkPYInitial string `json:"RemarkPYInitial"`
-			RemarkPYQuanPin string `json:"RemarkPYQuanPin"`
-			Uin             int64  `json:"Uin"`
-			UserName        string `json:"UserName"`
-		} `json:"MemberList"`
-		NickName   string `json:"NickName"`
-		Province   string `json:"Province"`
-		RemarkName string `json:"RemarkName"`
-		Sex        int64  `json:"Sex"`
-		Signature  string `json:"Signature"`
-		SnsFlag    int64  `json:"SnsFlag"`
-		Statues    int64  `json:"Statues"`
-		UserName   string `json:"UserName"`
-		VerifyFlag int64  `json:"VerifyFlag"`
-	} `json:"ModContactList"`
-	Profile *struct {
+	ModContactList         []Contact     `json:"ModContactList"`
+	Profile                *struct {
 		Alias     string `json:"Alias"`
 		BindEmail struct {
 			Buff string `json:"Buff"`
