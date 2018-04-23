@@ -191,6 +191,9 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 	if respStruct.BaseResponse.Ret != 0 {
 		return fmt.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
 	}
+	for _, contact := range respStruct.ContactList {
+		wxwb.contactList[contact.UserName] = contact
+	}
 	wxwb.user = respStruct.User
 	wxwb.syncKey = respStruct.SyncKey
 	// wxwb.sKey = respStruct.SKey
