@@ -24,8 +24,11 @@ type VideoMessageHook func(*Context, datastruct.Message, appmsg.VideoMsgContent)
 // VoiceMessageHook 语音消息处理器接口
 type VoiceMessageHook func(*Context, datastruct.Message, appmsg.VoiceMsgContent)
 
-// RegisterMessageHook 注册消息处理器，需要传入消息处理器接口类型，会自动识别
-func (wxwb *WechatWeb) RegisterMessageHook(hook interface{}) error {
+// ModContactHook 联系人变动处理接口
+type ModContactHook func(*Context, datastruct.Contact)
+
+// RegisterHook 注册处理器，需要传入处理器接口类型，会自动识别
+func (wxwb *WechatWeb) RegisterHook(hook interface{}) error {
 	switch hook.(type) {
 	case TextMessageHook:
 		wxwb.messageHook[datastruct.TextMsg] = append(wxwb.messageHook[datastruct.TextMsg], hook)
@@ -39,6 +42,8 @@ func (wxwb *WechatWeb) RegisterMessageHook(hook interface{}) error {
 		wxwb.messageHook[datastruct.LittleVideoMsg] = append(wxwb.messageHook[datastruct.LittleVideoMsg], hook)
 	case VoiceMessageHook:
 		wxwb.messageHook[datastruct.VoiceMsg] = append(wxwb.messageHook[datastruct.VoiceMsg], hook)
+	case ModContactHook:
+		wxwb.modContactHook = append(wxwb.modContactHook, hook)
 	default:
 		return errors.New("Unknown hook function")
 	}

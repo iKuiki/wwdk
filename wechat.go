@@ -25,17 +25,18 @@ type wechatCookie struct {
 
 // WechatWeb 微信网页版客户端实例
 type WechatWeb struct {
-	cookie      wechatCookie
-	userAgent   string
-	deviceID    string // 由客户端生成，为e+15位随机数
-	contactList map[string]datastruct.Contact
-	user        *datastruct.User
-	syncKey     *datastruct.SyncKey
-	sKey        string
-	PassTicket  string
-	messageHook map[datastruct.MessageType][]interface{}
-	baseRequest *datastruct.BaseRequest
-	client      *http.Client
+	cookie         wechatCookie
+	userAgent      string
+	deviceID       string // 由客户端生成，为e+15位随机数
+	contactList    map[string]datastruct.Contact
+	user           *datastruct.User
+	syncKey        *datastruct.SyncKey
+	sKey           string
+	PassTicket     string
+	messageHook    map[datastruct.MessageType][]interface{}
+	modContactHook []interface{}
+	baseRequest    *datastruct.BaseRequest
+	client         *http.Client
 }
 
 // NewWechatWeb 生成微信网页版客户端实例

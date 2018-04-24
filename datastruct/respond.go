@@ -60,10 +60,10 @@ type SyncCheckRespond struct {
 type GetMessageRespond struct {
 	BaseResponse    *BaseResponse `json:"BaseResponse"`
 	AddMsgCount     int64         `json:"AddMsgCount"`
-	AddMsgList      []*Message    `json:"AddMsgList"`
+	AddMsgList      []Message     `json:"AddMsgList"`
 	ContinueFlag    int64         `json:"ContinueFlag"`
 	DelContactCount int64         `json:"DelContactCount"`
-	DelContactList  []*struct {
+	DelContactList  []struct {
 		ContactFlag int64  `json:"ContactFlag"`
 		UserName    string `json:"UserName"`
 	} `json:"DelContactList"`

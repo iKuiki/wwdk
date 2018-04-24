@@ -8,6 +8,6 @@ type SyncKeyItem struct {
 
 // SyncKey 同步Key
 type SyncKey struct {
-	Count int64          `json:"Count"`
-	List  []*SyncKeyItem `json:"List"`
+	Count int64         `json:"Count"`
+	List  []SyncKeyItem `json:"List"`
 }
