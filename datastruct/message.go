@@ -129,3 +129,12 @@ func (msg Message) GetMemberMsgContent() (content string, err error) {
 	}
 	return
 }
+
+// GetContent 获取消息，如果为群消息，则自动尝试获取真实消息本体
+func (msg Message) GetContent() (content string) {
+	content = msg.Content
+	if msg.IsChatroom() {
+		content, _ = msg.GetMemberMsgContent()
+	}
+	return
+}

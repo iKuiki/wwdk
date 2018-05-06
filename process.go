@@ -30,7 +30,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.ImageMsg:
-		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
+		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
 		var imgContent appmsg.ImageMsgContent
 		err = xml.Unmarshal([]byte(msg.Content), &imgContent)
 		if err != nil {
@@ -45,7 +45,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.AnimationEmotionsMsg:
-		msg.Content = html.UnescapeString(msg.Content)
+		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
 		var emojiContent appmsg.EmotionMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &emojiContent)
 		if err != nil {
@@ -60,7 +60,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.RevokeMsg:
-		msg.Content = html.UnescapeString(msg.Content)
+		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
 		var revokeContent appmsg.RevokeMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &revokeContent)
 		if err != nil {
@@ -75,7 +75,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.LittleVideoMsg:
-		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
+		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
 		var videoContent appmsg.VideoMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &videoContent)
 		if err != nil {
@@ -90,7 +90,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.VoiceMsg:
-		msg.Content = html.UnescapeString(msg.Content)
+		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
 		var voiceContent appmsg.VoiceMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &voiceContent)
 		if err != nil {
