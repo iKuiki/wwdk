@@ -31,14 +31,9 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 		}
 	case datastruct.ImageMsg:
 		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
-		var imgContent appmsg.ImageMsgContent
-		err = xml.Unmarshal([]byte(msg.Content), &imgContent)
-		if err != nil {
-			return errors.New("Unmarshal message content to struct: " + err.Error())
-		}
 		for _, v := range wxwb.messageHook[datastruct.ImageMsg] {
 			if f, ok := v.(ImageMessageHook); ok {
-				f(&context, *msg, imgContent)
+				f(&context, *msg)
 			}
 			if context.hasStop {
 				break
@@ -76,14 +71,9 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 		}
 	case datastruct.LittleVideoMsg:
 		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
-		var videoContent appmsg.VideoMsgContent
-		err := xml.Unmarshal([]byte(msg.Content), &videoContent)
-		if err != nil {
-			return errors.New("Unmarshal message content to struct: " + err.Error())
-		}
 		for _, v := range wxwb.messageHook[datastruct.LittleVideoMsg] {
 			if f, ok := v.(VideoMessageHook); ok {
-				f(&context, *msg, videoContent)
+				f(&context, *msg)
 			}
 			if context.hasStop {
 				break
@@ -91,14 +81,9 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 		}
 	case datastruct.VoiceMsg:
 		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
-		var voiceContent appmsg.VoiceMsgContent
-		err := xml.Unmarshal([]byte(msg.Content), &voiceContent)
-		if err != nil {
-			return errors.New("Unmarshal message content to struct: " + err.Error())
-		}
 		for _, v := range wxwb.messageHook[datastruct.VoiceMsg] {
 			if f, ok := v.(VoiceMessageHook); ok {
-				f(&context, *msg, voiceContent)
+				f(&context, *msg)
 			}
 			if context.hasStop {
 				break

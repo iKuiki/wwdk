@@ -10,7 +10,7 @@ import (
 type TextMessageHook func(*Context, datastruct.Message)
 
 // ImageMessageHook 图片消息处理器接口
-type ImageMessageHook func(*Context, datastruct.Message, appmsg.ImageMsgContent)
+type ImageMessageHook func(*Context, datastruct.Message)
 
 // EmotionMessageHook 表情消息处理器接口
 type EmotionMessageHook func(*Context, datastruct.Message, appmsg.EmotionMsgContent)
@@ -19,10 +19,10 @@ type EmotionMessageHook func(*Context, datastruct.Message, appmsg.EmotionMsgCont
 type RevokeMessageHook func(*Context, datastruct.Message, appmsg.RevokeMsgContent)
 
 // VideoMessageHook 视频消息处理器接口
-type VideoMessageHook func(*Context, datastruct.Message, appmsg.VideoMsgContent)
+type VideoMessageHook func(*Context, datastruct.Message)
 
 // VoiceMessageHook 语音消息处理器接口
-type VoiceMessageHook func(*Context, datastruct.Message, appmsg.VoiceMsgContent)
+type VoiceMessageHook func(*Context, datastruct.Message)
 
 // ModContactHook 联系人变动处理接口
 type ModContactHook func(*Context, datastruct.Contact)

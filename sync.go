@@ -3,10 +3,8 @@ package wxweb
 import (
 	"bytes"
 	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/datastruct/appmsg"
 	"github.com/yinhui87/wechat-web/tool"
 	"io/ioutil"
 	"log"
@@ -66,7 +64,7 @@ func (wxwb *WechatWeb) syncCheck() (selector string, err error) {
 	params.Set("deviceid", wxwb.deviceID)
 	params.Set("synckey", assembleSyncKey(wxwb.syncKey))
 	params.Set("_", tool.GetWxTimeStamp())
-	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck?" + params.Encode())
+	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck??" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
@@ -144,7 +142,7 @@ func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 	params.Set("MsgID", msg.MsgID)
 	params.Set("skey", wxwb.sKey)
 	// params.Set("type", "slave")
-	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg" + params.Encode())
+	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
@@ -175,7 +173,7 @@ func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string
 	params.Set("MsgID", msg.MsgID)
 	params.Set("skey", wxwb.sKey)
 	// params.Set("type", "slave")
-	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice" + params.Encode())
+	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
@@ -193,11 +191,6 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 	if msg.MsgType != datastruct.LittleVideoMsg {
 		return "", errors.New("Message type wrong")
 	}
-	var videoContent appmsg.VideoMsgContent
-	err = xml.Unmarshal([]byte(msg.Content), &videoContent)
-	if err != nil {
-		return "", errors.New("Unmarshal message content to struct: " + err.Error())
-	}
 	// req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo")
 	// req.Param("msgid", msg.MsgID)
 	// req.Param("skey", wxwb.sKey)
@@ -212,7 +205,7 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 	params := url.Values{}
 	params.Set("msgid", msg.MsgID)
 	params.Set("skey", wxwb.sKey)
-	req, err := http.NewRequest("GET", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo", strings.NewReader(""))
+	req, err := http.NewRequest("GET", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo?"+params.Encode(), strings.NewReader(""))
 	if err != nil {
 		return "", errors.New("create request error: " + err.Error())
 	}
@@ -221,19 +214,12 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
-	length, err := strconv.ParseInt(videoContent.VideoMsg.Length, 10, 64)
-	if err != nil {
-		return "", errors.New("Parse Video Content Length error: " + err.Error())
-	}
-	if resp.ContentLength != length {
-		return "", errors.New("Respond content length wrong")
-	}
 	filename = msg.MsgID + ".mp4"
 	n, err := tool.WriteToFile(filename, resp.Body)
 	if err != nil {
 		return "", errors.New("WriteToFile error: " + err.Error())
 	}
-	if int64(n) != length {
+	if int64(n) != resp.ContentLength {
 		return filename, errors.New("File size wrong")
 	}
 	return filename, nil

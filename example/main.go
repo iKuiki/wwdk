@@ -15,29 +15,29 @@ func main() {
 		panic("Get new wechatweb client error: " + err.Error())
 	}
 	t := testServ{}
-	err = wx.RegisterMessageHook(wxweb.TextMessageHook(t.ProcessTextMessage))
+	err = wx.RegisterHook(wxweb.TextMessageHook(t.ProcessTextMessage))
 	if err != nil {
-		panic("RegisterMessageHook TextMessageHook: " + err.Error())
+		panic("RegisterHook TextMessageHook: " + err.Error())
 	}
-	err = wx.RegisterMessageHook(wxweb.ImageMessageHook(t.ProcessImageMessage))
+	err = wx.RegisterHook(wxweb.ImageMessageHook(t.ProcessImageMessage))
 	if err != nil {
-		panic("RegisterMessageHook ImageMessageHook: " + err.Error())
+		panic("RegisterHook ImageMessageHook: " + err.Error())
 	}
-	err = wx.RegisterMessageHook(wxweb.EmotionMessageHook(ProcessEmojiMessage))
+	err = wx.RegisterHook(wxweb.EmotionMessageHook(ProcessEmojiMessage))
 	if err != nil {
-		panic("RegisterMessageHook EmotionMessageHook: " + err.Error())
+		panic("RegisterHook EmotionMessageHook: " + err.Error())
 	}
-	err = wx.RegisterMessageHook(wxweb.RevokeMessageHook(ProcessRevokeMessage))
+	err = wx.RegisterHook(wxweb.RevokeMessageHook(ProcessRevokeMessage))
 	if err != nil {
-		panic("RegisterMessageHook RevokeMessageHook: " + err.Error())
+		panic("RegisterHook RevokeMessageHook: " + err.Error())
 	}
-	err = wx.RegisterMessageHook(wxweb.VideoMessageHook(ProcessVideoMessage))
+	err = wx.RegisterHook(wxweb.VideoMessageHook(ProcessVideoMessage))
 	if err != nil {
-		panic("RegisterMessageHook VideoMessageHook: " + err.Error())
+		panic("RegisterHook VideoMessageHook: " + err.Error())
 	}
-	err = wx.RegisterMessageHook(wxweb.VoiceMessageHook(ProcessVoiceMessage))
+	err = wx.RegisterHook(wxweb.VoiceMessageHook(ProcessVoiceMessage))
 	if err != nil {
-		panic("RegisterMessageHook VoiceMessageHook: " + err.Error())
+		panic("RegisterHook VoiceMessageHook: " + err.Error())
 	}
 	err = wx.Login()
 	if err != nil {
@@ -85,14 +85,13 @@ func (serv *testServ) ProcessTextMessage(ctx *wxweb.Context, msg datastruct.Mess
 }
 
 // ProcessImageMessage set image message handle
-func (serv *testServ) ProcessImageMessage(ctx *wxweb.Context, msg datastruct.Message, imgContent appmsg.ImageMsgContent) {
+func (serv *testServ) ProcessImageMessage(ctx *wxweb.Context, msg datastruct.Message) {
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
 		return
 	}
 	log.Printf("Recived a image msg from %s\n", from.NickName)
-	fmt.Println("aeskey: ", imgContent.Img.AesKey)
 }
 
 // ProcessEmojiMessage set Emoji message Handle
@@ -116,21 +115,21 @@ func ProcessRevokeMessage(ctx *wxweb.Context, msg datastruct.Message, revokeCont
 }
 
 // ProcessVideoMessage set video message handle
-func ProcessVideoMessage(ctx *wxweb.Context, msg datastruct.Message, videoContent appmsg.VideoMsgContent) {
+func ProcessVideoMessage(ctx *wxweb.Context, msg datastruct.Message) {
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
 		return
 	}
-	log.Printf("Recived video from %s: %s", from.NickName, videoContent.VideoMsg.AesKey)
+	log.Printf("Recived video from %s", from.NickName)
 }
 
 // ProcessVoiceMessage set voice message handle
-func ProcessVoiceMessage(ctx *wxweb.Context, msg datastruct.Message, voiceContent appmsg.VoiceMsgContent) {
+func ProcessVoiceMessage(ctx *wxweb.Context, msg datastruct.Message) {
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
 		return
 	}
-	log.Printf("Recived voice from %s, length %s ms", from.NickName, voiceContent.VoiceMsg.VoiceLength)
+	log.Printf("Recived voice from %s", from.NickName)
 }
