@@ -32,6 +32,7 @@ func WriteToFile(filename string, data io.ReadCloser) (n int, err error) {
 	if err != nil {
 		return 0, errors.New("create " + filename + " error: " + err.Error())
 	}
+	defer f.Close()
 	d, err := ioutil.ReadAll(data)
 	if err != nil {
 		return 0, errors.New("Read io.ReadCloser error: " + err.Error())
