@@ -64,7 +64,7 @@ func (wxwb *WechatWeb) syncCheck() (selector string, err error) {
 	params.Set("deviceid", wxwb.deviceID)
 	params.Set("synckey", assembleSyncKey(wxwb.syncKey))
 	params.Set("_", tool.GetWxTimeStamp())
-	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck??" + params.Encode())
+	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
