@@ -30,6 +30,7 @@ type WechatWeb struct {
 	deviceID       string // 由客户端生成，为e+15位随机数
 	contactList    map[string]datastruct.Contact
 	user           *datastruct.User
+	syncHost       string
 	syncKey        *datastruct.SyncKey
 	sKey           string
 	PassTicket     string
@@ -63,7 +64,8 @@ func NewWechatWeb() (wxweb *WechatWeb, err error) {
 				// 	return url.Parse("http://127.0.0.1:8888") //根据定义Proxy func(*Request) (*url.URL, error)这里要返回url.URL
 				// },
 			},
-			Jar: jar,
+			Jar:     jar,
+			Timeout: 1 * time.Minute,
 		},
 	}, nil
 }
@@ -140,4 +142,15 @@ func (wxwb *WechatWeb) refreshCookie(cookies []*http.Cookie) {
 			wxwb.cookie.AuthTicket = c.Value
 		}
 	}
+}
+
+// 统一请求
+func (wxwb *WechatWeb) request(req *http.Request) (resp *http.Response, err error) {
+	resp, err = wxwb.client.Do(req)
+	wxwb.refreshCookie(resp.Cookies())
+	if wxwb.baseRequest != nil {
+		wxwb.baseRequest.Uin = wxwb.cookie.Wxuin
+		wxwb.baseRequest.Sid = wxwb.cookie.Wxsid
+	}
+	return
 }

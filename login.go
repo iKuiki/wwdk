@@ -12,21 +12,13 @@ import (
 	"github.com/yinhui87/wechat-web/tool"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"time"
 )
 
 func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
-	// req := httplib.Get("https://login.weixin.qq.com/jslogin")
-	// req.Param("appid", conf.APP_ID)
-	// req.Param("fun", "new")
-	// req.Param("lang", conf.Lang)
-	// req.Param("_", tool.GetWxTimeStamp())
-	// resp, err := req.String()
-	// if err != nil {
-	// 	return "", errors.New("request error: " + err.Error())
-	// }
 	params := url.Values{}
 	params.Set("appid", conf.AppID)
 	params.Set("fun", "new")
@@ -47,17 +39,6 @@ func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
 
 // getQrCode 通过uuid生成二维码并输出到控制台
 func (wxwb *WechatWeb) getQrCode(uuid string) (err error) {
-	// req := httplib.Get("https://login.weixin.qq.com/qrcode/" + uuid)
-	// req.Param("t", "webwx")
-	// req.Param("_", tool.GetWxTimeStamp())
-	// _, err = req.String()
-	// params := url.Values{}
-	// params.Set("t", "webwx")
-	// params.Set("_", tool.GetWxTimeStamp())
-	// _, err = wxwb.client.Get("https://login.weixin.qq.com/qrcode/" + uuid + "?" + params.Encode())
-	// if err != nil {
-	// 	return err
-	// }
 	if os.Getenv("DEBUG_PRINT_QRURL") == "true" {
 		log.Println("qrcode url: https://login.weixin.qq.com/l/" + uuid)
 	}
@@ -75,11 +56,6 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 		true:  "0",
 	}
 	for true {
-		// req := httplib.Get("https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login")
-		// req.Param("tip", scaned2TipMap[scaned])
-		// req.Param("uuid", uuid)
-		// req.Param("_", tool.GetWxTimeStamp())
-		// resp, err := req.String()
 		redirectURL, err = func() (redirectURL string, err error) {
 			params := url.Values{}
 			params.Set("tip", scaned2TipMap[scaned])
@@ -118,20 +94,9 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 }
 
 func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {
-	// u, err := url.Parse(redirectURL)
-	// if err != nil {
-	// 	return errors.New("redirect_url parse fail: " + err.Error())
-	// }
-	// query := u.Query()
-	// req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage")
-	// req.Param("ticket", query.Get("ticket"))
-	// req.Param("uuid", query.Get("uuid"))
-	// req.Param("lang", conf.Lang)
-	// req.Param("scan", query.Get("scan"))
-	// req.Param("fun", "new")
-	// req.SetUserAgent(wxwb.userAgent)
-	// resp, err := req.Response()
-	resp, err := wxwb.client.Get(redirectURL + "&fun=new")
+
+	req, _ := http.NewRequest(`GET`, redirectURL+"&fun=new", nil)
+	resp, err := wxwb.request(req)
 	if err != nil {
 		return errors.New("getCookie request error: " + err.Error())
 	}
@@ -144,7 +109,7 @@ func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {
 	if err != nil {
 		return errors.New("Unmarshal respond xml error: " + err.Error())
 	}
-	wxwb.refreshCookie(resp.Cookies())
+	// wxwb.refreshCookie(resp.Cookies())
 	wxwb.PassTicket = bodyResp.PassTicket
 	wxwb.sKey = bodyResp.Skey
 	wxwb.baseRequest = &datastruct.BaseRequest{
@@ -157,13 +122,6 @@ func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {
 }
 
 func (wxwb *WechatWeb) wxInit() (err error) {
-	// req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit")
-	// req.Header("Content-Type", "application/json;charset=UTF-8")
-	// req.Param("r", tool.GetWxTimeStamp())
-	// setWechatCookie(req, wxwb.cookie)
-	// req.Body(data)
-	// err = req.ToJSON(&respStruct)
-	// r, err := req.Bytes()
 	data, err := json.Marshal(datastruct.WxInitRequestBody{
 		BaseRequest: wxwb.baseRequest,
 	})
@@ -174,15 +132,23 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 	params.Set("pass_ticket", wxwb.PassTicket)
 	params.Set("skey", wxwb.sKey)
 	params.Set("r", tool.GetWxTimeStamp())
-	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
-		"application/json;charset=UTF-8",
-		bytes.NewReader(data))
+	// resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
+	// 	"application/json;charset=UTF-8",
+	// 	bytes.NewReader(data))
 
-	respStruct := datastruct.WxInitRespond{}
+	req, err := http.NewRequest("POST",
+		"https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
+		bytes.NewReader(data))
 	if err != nil {
-		return errors.New("request error: " + err.Error())
+		return errors.New("create request error: " + err.Error())
+	}
+	resp, err := wxwb.request(req)
+	if err != nil {
+		return errors.New("do request error: " + err.Error())
 	}
 	defer resp.Body.Close()
+
+	respStruct := datastruct.WxInitRespond{}
 	body, _ := ioutil.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &respStruct)
 	if err != nil {
@@ -196,15 +162,11 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 	}
 	wxwb.user = respStruct.User
 	wxwb.syncKey = respStruct.SyncKey
-	// wxwb.sKey = respStruct.SKey
+	wxwb.sKey = respStruct.SKey
 	return nil
 }
 
 func (wxwb *WechatWeb) getContactList() (err error) {
-	// req := httplib.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact")
-	// req.Param("r", tool.GetWxTimeStamp())
-	// setWechatCookie(req, wxwb.cookie)
-	// r, err := req.Bytes()
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
 	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact?" + params.Encode())

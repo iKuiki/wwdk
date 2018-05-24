@@ -14,11 +14,6 @@ import (
 
 // StatusNotify 消息已读通知
 func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64) (err error) {
-	// req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify")
-	// req.Param("pass_ticket", wxwb.PassTicket)
-	// setWechatCookie(req, wxwb.cookie)
-	// req.Body(body)
-	// resp, err := req.Bytes()
 	msgID, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
 	reqBody := datastruct.StatusNotifyRequest{
 		BaseRequest:  wxwb.baseRequest,
