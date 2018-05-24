@@ -29,7 +29,7 @@ func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 	params := url.Values{}
 	params.Set("sid", wxwb.cookie.Wxsid)
 	params.Set("skey", wxwb.sKey)
-	params.Set("pass_ticket", wxwb.PassTicket)
+	// params.Set("pass_ticket", wxwb.PassTicket)
 	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync?"+params.Encode(),
 		"application/json;charset=UTF-8",
 		bytes.NewReader(data))
