@@ -39,7 +39,8 @@ func assembleSyncKey(syncKey *datastruct.SyncKey) string {
 		keys = append(keys, strconv.FormatInt(v.Key, 10)+"_"+strconv.FormatInt(v.Val, 10))
 	}
 	ret := strings.Join(keys, "|")
-	return url.QueryEscape(ret)
+	// return url.QueryEscape(ret)
+	return ret
 }
 
 // analysisSyncResp 解析同步状态返回值
@@ -137,7 +138,7 @@ Serve:
 		}
 		// log.Println("selector: ", selector)
 		switch selector {
-		case "7":
+		case "2":
 			// log.Println("SyncCheck 7")
 			gmResp, err := wxwb.getMessage()
 			if err != nil {
