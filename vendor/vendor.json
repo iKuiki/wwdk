@@ -1,0 +1,37 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "lNk83SMWEgFZmO/Xgrb/IVKUdlI=",
+			"path": "github.com/astaxie/beego/httplib",
+			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
+			"revisionTime": "2017-05-19T13:19:18Z"
+		},
+		{
+			"checksumSHA1": "xFydIYCXfeqZ7z1winPE/s8UyDs=",
+			"path": "github.com/mdp/qrterminal",
+			"revision": "bd37d7b62c3e19529343c3426e649b300d3102f8",
+			"revisionTime": "2016-12-19T15:20:28Z"
+		},
+		{
+			"checksumSHA1": "F0ZruodKjrf+6ZABej0DmUUUgvg=",
+			"path": "github.com/mdp/rsc/gf256",
+			"revision": "90f07065088deccf50b28eb37c93dad3078c0f3c",
+			"revisionTime": "2016-01-31T16:45:16Z"
+		},
+		{
+			"checksumSHA1": "zqqrpOfbTSZkipqLHi9a+MNi29Q=",
+			"path": "github.com/mdp/rsc/qr",
+			"revision": "90f07065088deccf50b28eb37c93dad3078c0f3c",
+			"revisionTime": "2016-01-31T16:45:16Z"
+		},
+		{
+			"checksumSHA1": "OLqhFuxXrRbCqqVjx8DPaACXVT8=",
+			"path": "github.com/mdp/rsc/qr/coding",
+			"revision": "90f07065088deccf50b28eb37c93dad3078c0f3c",
+			"revisionTime": "2016-01-31T16:45:16Z"
+		}
+	],
+	"rootPath": "github.com/yinhui87/wechat-web"
+}
