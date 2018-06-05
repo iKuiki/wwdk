@@ -19,7 +19,7 @@ import (
 func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err error) {
 	gmResp = datastruct.GetMessageRespond{}
 	data, err := json.Marshal(datastruct.GetMessageRequest{
-		BaseRequest: wxwb.baseRequest,
+		BaseRequest: wxwb.baseRequest(),
 		SyncKey:     wxwb.syncKey,
 		Rr:          ^time.Now().Unix() + 1,
 	})

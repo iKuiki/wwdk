@@ -61,7 +61,8 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 			params.Set("tip", scaned2TipMap[scaned])
 			params.Set("uuid", uuid)
 			params.Set("_", tool.GetWxTimeStamp())
-			resp, err := wxwb.client.Get("https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?" + params.Encode())
+			req, _ := http.NewRequest(`GET`, "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?"+params.Encode(), nil)
+			resp, err := wxwb.request(req)
 			if err != nil {
 				log.Println("waitForScan request error: " + err.Error())
 				return "", nil // return nil error for continue
@@ -109,21 +110,15 @@ func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {
 	if err != nil {
 		return errors.New("Unmarshal respond xml error: " + err.Error())
 	}
-	// wxwb.refreshCookie(resp.Cookies())
+	// wxwb.refreshCookie(resp.Cookies()) // 在统一的Request方法已经调用了
 	wxwb.PassTicket = bodyResp.PassTicket
 	wxwb.sKey = bodyResp.Skey
-	wxwb.baseRequest = &datastruct.BaseRequest{
-		Uin:      wxwb.cookie.Wxuin,
-		Sid:      wxwb.cookie.Wxsid,
-		Skey:     wxwb.sKey,
-		DeviceID: wxwb.deviceID,
-	}
 	return nil
 }
 
 func (wxwb *WechatWeb) wxInit() (err error) {
 	data, err := json.Marshal(datastruct.WxInitRequestBody{
-		BaseRequest: wxwb.baseRequest,
+		BaseRequest: wxwb.baseRequest(),
 	})
 	if err != nil {
 		return errors.New("json.Marshal error: " + err.Error())
@@ -191,7 +186,7 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 
 func (wxwb *WechatWeb) getBatchContact() (err error) {
 	dataStruct := datastruct.GetBatchContactRequest{
-		BaseRequest: wxwb.baseRequest,
+		BaseRequest: wxwb.baseRequest(),
 	}
 	for _, contact := range wxwb.contactList {
 		if contact.IsChatroom() {

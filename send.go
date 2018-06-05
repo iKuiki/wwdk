@@ -16,7 +16,7 @@ import (
 func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64) (err error) {
 	msgID, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
 	reqBody := datastruct.StatusNotifyRequest{
-		BaseRequest:  wxwb.baseRequest,
+		BaseRequest:  wxwb.baseRequest(),
 		ClientMsgID:  msgID,
 		Code:         code,
 		FromUserName: fromUserName,
@@ -53,7 +53,7 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 	req.Param("pass_ticket", wxwb.PassTicket)
 	setWechatCookie(req, wxwb.cookie)
 	msgReq := datastruct.SendMessageRequest{
-		BaseRequest: wxwb.baseRequest,
+		BaseRequest: wxwb.baseRequest(),
 		Msg: &datastruct.SendMessage{
 
 			ClientMsgID:  tool.GetWxTimeStamp(),
@@ -89,7 +89,7 @@ func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName strin
 	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg")
 	setWechatCookie(req, wxwb.cookie)
 	srmReq := datastruct.RevokeMessageRequest{
-		BaseRequest: wxwb.baseRequest,
+		BaseRequest: wxwb.baseRequest(),
 		ClientMsgID: clientMsgID,
 		SvrMsgID:    svrMsgID,
 		ToUserName:  toUserName,

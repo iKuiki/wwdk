@@ -36,7 +36,6 @@ type WechatWeb struct {
 	PassTicket     string
 	messageHook    map[datastruct.MessageType][]interface{}
 	modContactHook []interface{}
-	baseRequest    *datastruct.BaseRequest
 	client         *http.Client
 }
 
@@ -77,6 +76,15 @@ func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie wechatCookie) {
 	request.SetCookie(&http.Cookie{Name: "webwxuvid", Value: cookie.Uvid})
 	request.SetCookie(&http.Cookie{Name: "webwx_auth_ticket", Value: cookie.AuthTicket})
 	request.SetCookie(&http.Cookie{Name: "wxuin", Value: cookie.Wxuin})
+}
+
+func (wxwb *WechatWeb) baseRequest() (baseRequest *datastruct.BaseRequest) {
+	return &datastruct.BaseRequest{
+		Uin:      wxwb.cookie.Wxuin,
+		Sid:      wxwb.cookie.Wxsid,
+		Skey:     wxwb.sKey,
+		DeviceID: wxwb.deviceID,
+	}
 }
 
 // GetContact 根据username获取联系人
@@ -148,9 +156,5 @@ func (wxwb *WechatWeb) refreshCookie(cookies []*http.Cookie) {
 func (wxwb *WechatWeb) request(req *http.Request) (resp *http.Response, err error) {
 	resp, err = wxwb.client.Do(req)
 	wxwb.refreshCookie(resp.Cookies())
-	if wxwb.baseRequest != nil {
-		wxwb.baseRequest.Uin = wxwb.cookie.Wxuin
-		wxwb.baseRequest.Sid = wxwb.cookie.Wxsid
-	}
 	return
 }
