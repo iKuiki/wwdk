@@ -2,14 +2,15 @@ package wxweb
 
 import (
 	"errors"
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/tool"
 	"io/ioutil"
 	"log"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/yinhui87/wechat-web/datastruct"
+	"github.com/yinhui87/wechat-web/tool"
 )
 
 var syncHosts = []string{
@@ -138,8 +139,12 @@ Serve:
 		}
 		// log.Println("selector: ", selector)
 		switch selector {
+		case "0":
+			// log.Println("SyncCheck 0")
+			// normal
+			// log.Println("no new message")
 		case "2":
-			// log.Println("SyncCheck 7")
+			// log.Println("SyncCheck 2")
 			gmResp, err := wxwb.getMessage()
 			if err != nil {
 				log.Printf("GetMessage error: %s\n", err.Error())
