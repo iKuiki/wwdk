@@ -4,16 +4,19 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"html"
+	"runtime/debug"
+	"strings"
+
 	"github.com/yinhui87/wechat-web/datastruct"
 	"github.com/yinhui87/wechat-web/datastruct/appmsg"
-	"html"
-	"strings"
 )
 
 func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 	defer func() {
 		// 防止外部方法导致的崩溃
 		if err := recover(); err != nil {
+			debug.PrintStack()
 			fmt.Println("messageProcesser panic: ", err)
 			fmt.Println("message data: ", msg)
 		}
@@ -30,7 +33,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.ImageMsg:
-		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
+		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		for _, v := range wxwb.messageHook[datastruct.ImageMsg] {
 			if f, ok := v.(ImageMessageHook); ok {
 				f(&context, *msg)
@@ -40,7 +43,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.AnimationEmotionsMsg:
-		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
+		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		var emojiContent appmsg.EmotionMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &emojiContent)
 		if err != nil {
@@ -55,7 +58,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.RevokeMsg:
-		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
+		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		var revokeContent appmsg.RevokeMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &revokeContent)
 		if err != nil {
@@ -70,7 +73,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.LittleVideoMsg:
-		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
+		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		for _, v := range wxwb.messageHook[datastruct.LittleVideoMsg] {
 			if f, ok := v.(VideoMessageHook); ok {
 				f(&context, *msg)
@@ -80,7 +83,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.VoiceMsg:
-		msg.Content = strings.Replace(html.UnescapeString(msg.GetContent()), "<br/>", "", -1)
+		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		for _, v := range wxwb.messageHook[datastruct.VoiceMsg] {
 			if f, ok := v.(VoiceMessageHook); ok {
 				f(&context, *msg)
