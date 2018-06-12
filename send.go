@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/astaxie/beego/httplib"
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/tool"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/yinhui87/wechat-web/datastruct"
+	"github.com/yinhui87/wechat-web/tool"
 )
 
 // StatusNotify 消息已读通知
@@ -49,9 +50,6 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 
 // SendTextMessage 发送消息
 func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageRespond *datastruct.SendMessageRespond, err error) {
-	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg")
-	req.Param("pass_ticket", wxwb.PassTicket)
-	setWechatCookie(req, wxwb.cookie)
 	msgReq := datastruct.SendMessageRequest{
 		BaseRequest: wxwb.baseRequest(),
 		Msg: &datastruct.SendMessage{
@@ -68,13 +66,23 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 	if err != nil {
 		return nil, errors.New("Marshal body to json fail: " + err.Error())
 	}
-	req.Body(body)
-	resp, err := req.Bytes()
+	params := url.Values{}
+	params.Set("pass_ticket", wxwb.PassTicket)
+	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg?"+params.Encode(), bytes.NewReader(body))
+	if err != nil {
+		return nil, errors.New("create request error: " + err.Error())
+	}
+	resp, err := wxwb.request(req)
 	if err != nil {
 		return nil, errors.New("request error: " + err.Error())
 	}
+	defer resp.Body.Close()
 	var smResp datastruct.SendMessageRespond
-	err = json.Unmarshal(resp, &smResp)
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.New("read response body error: " + err.Error())
+	}
+	err = json.Unmarshal(respBody, &smResp)
 	if err != nil {
 		return nil, errors.New("UnMarshal respond json fail: " + err.Error())
 	}
@@ -86,8 +94,6 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 
 // SendRevokeMessage 撤回消息
 func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName string) (revokeMessageRespond *datastruct.RevokeMessageRespond, err error) {
-	req := httplib.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg")
-	setWechatCookie(req, wxwb.cookie)
 	srmReq := datastruct.RevokeMessageRequest{
 		BaseRequest: wxwb.baseRequest(),
 		ClientMsgID: clientMsgID,
@@ -98,13 +104,21 @@ func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName strin
 	if err != nil {
 		return nil, errors.New("Marshal body to json fail: " + err.Error())
 	}
-	req.Body(body)
-	resp, err := req.Bytes()
+	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg", bytes.NewReader(body))
+	if err != nil {
+		return nil, errors.New("create request error: " + err.Error())
+	}
+	resp, err := wxwb.request(req)
 	if err != nil {
 		return nil, errors.New("request error: " + err.Error())
 	}
+	defer resp.Body.Close()
 	var rmResp datastruct.RevokeMessageRespond
-	err = json.Unmarshal(resp, &rmResp)
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.New("read response body error: " + err.Error())
+	}
+	err = json.Unmarshal(respBody, &rmResp)
 	if err != nil {
 		return nil, errors.New("UnMarshal respond json fail: " + err.Error())
 	}
