@@ -143,6 +143,9 @@ Serve:
 			// log.Println("SyncCheck 0")
 			// normal
 			// log.Println("no new message")
+		case "6":
+			log.Printf("selector is 6")
+			fallthrough
 		case "2":
 			// log.Println("SyncCheck 2")
 			gmResp, err := wxwb.getMessage()
