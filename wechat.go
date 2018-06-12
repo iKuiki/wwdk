@@ -3,12 +3,12 @@ package wxweb
 import (
 	// "crypto/tls"
 	"errors"
-	"github.com/astaxie/beego/httplib"
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/tool"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
+
+	"github.com/yinhui87/wechat-web/datastruct"
+	"github.com/yinhui87/wechat-web/tool"
 	// "net/url"
 	"time"
 )
@@ -67,15 +67,6 @@ func NewWechatWeb() (wxweb *WechatWeb, err error) {
 			Timeout: 1 * time.Minute,
 		},
 	}, nil
-}
-
-// setWechatCookie 为http request设置cookie登陆凭据
-func setWechatCookie(request *httplib.BeegoHTTPRequest, cookie wechatCookie) {
-	request.SetCookie(&http.Cookie{Name: "wxsid", Value: cookie.Wxsid})
-	request.SetCookie(&http.Cookie{Name: "webwx_data_ticket", Value: cookie.DataTicket})
-	request.SetCookie(&http.Cookie{Name: "webwxuvid", Value: cookie.Uvid})
-	request.SetCookie(&http.Cookie{Name: "webwx_auth_ticket", Value: cookie.AuthTicket})
-	request.SetCookie(&http.Cookie{Name: "wxuin", Value: cookie.Wxuin})
 }
 
 func (wxwb *WechatWeb) baseRequest() (baseRequest *datastruct.BaseRequest) {
