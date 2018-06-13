@@ -6,16 +6,17 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/mdp/qrterminal"
-	"github.com/yinhui87/wechat-web/conf"
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/tool"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/mdp/qrterminal"
+	"github.com/yinhui87/wechat-web/conf"
+	"github.com/yinhui87/wechat-web/datastruct"
+	"github.com/yinhui87/wechat-web/tool"
 )
 
 func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
@@ -24,7 +25,8 @@ func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
 	params.Set("fun", "new")
 	params.Set("lang", conf.Lang)
 	params.Set("_", tool.GetWxTimeStamp())
-	resp, err := wxwb.client.Get("https://login.weixin.qq.com/jslogin?" + params.Encode())
+	req, _ := http.NewRequest("GET", "https://login.weixin.qq.com/jslogin?"+params.Encode(), nil)
+	resp, err := wxwb.request(req)
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
@@ -111,8 +113,8 @@ func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {
 		return errors.New("Unmarshal respond xml error: " + err.Error())
 	}
 	// wxwb.refreshCookie(resp.Cookies()) // 在统一的Request方法已经调用了
-	wxwb.PassTicket = bodyResp.PassTicket
-	wxwb.sKey = bodyResp.Skey
+	wxwb.loginInfo.PassTicket = bodyResp.PassTicket
+	wxwb.loginInfo.sKey = bodyResp.Skey
 	return nil
 }
 
@@ -124,8 +126,8 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 		return errors.New("json.Marshal error: " + err.Error())
 	}
 	params := url.Values{}
-	params.Set("pass_ticket", wxwb.PassTicket)
-	params.Set("skey", wxwb.sKey)
+	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
+	params.Set("skey", wxwb.loginInfo.sKey)
 	params.Set("r", tool.GetWxTimeStamp())
 	// resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 	// 	"application/json;charset=UTF-8",
@@ -156,8 +158,8 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 		wxwb.contactList[contact.UserName] = contact
 	}
 	wxwb.user = respStruct.User
-	wxwb.syncKey = respStruct.SyncKey
-	wxwb.sKey = respStruct.SKey
+	wxwb.loginInfo.syncKey = respStruct.SyncKey
+	wxwb.loginInfo.sKey = respStruct.SKey
 	return nil
 }
 
@@ -278,10 +280,10 @@ func (wxwb *WechatWeb) Logout() (err error) {
 	params := url.Values{}
 	params.Set("redirect", "0")
 	params.Set("type", "1")
-	params.Set("skey", wxwb.sKey)
+	params.Set("skey", wxwb.loginInfo.sKey)
 	form := url.Values{}
-	form.Set("sid", wxwb.cookie.Wxsid)
-	form.Set("uin", wxwb.cookie.Wxuin)
+	form.Set("sid", wxwb.loginInfo.cookie.Wxsid)
+	form.Set("uin", wxwb.loginInfo.cookie.Wxuin)
 	resp, err := wxwb.client.PostForm("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxlogout?"+params.Encode(), form)
 	if err != nil {
 		return errors.New("request error: " + err.Error())

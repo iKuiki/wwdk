@@ -28,7 +28,7 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 		return errors.New("Marshal request body to json fail: " + err.Error())
 	}
 	params := url.Values{}
-	params.Set("pass_ticket", wxwb.PassTicket)
+	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
 	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify?"+params.Encode(),
 		"application/json;charset=UTF-8",
 		bytes.NewReader(data))
@@ -67,7 +67,7 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 		return nil, errors.New("Marshal body to json fail: " + err.Error())
 	}
 	params := url.Values{}
-	params.Set("pass_ticket", wxwb.PassTicket)
+	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
 	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg?"+params.Encode(), bytes.NewReader(body))
 	if err != nil {
 		return nil, errors.New("create request error: " + err.Error())

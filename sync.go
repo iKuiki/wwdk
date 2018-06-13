@@ -83,10 +83,10 @@ func (wxwb *WechatWeb) syncCheck() (retCode, selector string, err error) {
 	}
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
-	params.Set("sid", wxwb.cookie.Wxsid)
-	params.Set("uin", wxwb.cookie.Wxuin)
+	params.Set("sid", wxwb.loginInfo.cookie.Wxsid)
+	params.Set("uin", wxwb.loginInfo.cookie.Wxuin)
 	params.Set("deviceid", wxwb.deviceID)
-	params.Set("synckey", assembleSyncKey(wxwb.syncKey))
+	params.Set("synckey", assembleSyncKey(wxwb.loginInfo.syncKey))
 	params.Set("_", tool.GetWxTimeStamp())
 	resp, err := wxwb.client.Get("https://" + wxwb.syncHost + "/cgi-bin/mmwebwx-bin/synccheck?" + params.Encode())
 	if err != nil {
@@ -154,9 +154,9 @@ Serve:
 				continue
 			}
 			if gmResp.SyncCheckKey != nil {
-				wxwb.syncKey = gmResp.SyncCheckKey
+				wxwb.loginInfo.syncKey = gmResp.SyncCheckKey
 			} else {
-				wxwb.syncKey = gmResp.SyncKey
+				wxwb.loginInfo.syncKey = gmResp.SyncKey
 			}
 			// 处理新增联系人
 			for _, contact := range gmResp.ModContactList {

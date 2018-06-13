@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/tool"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/yinhui87/wechat-web/datastruct"
+	"github.com/yinhui87/wechat-web/tool"
 )
 
 // getMessage 同步消息
@@ -20,15 +21,15 @@ func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 	gmResp = datastruct.GetMessageRespond{}
 	data, err := json.Marshal(datastruct.GetMessageRequest{
 		BaseRequest: wxwb.baseRequest(),
-		SyncKey:     wxwb.syncKey,
+		SyncKey:     wxwb.loginInfo.syncKey,
 		Rr:          ^time.Now().Unix() + 1,
 	})
 	if err != nil {
 		return gmResp, errors.New("Marshal request body to json fail: " + err.Error())
 	}
 	params := url.Values{}
-	params.Set("sid", wxwb.cookie.Wxsid)
-	params.Set("skey", wxwb.sKey)
+	params.Set("sid", wxwb.loginInfo.cookie.Wxsid)
+	params.Set("skey", wxwb.loginInfo.sKey)
 	// params.Set("pass_ticket", wxwb.PassTicket)
 	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync?"+params.Encode(),
 		"application/json;charset=UTF-8",
@@ -56,7 +57,7 @@ func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string, err error) {
 	params := url.Values{}
 	params.Set("MsgID", msg.MsgID)
-	params.Set("skey", wxwb.sKey)
+	params.Set("skey", wxwb.loginInfo.sKey)
 	// params.Set("type", "slave")
 	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg?" + params.Encode())
 	if err != nil {
@@ -78,7 +79,7 @@ func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string
 	}
 	params := url.Values{}
 	params.Set("MsgID", msg.MsgID)
-	params.Set("skey", wxwb.sKey)
+	params.Set("skey", wxwb.loginInfo.sKey)
 	// params.Set("type", "slave")
 	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice?" + params.Encode())
 	if err != nil {
@@ -100,7 +101,7 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 	}
 	params := url.Values{}
 	params.Set("msgid", msg.MsgID)
-	params.Set("skey", wxwb.sKey)
+	params.Set("skey", wxwb.loginInfo.sKey)
 	req, err := http.NewRequest("GET", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo?"+params.Encode(), strings.NewReader(""))
 	if err != nil {
 		return "", errors.New("create request error: " + err.Error())
