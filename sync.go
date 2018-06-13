@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -88,7 +89,11 @@ func (wxwb *WechatWeb) syncCheck() (retCode, selector string, err error) {
 	params.Set("deviceid", wxwb.deviceID)
 	params.Set("synckey", assembleSyncKey(wxwb.loginInfo.syncKey))
 	params.Set("_", tool.GetWxTimeStamp())
-	resp, err := wxwb.client.Get("https://" + wxwb.syncHost + "/cgi-bin/mmwebwx-bin/synccheck?" + params.Encode())
+	req, err := http.NewRequest("GET", "https://"+wxwb.syncHost+"/cgi-bin/mmwebwx-bin/synccheck?"+params.Encode(), nil)
+	if err != nil {
+		return "", "", errors.New("create request error: " + err.Error())
+	}
+	resp, err := wxwb.request(req)
 	if err != nil {
 		return "", "", errors.New("request error: " + err.Error())
 	}
@@ -120,7 +125,7 @@ Serve:
 		code, selector, err := wxwb.syncCheck()
 		if err != nil {
 			log.Printf("SyncCheck error: %s\n", err.Error())
-			break Serve
+			continue Serve
 		}
 		if code != "0" {
 			switch code {
