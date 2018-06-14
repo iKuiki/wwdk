@@ -149,7 +149,12 @@ func (wxwb *WechatWeb) refreshCookie(cookies []*http.Cookie) {
 
 // 统一请求
 func (wxwb *WechatWeb) request(req *http.Request) (resp *http.Response, err error) {
+	if req == nil {
+		return nil, errors.New("request is nil")
+	}
 	resp, err = wxwb.client.Do(req)
-	wxwb.refreshCookie(resp.Cookies())
+	if err == nil {
+		wxwb.refreshCookie(resp.Cookies())
+	}
 	return
 }
