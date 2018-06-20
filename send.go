@@ -29,9 +29,12 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 	}
 	params := url.Values{}
 	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
-	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify?"+params.Encode(),
-		"application/json;charset=UTF-8",
-		bytes.NewReader(data))
+	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify?"+params.Encode(), bytes.NewReader(data))
+	if err != nil {
+		return errors.New("create request error: " + err.Error())
+	}
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	resp, err := wxwb.request(req)
 	if err != nil {
 		return errors.New("request error: " + err.Error())
 	}
