@@ -180,6 +180,18 @@ Serve:
 		case "7":
 			log.Printf("selector is 7")
 			getMessage()
+		case "1":
+			log.Printf("selector is 1")
+			getMessage()
+		case "3":
+			log.Printf("selector is 3")
+			getMessage()
+		case "4":
+			log.Printf("selector is 4")
+			getMessage()
+		case "5":
+			log.Printf("selector is 5")
+			getMessage()
 		case "2":
 			// log.Println("SyncCheck 2")
 			getMessage()
