@@ -120,6 +120,32 @@ func (wxwb *WechatWeb) StartServe() {
 		log.Println("all sync host unavaliable, exit...")
 		return
 	}
+	getMessage := func() {
+		gmResp, err := wxwb.getMessage()
+		if err != nil {
+			log.Printf("GetMessage error: %s\n", err.Error())
+			return
+		}
+		if gmResp.SyncCheckKey != nil {
+			wxwb.loginInfo.syncKey = gmResp.SyncCheckKey
+		} else {
+			wxwb.loginInfo.syncKey = gmResp.SyncKey
+		}
+		// 处理新增联系人
+		for _, contact := range gmResp.ModContactList {
+			log.Println("Modify contact: ", contact.NickName)
+			wxwb.contactProcesser(&contact)
+			wxwb.contactList[contact.UserName] = contact
+		}
+		// 新消息
+		for _, msg := range gmResp.AddMsgList {
+			err = wxwb.messageProcesser(&msg)
+			if err != nil {
+				log.Printf("MessageProcesser error: %s\n", err.Error())
+				continue
+			}
+		}
+	}
 Serve:
 	for {
 		code, selector, err := wxwb.syncCheck()
@@ -150,33 +176,13 @@ Serve:
 			// log.Println("no new message")
 		case "6":
 			log.Printf("selector is 6")
-			fallthrough
+			getMessage()
+		case "7":
+			log.Printf("selector is 7")
+			getMessage()
 		case "2":
 			// log.Println("SyncCheck 2")
-			gmResp, err := wxwb.getMessage()
-			if err != nil {
-				log.Printf("GetMessage error: %s\n", err.Error())
-				continue
-			}
-			if gmResp.SyncCheckKey != nil {
-				wxwb.loginInfo.syncKey = gmResp.SyncCheckKey
-			} else {
-				wxwb.loginInfo.syncKey = gmResp.SyncKey
-			}
-			// 处理新增联系人
-			for _, contact := range gmResp.ModContactList {
-				log.Println("Modify contact: ", contact.NickName)
-				wxwb.contactProcesser(&contact)
-				wxwb.contactList[contact.UserName] = contact
-			}
-			// 新消息
-			for _, msg := range gmResp.AddMsgList {
-				err = wxwb.messageProcesser(&msg)
-				if err != nil {
-					log.Printf("MessageProcesser error: %s\n", err.Error())
-					continue
-				}
-			}
+			getMessage()
 		default:
 			log.Printf("SyncCheck Unknow selector: %s\n", selector)
 		}
