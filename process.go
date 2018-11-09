@@ -98,18 +98,18 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 	return nil
 }
 
-func (wxwb *WechatWeb) contactProcesser(contact *datastruct.Contact) (err error) {
+func (wxwb *WechatWeb) contactProcesser(oldContact, newContact *datastruct.Contact) (err error) {
 	defer func() {
 		// 防止外部方法导致的崩溃
 		if err := recover(); err != nil {
 			fmt.Println("contactProcesser panic: ", err)
-			fmt.Println("contact data: ", contact)
+			fmt.Println("contact data: ", newContact)
 		}
 	}()
 	context := Context{App: wxwb, hasStop: false}
 	for _, v := range wxwb.modContactHook {
 		if f, ok := v.(ModContactHook); ok {
-			f(&context, *contact)
+			f(&context, oldContact, newContact)
 		}
 		if context.hasStop {
 			break

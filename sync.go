@@ -134,7 +134,8 @@ func (wxwb *WechatWeb) StartServe() {
 		// 处理新增联系人
 		for _, contact := range gmResp.ModContactList {
 			log.Println("Modify contact: ", contact.NickName)
-			wxwb.contactProcesser(&contact)
+			oldContact := wxwb.contactList[contact.UserName]
+			wxwb.contactProcesser(&oldContact, &contact)
 			wxwb.contactList[contact.UserName] = contact
 		}
 		// 新消息

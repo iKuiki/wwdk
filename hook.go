@@ -25,7 +25,7 @@ type VideoMessageHook func(*Context, datastruct.Message)
 type VoiceMessageHook func(*Context, datastruct.Message)
 
 // ModContactHook 联系人变动处理接口
-type ModContactHook func(*Context, datastruct.Contact)
+type ModContactHook func(context *Context, oldContact, newContact *datastruct.Contact)
 
 // RegisterHook 注册处理器，需要传入处理器接口类型，会自动识别
 func (wxwb *WechatWeb) RegisterHook(hook interface{}) error {
