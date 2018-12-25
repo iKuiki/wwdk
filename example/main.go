@@ -101,7 +101,7 @@ func ProcessEmojiMessage(ctx *wxweb.Context, msg datastruct.Message, emojiConten
 		log.Println("getContact error: " + err.Error())
 		return
 	}
-	log.Printf("Recived a emotion from %s url: %s\n", from.NickName, emojiContent.Emoji.CdnUrl)
+	log.Printf("Recived a emotion from %s url: %s\n", from.NickName, emojiContent.Emoji.CdnURL)
 }
 
 // ProcessRevokeMessage set revoke message handle
