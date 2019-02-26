@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/yinhui87/wechat-web"
+	"github.com/ikuiki/wechat-web"
 	"testing"
 )
 

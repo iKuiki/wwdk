@@ -8,8 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/datastruct/appmsg"
+	"github.com/ikuiki/wechat-web/datastruct"
+	"github.com/ikuiki/wechat-web/datastruct/appmsg"
 )
 
 func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {

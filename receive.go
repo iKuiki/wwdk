@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/tool"
+	"github.com/ikuiki/wechat-web/datastruct"
+	"github.com/ikuiki/wechat-web/tool"
 )
 
 // getMessage 同步消息

@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/yinhui87/wechat-web"
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/datastruct/appmsg"
+	"github.com/ikuiki/wechat-web"
+	"github.com/ikuiki/wechat-web/datastruct"
+	"github.com/ikuiki/wechat-web/datastruct/appmsg"
 	"log"
 	"time"
 )

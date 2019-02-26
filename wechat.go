@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/tool"
+	"github.com/ikuiki/wechat-web/datastruct"
+	"github.com/ikuiki/wechat-web/tool"
 	// "net/url"
 	"time"
 )

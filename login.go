@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/mdp/qrterminal"
-	"github.com/yinhui87/wechat-web/conf"
-	"github.com/yinhui87/wechat-web/datastruct"
-	"github.com/yinhui87/wechat-web/tool"
+	"github.com/ikuiki/wechat-web/conf"
+	"github.com/ikuiki/wechat-web/datastruct"
+	"github.com/ikuiki/wechat-web/tool"
 )
 
 func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
