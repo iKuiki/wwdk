@@ -3,12 +3,6 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "lNk83SMWEgFZmO/Xgrb/IVKUdlI=",
-			"path": "github.com/astaxie/beego/httplib",
-			"revision": "cab8458c1c4a5a3b4bf5192922be620e6dede15b",
-			"revisionTime": "2017-05-19T13:19:18Z"
-		},
-		{
 			"checksumSHA1": "xFydIYCXfeqZ7z1winPE/s8UyDs=",
 			"path": "github.com/mdp/qrterminal",
 			"revision": "bd37d7b62c3e19529343c3426e649b300d3102f8",
