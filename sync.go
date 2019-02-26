@@ -147,58 +147,68 @@ func (wxwb *WechatWeb) StartServe() {
 			}
 		}
 	}
-Serve:
 	for {
-		code, selector, err := wxwb.syncCheck()
-		if err != nil {
-			log.Printf("SyncCheck error: %s\n", err.Error())
-			continue Serve
-		}
-		if code != "0" {
-			switch code {
-			case "1101":
-				log.Println("User has logout web wechat, exit...")
-				break Serve
-			case "1100":
-				log.Println("sync host unavaliable, choose a new one...")
-				avaliable = wxwb.chooseSyncHost()
-				if !avaliable {
-					log.Println("all sync host unavaliable, exit...")
-					break Serve
+		isBreaked := func() (isBreaked bool) {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Println("Recovered in StartServe loop: ", r)
 				}
-				continue Serve
+			}()
+			code, selector, err := wxwb.syncCheck()
+			if err != nil {
+				log.Printf("SyncCheck error: %s\n", err.Error())
+				return false
 			}
+			if code != "0" {
+				switch code {
+				case "1101":
+					log.Println("User has logout web wechat, exit...")
+					return true
+				case "1100":
+					log.Println("sync host unavaliable, choose a new one...")
+					avaliable = wxwb.chooseSyncHost()
+					if !avaliable {
+						log.Println("all sync host unavaliable, exit...")
+						return true
+					}
+					return false
+				}
+			}
+			// log.Println("selector: ", selector)
+			switch selector {
+			case "0":
+				// log.Println("SyncCheck 0")
+				// normal
+				// log.Println("no new message")
+			case "6":
+				log.Printf("selector is 6")
+				getMessage()
+			case "7":
+				log.Printf("selector is 7")
+				getMessage()
+			case "1":
+				log.Printf("selector is 1")
+				getMessage()
+			case "3":
+				log.Printf("selector is 3")
+				getMessage()
+			case "4":
+				log.Printf("selector is 4")
+				getMessage()
+			case "5":
+				log.Printf("selector is 5")
+				getMessage()
+			case "2":
+				// log.Println("SyncCheck 2")
+				getMessage()
+			default:
+				log.Printf("SyncCheck Unknow selector: %s\n", selector)
+			}
+			time.Sleep(1000 * time.Millisecond)
+			return false
+		}()
+		if isBreaked {
+			break
 		}
-		// log.Println("selector: ", selector)
-		switch selector {
-		case "0":
-			// log.Println("SyncCheck 0")
-			// normal
-			// log.Println("no new message")
-		case "6":
-			log.Printf("selector is 6")
-			getMessage()
-		case "7":
-			log.Printf("selector is 7")
-			getMessage()
-		case "1":
-			log.Printf("selector is 1")
-			getMessage()
-		case "3":
-			log.Printf("selector is 3")
-			getMessage()
-		case "4":
-			log.Printf("selector is 4")
-			getMessage()
-		case "5":
-			log.Printf("selector is 5")
-			getMessage()
-		case "2":
-			// log.Println("SyncCheck 2")
-			getMessage()
-		default:
-			log.Printf("SyncCheck Unknow selector: %s\n", selector)
-		}
-		time.Sleep(1000 * time.Millisecond)
 	}
 }
