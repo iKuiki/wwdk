@@ -24,6 +24,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 	context := Context{App: wxwb, hasStop: false}
 	switch msg.MsgType {
 	case datastruct.TextMsg:
+		wxwb.runInfo.MessageRecivedCount++
 		for _, v := range wxwb.messageHook[datastruct.TextMsg] {
 			if f, ok := v.(TextMessageHook); ok {
 				f(&context, *msg)
@@ -33,6 +34,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.ImageMsg:
+		wxwb.runInfo.MessageRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		for _, v := range wxwb.messageHook[datastruct.ImageMsg] {
 			if f, ok := v.(ImageMessageHook); ok {
@@ -43,6 +45,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.AnimationEmotionsMsg:
+		wxwb.runInfo.MessageRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		var emojiContent appmsg.EmotionMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &emojiContent)
@@ -58,6 +61,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.RevokeMsg:
+		wxwb.runInfo.MessageRevokeRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		var revokeContent appmsg.RevokeMsgContent
 		err := xml.Unmarshal([]byte(msg.Content), &revokeContent)
@@ -73,6 +77,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.LittleVideoMsg:
+		wxwb.runInfo.MessageRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		for _, v := range wxwb.messageHook[datastruct.LittleVideoMsg] {
 			if f, ok := v.(VideoMessageHook); ok {
@@ -83,6 +88,7 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 			}
 		}
 	case datastruct.VoiceMsg:
+		wxwb.runInfo.MessageRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
 		for _, v := range wxwb.messageHook[datastruct.VoiceMsg] {
 			if f, ok := v.(VoiceMessageHook); ok {

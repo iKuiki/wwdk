@@ -30,6 +30,30 @@ type wechatLoginInfo struct {
 	PassTicket string
 }
 
+// WechatRunInfo 微信运行信息
+type WechatRunInfo struct {
+	// StartAt 程序启动的时间
+	StartAt time.Time
+	// LoginAt 程序登陆的时间
+	LoginAt time.Time
+	// SyncCount 同步次数
+	SyncCount uint64
+	// ContactModifyCount 联系人修改计数器
+	ContactModifyCount uint64
+	// MessageCount 消息计数器
+	MessageCount uint64
+	// MessageRecivedCount 收到消息计数器
+	MessageRecivedCount uint64
+	// MessageSentCount 发送消息计数器
+	MessageSentCount uint64
+	// MessageRevokeCount 撤回消息计数器
+	MessageRevokeCount uint64
+	// MessageRevokeRecivedCount 收到撤回消息计数器
+	MessageRevokeRecivedCount uint64
+	// MessageRevokeSentCount 发送撤回消息计数器
+	MessageRevokeSentCount uint64
+}
+
 // WechatWeb 微信网页版客户端实例
 type WechatWeb struct {
 	userAgent      string
@@ -40,6 +64,7 @@ type WechatWeb struct {
 	modContactHook []interface{}
 	client         *http.Client
 	loginInfo      wechatLoginInfo // 登陆信息
+	runInfo        WechatRunInfo   // 运行统计信息
 	deviceID       string          // 由客户端生成，为e+15位随机数
 }
 
@@ -70,6 +95,9 @@ func NewWechatWeb() (wxweb *WechatWeb, err error) {
 			Jar:     jar,
 			Timeout: 1 * time.Minute,
 		},
+		runInfo: WechatRunInfo{
+			StartAt: time.Now(),
+		},
 	}, nil
 }
 
@@ -91,7 +119,7 @@ func (wxwb *WechatWeb) GetContact(username string) (contact datastruct.Contact, 
 	return
 }
 
-// GetContactByAlias 根据备注获取联系人
+// GetContactByAlias 根据Alias获取联系人
 func (wxwb *WechatWeb) GetContactByAlias(alias string) (contact datastruct.Contact, err error) {
 	found := false
 	for _, v := range wxwb.contactList {
@@ -121,12 +149,32 @@ func (wxwb *WechatWeb) GetContactByNickname(nickname string) (contact datastruct
 	return
 }
 
+// GetContactByRemarkName 根据备注获取用户名
+func (wxwb *WechatWeb) GetContactByRemarkName(remarkName string) (contact datastruct.Contact, err error) {
+	found := false
+	for _, v := range wxwb.contactList {
+		if v.RemarkName == remarkName {
+			contact = v
+			found = true
+		}
+	}
+	if !found {
+		err = errors.New("User not found")
+	}
+	return
+}
+
 // GetContactList 获取联系人列表
 func (wxwb *WechatWeb) GetContactList() (contacts []datastruct.Contact) {
 	for _, v := range wxwb.contactList {
 		contacts = append(contacts, v)
 	}
 	return
+}
+
+// GetRunInfo 获取运行计数器信息
+func (wxwb *WechatWeb) GetRunInfo() (runinfo WechatRunInfo) {
+	return wxwb.runInfo
 }
 
 // refreshCookie 根据response更新cookie

@@ -92,6 +92,8 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 	if smResp.BaseResponse.Ret != 0 {
 		return nil, errors.New("Respond error ret: " + strconv.FormatInt(smResp.BaseResponse.Ret, 10))
 	}
+	wxwb.runInfo.MessageCount++
+	wxwb.runInfo.MessageSentCount++
 	return &smResp, nil
 }
 
@@ -128,5 +130,7 @@ func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName strin
 	if rmResp.BaseResponse.Ret != 0 {
 		return nil, errors.New("Respond error ret: " + strconv.FormatInt(rmResp.BaseResponse.Ret, 10))
 	}
+	wxwb.runInfo.MessageRevokeCount++
+	wxwb.runInfo.MessageRevokeSentCount++
 	return &rmResp, nil
 }

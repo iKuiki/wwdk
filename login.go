@@ -13,10 +13,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/mdp/qrterminal"
 	"github.com/ikuiki/wechat-web/conf"
 	"github.com/ikuiki/wechat-web/datastruct"
 	"github.com/ikuiki/wechat-web/tool"
+	"github.com/mdp/qrterminal"
 )
 
 func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
@@ -258,6 +258,8 @@ func (wxwb *WechatWeb) Login() (err error) {
 	if err != nil {
 		return errors.New("wxInit error: " + err.Error())
 	}
+	// 此处即认为登陆成功
+	wxwb.runInfo.LoginAt = time.Now()
 	// err = wxwb.StatusNotify(wxwb.user.UserName, wxwb.user.UserName, 3)
 	// if err != nil {
 	// 	return errors.New("StatusNotify error: " + err.Error())
@@ -271,7 +273,6 @@ func (wxwb *WechatWeb) Login() (err error) {
 		return errors.New("getBatchContact error: " + err.Error())
 	}
 	log.Printf("User %s has Login Success, total %d contacts\n", wxwb.user.NickName, len(wxwb.contactList))
-
 	return nil
 }
 

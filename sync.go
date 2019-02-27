@@ -133,6 +133,7 @@ func (wxwb *WechatWeb) StartServe() {
 		}
 		// 处理新增联系人
 		for _, contact := range gmResp.ModContactList {
+			wxwb.runInfo.ContactModifyCount++
 			log.Println("Modify contact: ", contact.NickName)
 			oldContact := wxwb.contactList[contact.UserName]
 			wxwb.contactProcesser(&oldContact, &contact)
@@ -140,6 +141,11 @@ func (wxwb *WechatWeb) StartServe() {
 		}
 		// 新消息
 		for _, msg := range gmResp.AddMsgList {
+			if msg.MsgType == datastruct.RevokeMsg {
+				wxwb.runInfo.MessageRevokeCount++
+			} else {
+				wxwb.runInfo.MessageCount++
+			}
 			err = wxwb.messageProcesser(&msg)
 			if err != nil {
 				log.Printf("MessageProcesser error: %s\n", err.Error())
@@ -204,6 +210,7 @@ func (wxwb *WechatWeb) StartServe() {
 			default:
 				log.Printf("SyncCheck Unknow selector: %s\n", selector)
 			}
+			wxwb.runInfo.SyncCount++
 			time.Sleep(1000 * time.Millisecond)
 			return false
 		}()
