@@ -77,3 +77,11 @@ type RevokeMessageRequest struct {
 	SvrMsgID    string       `json:"SvrMsgId"`
 	ToUserName  string       `json:"ToUserName"`
 }
+
+// ModifyRemarkRequest 修改用户备注的请求
+type ModifyRemarkRequest struct {
+	BaseRequest *BaseRequest `json:"BaseRequest"`
+	CmdID       int64        `json:"CmdId"`
+	RemarkName  string       `json:"RemarkName"`
+	UserName    string       `json:"UserName"`
+}

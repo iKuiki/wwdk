@@ -118,3 +118,8 @@ type RevokeMessageRespond struct {
 	Introduction string        `json:"Introduction"`
 	SysWording   string        `json:"SysWording"`
 }
+
+// ModifyRemarkRespond 修改用户备注的返回
+type ModifyRemarkRespond struct {
+	BaseResponse *BaseResponse `json:"BaseResponse"`
+}

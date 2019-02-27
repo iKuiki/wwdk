@@ -134,3 +134,39 @@ func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName strin
 	wxwb.runInfo.MessageRevokeSentCount++
 	return &rmResp, nil
 }
+
+// ModifyUserRemakName 修改用户备注
+func (wxwb *WechatWeb) ModifyUserRemakName(userName, remarkName string) (revokeMessageRespond *datastruct.ModifyRemarkRespond, err error) {
+	murReq := datastruct.ModifyRemarkRequest{
+		BaseRequest: wxwb.baseRequest(),
+		CmdID:       2,
+		RemarkName:  remarkName,
+		UserName:    userName,
+	}
+	body, err := json.Marshal(murReq)
+	if err != nil {
+		return nil, errors.New("Marshal body to json fail: " + err.Error())
+	}
+	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxoplog", bytes.NewReader(body))
+	if err != nil {
+		return nil, errors.New("create request error: " + err.Error())
+	}
+	resp, err := wxwb.request(req)
+	if err != nil {
+		return nil, errors.New("request error: " + err.Error())
+	}
+	defer resp.Body.Close()
+	var murResp datastruct.ModifyRemarkRespond
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.New("read response body error: " + err.Error())
+	}
+	err = json.Unmarshal(respBody, &murResp)
+	if err != nil {
+		return nil, errors.New("UnMarshal respond json fail: " + err.Error())
+	}
+	if murResp.BaseResponse.Ret != 0 {
+		return nil, errors.New("Respond error ret: " + strconv.FormatInt(murResp.BaseResponse.Ret, 10))
+	}
+	return &murResp, nil
+}
