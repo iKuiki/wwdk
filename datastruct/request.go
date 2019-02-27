@@ -85,3 +85,10 @@ type ModifyRemarkRequest struct {
 	RemarkName  string       `json:"RemarkName"`
 	UserName    string       `json:"UserName"`
 }
+
+// ModifyChatRoomTopicRequest 修改群名的请求
+type ModifyChatRoomTopicRequest struct {
+	BaseRequest  *BaseRequest `json:"BaseRequest"`
+	ChatRoomName string       `json:"ChatRoomName"`
+	NewTopic     string       `json:"NewTopic"`
+}

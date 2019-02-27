@@ -170,3 +170,38 @@ func (wxwb *WechatWeb) ModifyUserRemakName(userName, remarkName string) (revokeM
 	}
 	return &murResp, nil
 }
+
+// ModifyChatRoomTopic 修改群名
+func (wxwb *WechatWeb) ModifyChatRoomTopic(userName, newTopic string) (revokeMessageRespond *datastruct.ModifyChatRoomTopicRespond, err error) {
+	mctReq := datastruct.ModifyChatRoomTopicRequest{
+		BaseRequest:  wxwb.baseRequest(),
+		NewTopic:     newTopic,
+		ChatRoomName: userName,
+	}
+	body, err := json.Marshal(mctReq)
+	if err != nil {
+		return nil, errors.New("Marshal body to json fail: " + err.Error())
+	}
+	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxupdatechatroom?fun=modtopic", bytes.NewReader(body))
+	if err != nil {
+		return nil, errors.New("create request error: " + err.Error())
+	}
+	resp, err := wxwb.request(req)
+	if err != nil {
+		return nil, errors.New("request error: " + err.Error())
+	}
+	defer resp.Body.Close()
+	var mctResp datastruct.ModifyChatRoomTopicRespond
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.New("read response body error: " + err.Error())
+	}
+	err = json.Unmarshal(respBody, &mctResp)
+	if err != nil {
+		return nil, errors.New("UnMarshal respond json fail: " + err.Error())
+	}
+	if mctResp.BaseResponse.Ret != 0 {
+		return nil, errors.New("Respond error ret: " + strconv.FormatInt(mctResp.BaseResponse.Ret, 10))
+	}
+	return &mctResp, nil
+}

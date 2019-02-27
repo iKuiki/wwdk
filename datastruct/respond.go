@@ -123,3 +123,10 @@ type RevokeMessageRespond struct {
 type ModifyRemarkRespond struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
 }
+
+// ModifyChatRoomTopicRespond 修改群名的返回
+type ModifyChatRoomTopicRespond struct {
+	BaseResponse *BaseResponse `json:"BaseResponse"`
+	MemberCount  int64         `json:"MemberCount"`
+	MemberList   []interface{} `json:"MemberList"`
+}

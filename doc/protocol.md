@@ -15,7 +15,8 @@
       - [Body (Json):](#body-json)
     - [撤回消息](#%E6%92%A4%E5%9B%9E%E6%B6%88%E6%81%AF)
     - [转发被撤回的图片消息](#%E8%BD%AC%E5%8F%91%E8%A2%AB%E6%92%A4%E5%9B%9E%E7%9A%84%E5%9B%BE%E7%89%87%E6%B6%88%E6%81%AF)
-    - [修改备注](#%E4%BF%AE%E6%94%B9%E5%A4%87%E6%B3%A8)
+    - [修改用户备注](#%E4%BF%AE%E6%94%B9%E7%94%A8%E6%88%B7%E5%A4%87%E6%B3%A8)
+    - [修改群名](#%E4%BF%AE%E6%94%B9%E7%BE%A4%E5%90%8D)
 
 ## 通用
 
@@ -307,7 +308,7 @@ window.synccheck={retcode:"0",selector:"2"}
 
 ---
 
-### 修改备注
+### 修改用户备注
 
 | Key         | Value                                                 |
 | ----------- | ----------------------------------------------------- |
@@ -326,6 +327,28 @@ window.synccheck={retcode:"0",selector:"2"}
         "Sid": "2ZgAp8arXklWje6v",
         "Skey": "@crypt_a6a25b34_bdf4052fc37832fabf2c2dc5421f8fca",
         "DeviceID": "e968379522819118"
+    }
+}
+```
+
+### 修改群名
+
+| Key         | Value                                                 |
+| ----------- | ----------------------------------------------------- |
+| Request URL | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxupdatechatroom?fun=modtopic |
+| Method      | POST                                                  |
+| Cookie      | Need                                                  |
+
+**Body (json):**
+``` json
+{
+    "NewTopic": "KKK1",
+    "ChatRoomName": "@@5c6af4a5215187e41484226127ddfd19646559ec4586f0c2a7f6e048d5e8cb98",
+    "BaseRequest": {
+        "Uin": 216547950,
+        "Sid": "2ZgAp8arXklWje6v",
+        "Skey": "@crypt_a6a25b34_bdf4052fc37832fabf2c2dc5421f8fca",
+        "DeviceID": "e786480153373391"
     }
 }
 ```
