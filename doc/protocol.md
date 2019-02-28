@@ -310,11 +310,11 @@ window.synccheck={retcode:"0",selector:"2"}
 
 ### 修改用户备注
 
-| Key         | Value                                                 |
-| ----------- | ----------------------------------------------------- |
+| Key         | Value                                             |
+| ----------- | ------------------------------------------------- |
 | Request URL | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxoplog |
-| Method      | POST                                                  |
-| Cookie      | Need                                                  |
+| Method      | POST                                              |
+| Cookie      | Need                                              |
 
 **Body (json):**
 ``` json
@@ -333,11 +333,11 @@ window.synccheck={retcode:"0",selector:"2"}
 
 ### 修改群名
 
-| Key         | Value                                                 |
-| ----------- | ----------------------------------------------------- |
+| Key         | Value                                                                   |
+| ----------- | ----------------------------------------------------------------------- |
 | Request URL | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxupdatechatroom?fun=modtopic |
-| Method      | POST                                                  |
-| Cookie      | Need                                                  |
+| Method      | POST                                                                    |
+| Cookie      | Need                                                                    |
 
 **Body (json):**
 ``` json
