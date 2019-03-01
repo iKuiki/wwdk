@@ -158,6 +158,7 @@ func (wxwb *WechatWeb) StartServe() {
 			defer func() {
 				if r := recover(); r != nil {
 					log.Println("Recovered in StartServe loop: ", r)
+					wxwb.runInfo.PanicCount++
 				}
 			}()
 			code, selector, err := wxwb.syncCheck()

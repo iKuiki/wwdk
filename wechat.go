@@ -52,6 +52,8 @@ type WechatRunInfo struct {
 	MessageRevokeRecivedCount uint64
 	// MessageRevokeSentCount 发送撤回消息计数器
 	MessageRevokeSentCount uint64
+	// PanicCount panic计数器
+	PanicCount uint64
 }
 
 // WechatWeb 微信网页版客户端实例
