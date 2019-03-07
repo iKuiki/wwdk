@@ -4,6 +4,8 @@
 
 storer是用于存储运行配置的存储器，可以提供存、取一串string配置，只能存取一个字符串数据
 
+
+调用```Truncate() (err error)```清空数据
 调用```WriterString(data string) error```方法可以写入数据
 调用```ReadString() (data string, err error)```则读出数据
 

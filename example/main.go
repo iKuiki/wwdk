@@ -5,12 +5,15 @@ import (
 	"github.com/ikuiki/wechat-web"
 	"github.com/ikuiki/wechat-web/datastruct"
 	"github.com/ikuiki/wechat-web/datastruct/appmsg"
+	"github.com/ikuiki/wechat-web/storer"
 	"log"
 	"time"
 )
 
 func main() {
-	wx, err := wxweb.NewWechatWeb()
+	// 初始化一个文件loginStorer
+	storer := storer.MustNewFileStorer("loginInfo.txt")
+	wx, err := wxweb.NewWechatWeb(storer)
 	if err != nil {
 		panic("Get new wechatweb client error: " + err.Error())
 	}

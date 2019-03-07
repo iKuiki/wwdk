@@ -15,8 +15,8 @@ import (
 )
 
 var syncHosts = []string{
-	"webpush.wx.qq.com",
 	"wx2.qq.com",
+	"webpush.wx.qq.com",
 	"webpush.wx2.qq.com",
 	"wx8.qq.com",
 	"webpush.wx8.qq.com",

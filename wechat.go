@@ -1,6 +1,10 @@
 package wxweb
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/ikuiki/wechat-web/storer"
+	"log"
 	// "crypto/tls"
 	"errors"
 	"net"
@@ -9,7 +13,7 @@ import (
 
 	"github.com/ikuiki/wechat-web/datastruct"
 	"github.com/ikuiki/wechat-web/tool"
-	// "net/url"
+	"net/url"
 	"time"
 )
 
@@ -28,6 +32,18 @@ type wechatLoginInfo struct {
 	syncKey    *datastruct.SyncKey
 	sKey       string
 	PassTicket string
+}
+
+// storeLoginInfo 用于储存的登录信息
+type storeLoginInfo struct {
+	Cookies    map[string][]*http.Cookie
+	Cookie     wechatCookie
+	SyncKey    *datastruct.SyncKey
+	SKey       string
+	PassTicket string
+	RunInfo    WechatRunInfo // 运行统计信息
+	DeviceID   string        // 由客户端生成，为e+15位随机数
+	User       *datastruct.User
 }
 
 // WechatRunInfo 微信运行信息
@@ -68,15 +84,16 @@ type WechatWeb struct {
 	loginInfo      wechatLoginInfo // 登陆信息
 	runInfo        WechatRunInfo   // 运行统计信息
 	deviceID       string          // 由客户端生成，为e+15位随机数
+	loginStorer    storer.Storer   // 存储器，如果有赋值，则用于记录登录信息
 }
 
 // NewWechatWeb 生成微信网页版客户端实例
-func NewWechatWeb() (wxweb *WechatWeb, err error) {
+func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		return &WechatWeb{}, err
 	}
-	return &WechatWeb{
+	w := &WechatWeb{
 		contactList: make(map[string]datastruct.Contact),
 		userAgent:   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
 		deviceID:    "e" + tool.GetRandomStringFromNum(15),
@@ -100,7 +117,16 @@ func NewWechatWeb() (wxweb *WechatWeb, err error) {
 		runInfo: WechatRunInfo{
 			StartAt: time.Now(),
 		},
-	}, nil
+	}
+	for _, c := range configs {
+		switch c.(type) {
+		case storer.Storer:
+			w.loginStorer = c.(storer.Storer)
+		default:
+			return &WechatWeb{}, fmt.Errorf("unknown config: %#v", c)
+		}
+	}
+	return w, nil
 }
 
 func (wxwb *WechatWeb) baseRequest() (baseRequest *datastruct.BaseRequest) {
@@ -195,6 +221,103 @@ func (wxwb *WechatWeb) refreshCookie(cookies []*http.Cookie) {
 			wxwb.loginInfo.cookie.AuthTicket = c.Value
 		}
 	}
+	// 如有必要，记录login信息到storer
+	wxwb.writeLoginInfo()
+}
+
+// 重置登录信息
+func (wxwb *WechatWeb) resetLoginInfo() error {
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Println("Recovered in resetLoginInfo: ", r)
+				wxwb.runInfo.PanicCount++
+			}
+		}()
+	}()
+	if wxwb.loginStorer != nil {
+		wxwb.loginStorer.Truncate()
+	}
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return err
+	}
+	wxwb.client.Jar = jar
+	wxwb.loginInfo = wechatLoginInfo{}
+	return nil
+}
+
+// 往storer中写入信息
+func (wxwb *WechatWeb) writeLoginInfo() error {
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Println("Recovered in writeLoginInfo: ", r)
+				wxwb.runInfo.PanicCount++
+			}
+		}()
+	}()
+	cookieMap := make(map[string][]*http.Cookie)
+	for _, host := range syncHosts {
+		u, _ := url.Parse("https://" + host)
+		cookieMap[host] = wxwb.client.Jar.Cookies(u)
+	}
+	if wxwb.loginStorer != nil {
+		storeInfo := storeLoginInfo{
+			Cookies:    cookieMap,
+			Cookie:     wxwb.loginInfo.cookie,
+			SyncKey:    wxwb.loginInfo.syncKey,
+			SKey:       wxwb.loginInfo.sKey,
+			PassTicket: wxwb.loginInfo.PassTicket,
+			User:       wxwb.user,
+			DeviceID:   wxwb.deviceID,
+			RunInfo:    wxwb.runInfo,
+		}
+		data, err := json.Marshal(storeInfo)
+		if err != nil {
+			return err
+		}
+		err = wxwb.loginStorer.Writer(data)
+		return err
+	}
+	return nil
+}
+
+// 从storer中读取信息
+func (wxwb *WechatWeb) readLoginInfo() error {
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Println("Recovered in readLoginInfo: ", r)
+				wxwb.runInfo.PanicCount++
+			}
+		}()
+	}()
+	if wxwb.loginStorer != nil {
+		data, err := wxwb.loginStorer.Read()
+		if err != nil {
+			return err
+		}
+		var storeInfo storeLoginInfo
+		err = json.Unmarshal(data, &storeInfo)
+		if err != nil {
+			return err
+		}
+		for _, host := range syncHosts {
+			u, _ := url.Parse("https://" + host)
+			wxwb.client.Jar.SetCookies(u, storeInfo.Cookies[host])
+		}
+		wxwb.loginInfo = wechatLoginInfo{
+			cookie:     storeInfo.Cookie,
+			syncKey:    storeInfo.SyncKey,
+			sKey:       storeInfo.SKey,
+			PassTicket: storeInfo.PassTicket,
+		}
+		wxwb.runInfo = storeInfo.RunInfo
+		wxwb.user = storeInfo.User
+		wxwb.deviceID = storeInfo.DeviceID
+	}
+	return nil
 }
 
 // 统一请求

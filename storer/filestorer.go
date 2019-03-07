@@ -21,13 +21,19 @@ func MustNewFileStorer(filePath string) Storer {
 	}
 }
 
-// WriterString 刷写配置
-func (storer *FileStorer) WriterString(data string) error {
-	err := storer.file.Truncate(0)
+// Truncate 清空配置
+func (storer *FileStorer) Truncate() (err error) {
+	err = storer.file.Truncate(0)
+	return
+}
+
+// Writer 刷写配置
+func (storer *FileStorer) Writer(data []byte) error {
+	err := storer.Truncate()
 	if err != nil {
 		return err
 	}
-	_, err = storer.file.WriteString(data)
+	_, err = storer.file.Write(data)
 	if err != nil {
 		return err
 	}
@@ -36,13 +42,13 @@ func (storer *FileStorer) WriterString(data string) error {
 	return err
 }
 
-// ReadString 读取配置
-func (storer *FileStorer) ReadString() (data string, err error) {
+// Read 读取配置
+func (storer *FileStorer) Read() (data []byte, err error) {
 	d, err := ioutil.ReadAll(storer.file)
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
 	// seek file point to start
 	_, err = storer.file.Seek(0, 0)
-	return string(d), err
+	return d, err
 }

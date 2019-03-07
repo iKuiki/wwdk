@@ -237,29 +237,37 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 
 // Login 登陆方法总成
 func (wxwb *WechatWeb) Login() (err error) {
-	uuid, err := wxwb.getUUID()
+	wxwb.readLoginInfo()
+	err = wxwb.getContactList()
 	if err != nil {
-		return errors.New("Get UUID fail: " + err.Error())
+		log.Println("stored login info not avaliable")
+		wxwb.resetLoginInfo()
+		uuid, err := wxwb.getUUID()
+		if err != nil {
+			return errors.New("Get UUID fail: " + err.Error())
+		}
+		err = wxwb.getQrCode(uuid)
+		if err != nil {
+			return errors.New("Get QrCode fail: " + err.Error())
+		}
+		redirectURL, err := wxwb.waitForScan(uuid)
+		if err != nil {
+			return errors.New("waitForScan error: " + err.Error())
+		}
+		// panic(redirectUrl)
+		err = wxwb.getCookie(redirectURL)
+		if err != nil {
+			return errors.New("getCookie error: " + err.Error())
+		}
+		err = wxwb.wxInit()
+		if err != nil {
+			return errors.New("wxInit error: " + err.Error())
+		}
+		// 此处即认为登陆成功
+		wxwb.runInfo.LoginAt = time.Now()
+	} else {
+		log.Printf("reuse loginInfo [%s] logined at %v\n", wxwb.user.NickName, wxwb.runInfo.LoginAt.Format("2006-01-02 15:04:05"))
 	}
-	err = wxwb.getQrCode(uuid)
-	if err != nil {
-		return errors.New("Get QrCode fail: " + err.Error())
-	}
-	redirectURL, err := wxwb.waitForScan(uuid)
-	if err != nil {
-		return errors.New("waitForScan error: " + err.Error())
-	}
-	// panic(redirectUrl)
-	err = wxwb.getCookie(redirectURL)
-	if err != nil {
-		return errors.New("getCookie error: " + err.Error())
-	}
-	err = wxwb.wxInit()
-	if err != nil {
-		return errors.New("wxInit error: " + err.Error())
-	}
-	// 此处即认为登陆成功
-	wxwb.runInfo.LoginAt = time.Now()
 	// err = wxwb.StatusNotify(wxwb.user.UserName, wxwb.user.UserName, 3)
 	// if err != nil {
 	// 	return errors.New("StatusNotify error: " + err.Error())
@@ -273,6 +281,8 @@ func (wxwb *WechatWeb) Login() (err error) {
 		return errors.New("getBatchContact error: " + err.Error())
 	}
 	log.Printf("User %s has Login Success, total %d contacts\n", wxwb.user.NickName, len(wxwb.contactList))
+	// 如有必要，记录login信息到storer
+	wxwb.writeLoginInfo()
 	return nil
 }
 
