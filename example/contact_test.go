@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/ikuiki/wechat-web"
+	"github.com/ikuiki/wwdk"
 	"testing"
 )
 

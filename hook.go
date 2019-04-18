@@ -2,8 +2,8 @@ package wxweb
 
 import (
 	"errors"
-	"github.com/ikuiki/wechat-web/datastruct"
-	"github.com/ikuiki/wechat-web/datastruct/appmsg"
+	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/datastruct/appmsg"
 )
 
 // TextMessageHook 文字消息处理器接口

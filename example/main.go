@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/ikuiki/wechat-web"
-	"github.com/ikuiki/wechat-web/datastruct"
-	"github.com/ikuiki/wechat-web/datastruct/appmsg"
-	"github.com/ikuiki/wechat-web/storer"
+	"github.com/ikuiki/wwdk"
+	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/datastruct/appmsg"
+	"github.com/ikuiki/wwdk/storer"
 	"log"
 	"time"
 )

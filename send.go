@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/ikuiki/wechat-web/datastruct"
-	"github.com/ikuiki/wechat-web/tool"
+	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/tool"
 )
 
 // StatusNotify 消息已读通知

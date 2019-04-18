@@ -1,7 +1,7 @@
 package storer_test
 
 import (
-	"github.com/ikuiki/wechat-web/storer"
+	"github.com/ikuiki/wwdk/storer"
 	"os"
 	"testing"
 )

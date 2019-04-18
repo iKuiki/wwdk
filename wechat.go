@@ -3,7 +3,7 @@ package wxweb
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ikuiki/wechat-web/storer"
+	"github.com/ikuiki/wwdk/storer"
 	"log"
 	// "crypto/tls"
 	"errors"
@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 
-	"github.com/ikuiki/wechat-web/datastruct"
-	"github.com/ikuiki/wechat-web/tool"
+	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/tool"
 	"net/url"
 	"time"
 )

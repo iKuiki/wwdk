@@ -13,9 +13,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/ikuiki/wechat-web/conf"
-	"github.com/ikuiki/wechat-web/datastruct"
-	"github.com/ikuiki/wechat-web/tool"
+	"github.com/ikuiki/wwdk/conf"
+	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/tool"
 	"github.com/mdp/qrterminal"
 )
 
