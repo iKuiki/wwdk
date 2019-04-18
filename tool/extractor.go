@@ -4,8 +4,8 @@ import (
 	"strings"
 )
 
-// AnalysisWxWindowRespond 	解析返回值中由js代码构成的参数
-func AnalysisWxWindowRespond(respond string) (ret map[string]string) {
+// ExtractWxWindowRespond 	提取返回值中由js代码构成的参数
+func ExtractWxWindowRespond(respond string) (ret map[string]string) {
 	ret = make(map[string]string)
 	arr := strings.Split(respond, ";")
 	for _, a := range arr {

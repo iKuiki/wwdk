@@ -32,7 +32,7 @@ func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	ret := tool.AnalysisWxWindowRespond(string(body))
+	ret := tool.ExtractWxWindowRespond(string(body))
 	if ret["window.QRLogin.code"] != "200" {
 		return "", errors.New("window.QRLogin.code = " + ret["window.QRLogin.code"])
 	}
@@ -71,7 +71,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 			}
 			defer resp.Body.Close()
 			body, _ := ioutil.ReadAll(resp.Body)
-			ret = tool.AnalysisWxWindowRespond(string(body))
+			ret = tool.ExtractWxWindowRespond(string(body))
 			switch ret["window.code"] {
 			case "200": // 确认登陆
 				log.Println("Login success")

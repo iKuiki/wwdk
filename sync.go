@@ -99,7 +99,7 @@ func (wxwb *WechatWeb) syncCheck() (retCode, selector string, err error) {
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	retArr := tool.AnalysisWxWindowRespond(string(body))
+	retArr := tool.ExtractWxWindowRespond(string(body))
 
 	ret := analysisSyncResp(retArr["window.synccheck"])
 	return ret.Retcode, ret.Selector, nil
