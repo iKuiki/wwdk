@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -42,7 +41,7 @@ func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
 // getQrCode 通过uuid生成二维码并输出到控制台
 func (wxwb *WechatWeb) getQrCode(uuid string) (err error) {
 	if os.Getenv("DEBUG_PRINT_QRURL") == "true" {
-		log.Println("qrcode url: https://login.weixin.qq.com/l/" + uuid)
+		wxwb.logger.Infof("qrcode url: https://login.weixin.qq.com/l/%s\n", uuid)
 	}
 	qrterminal.Generate("https://login.weixin.qq.com/l/"+uuid, qrterminal.L, os.Stdout)
 	return nil
@@ -66,7 +65,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 			req, _ := http.NewRequest(`GET`, "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?"+params.Encode(), nil)
 			resp, err := wxwb.request(req)
 			if err != nil {
-				log.Println("waitForScan request error: " + err.Error())
+				wxwb.logger.Infof("waitForScan request error: %v\n", err)
 				return "", nil // return nil error for continue
 			}
 			defer resp.Body.Close()
@@ -74,11 +73,11 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 			ret = tool.ExtractWxWindowRespond(string(body))
 			switch ret["window.code"] {
 			case "200": // 确认登陆
-				log.Println("Login success")
+				wxwb.logger.Info("Login success\n")
 				return ret["window.redirect_uri"], nil
 			case "201": // 用户已扫码
 				scaned = true
-				log.Println("Scan success, waiting for login")
+				wxwb.logger.Info("Scan success, waiting for login\n")
 				return "", nil // continue
 			case "400": // 登陆失败(二维码失效)
 				return "", errors.New("Login fail: qrcode has run out")
@@ -129,7 +128,7 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
 	params.Set("skey", wxwb.loginInfo.sKey)
 	params.Set("r", tool.GetWxTimeStamp())
-	// resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
+	// resp, err := wxwb.apiRuntime.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 	// 	"application/json;charset=UTF-8",
 	// 	bytes.NewReader(data))
 
@@ -157,7 +156,7 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 	for _, contact := range respStruct.ContactList {
 		wxwb.contactList[contact.UserName] = contact
 	}
-	wxwb.user = respStruct.User
+	wxwb.userInfo.user = respStruct.User
 	wxwb.loginInfo.syncKey = respStruct.SyncKey
 	wxwb.loginInfo.sKey = respStruct.SKey
 	return nil
@@ -166,7 +165,7 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 func (wxwb *WechatWeb) getContactList() (err error) {
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
-	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact?" + params.Encode())
+	resp, err := wxwb.apiRuntime.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact?" + params.Encode())
 	if err != nil {
 		return errors.New("request error: " + err.Error())
 	}
@@ -208,7 +207,7 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 	params := url.Values{}
 	params.Set("type", "ex")
 	params.Set("r", tool.GetWxTimeStamp())
-	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?"+params.Encode(),
+	resp, err := wxwb.apiRuntime.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?"+params.Encode(),
 		"application/json;charset=UTF-8",
 		bytes.NewReader(data))
 	if err != nil {
@@ -240,7 +239,7 @@ func (wxwb *WechatWeb) Login() (err error) {
 	wxwb.readLoginInfo()
 	err = wxwb.getContactList()
 	if err != nil {
-		log.Println("stored login info not avaliable")
+		wxwb.logger.Info("stored login info not avaliable\n")
 		wxwb.resetLoginInfo()
 		uuid, err := wxwb.getUUID()
 		if err != nil {
@@ -266,9 +265,9 @@ func (wxwb *WechatWeb) Login() (err error) {
 		// 此处即认为登陆成功
 		wxwb.runInfo.LoginAt = time.Now()
 	} else {
-		log.Printf("reuse loginInfo [%s] logined at %v\n", wxwb.user.NickName, wxwb.runInfo.LoginAt.Format("2006-01-02 15:04:05"))
+		wxwb.logger.Infof("reuse loginInfo [%s] logined at %v\n", wxwb.userInfo.user.NickName, wxwb.runInfo.LoginAt.Format("2006-01-02 15:04:05"))
 	}
-	// err = wxwb.StatusNotify(wxwb.user.UserName, wxwb.user.UserName, 3)
+	// err = wxwb.StatusNotify(wxwb.userInfo.user.UserName, wxwb.userInfo.user.UserName, 3)
 	// if err != nil {
 	// 	return errors.New("StatusNotify error: " + err.Error())
 	// }
@@ -280,7 +279,7 @@ func (wxwb *WechatWeb) Login() (err error) {
 	if err != nil {
 		return errors.New("getBatchContact error: " + err.Error())
 	}
-	log.Printf("User %s has Login Success, total %d contacts\n", wxwb.user.NickName, len(wxwb.contactList))
+	wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.userInfo.user.NickName, len(wxwb.contactList))
 	// 如有必要，记录login信息到storer
 	wxwb.writeLoginInfo()
 	return nil
@@ -295,7 +294,7 @@ func (wxwb *WechatWeb) Logout() (err error) {
 	form := url.Values{}
 	form.Set("sid", wxwb.loginInfo.cookie.Wxsid)
 	form.Set("uin", wxwb.loginInfo.cookie.Wxuin)
-	resp, err := wxwb.client.PostForm("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxlogout?"+params.Encode(), form)
+	resp, err := wxwb.apiRuntime.client.PostForm("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxlogout?"+params.Encode(), form)
 	if err != nil {
 		return errors.New("request error: " + err.Error())
 	}

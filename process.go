@@ -16,9 +16,9 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
 	defer func() {
 		// 防止外部方法导致的崩溃
 		if err := recover(); err != nil {
-			debug.PrintStack()
-			fmt.Println("messageProcesser panic: ", err)
-			fmt.Println("message data: ", msg)
+			wxwb.logger.Errorf("messageProcesser panic: %v\n", err)
+			wxwb.logger.Errorf("message data: %v\n", msg)
+			wxwb.logger.Errorf("Stack: %s\n", string(debug.Stack()))
 		}
 	}()
 	context := Context{App: wxwb, hasStop: false}
@@ -108,8 +108,9 @@ func (wxwb *WechatWeb) contactProcesser(oldContact, newContact *datastruct.Conta
 	defer func() {
 		// 防止外部方法导致的崩溃
 		if err := recover(); err != nil {
-			fmt.Println("contactProcesser panic: ", err)
-			fmt.Println("contact data: ", newContact)
+			wxwb.logger.Errorf("contactProcesser panic: %v\n", err)
+			wxwb.logger.Errorf("contact data: %v\n", newContact)
+			wxwb.logger.Errorf("Stack: %s\n", string(debug.Stack()))
 		}
 	}()
 	context := Context{App: wxwb, hasStop: false}
