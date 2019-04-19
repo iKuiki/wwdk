@@ -1,4 +1,4 @@
-package wxweb
+package wwdk
 
 import (
 	"encoding/json"
