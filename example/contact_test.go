@@ -7,7 +7,7 @@ import (
 )
 
 func TestContact(t *testing.T) {
-	wx, err := wxweb.NewWechatWeb()
+	wx, err := wwdk.NewWechatWeb()
 	if err != nil {
 		panic("NewWechatWeb error: " + err.Error())
 	}

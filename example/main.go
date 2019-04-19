@@ -13,32 +13,32 @@ import (
 func main() {
 	// 初始化一个文件loginStorer
 	storer := storer.MustNewFileStorer("loginInfo.txt")
-	wx, err := wxweb.NewWechatWeb(storer)
+	wx, err := wwdk.NewWechatWeb(storer)
 	if err != nil {
 		panic("Get new wechatweb client error: " + err.Error())
 	}
 	t := testServ{}
-	err = wx.RegisterHook(wxweb.TextMessageHook(t.ProcessTextMessage))
+	err = wx.RegisterHook(wwdk.TextMessageHook(t.ProcessTextMessage))
 	if err != nil {
 		panic("RegisterHook TextMessageHook: " + err.Error())
 	}
-	err = wx.RegisterHook(wxweb.ImageMessageHook(t.ProcessImageMessage))
+	err = wx.RegisterHook(wwdk.ImageMessageHook(t.ProcessImageMessage))
 	if err != nil {
 		panic("RegisterHook ImageMessageHook: " + err.Error())
 	}
-	err = wx.RegisterHook(wxweb.EmotionMessageHook(ProcessEmojiMessage))
+	err = wx.RegisterHook(wwdk.EmotionMessageHook(ProcessEmojiMessage))
 	if err != nil {
 		panic("RegisterHook EmotionMessageHook: " + err.Error())
 	}
-	err = wx.RegisterHook(wxweb.RevokeMessageHook(ProcessRevokeMessage))
+	err = wx.RegisterHook(wwdk.RevokeMessageHook(ProcessRevokeMessage))
 	if err != nil {
 		panic("RegisterHook RevokeMessageHook: " + err.Error())
 	}
-	err = wx.RegisterHook(wxweb.VideoMessageHook(ProcessVideoMessage))
+	err = wx.RegisterHook(wwdk.VideoMessageHook(ProcessVideoMessage))
 	if err != nil {
 		panic("RegisterHook VideoMessageHook: " + err.Error())
 	}
-	err = wx.RegisterHook(wxweb.VoiceMessageHook(ProcessVoiceMessage))
+	err = wx.RegisterHook(wwdk.VoiceMessageHook(ProcessVoiceMessage))
 	if err != nil {
 		panic("RegisterHook VoiceMessageHook: " + err.Error())
 	}
@@ -61,7 +61,7 @@ func main() {
 type testServ struct {
 }
 
-func (serv *testServ) ProcessTextMessage(ctx *wxweb.Context, msg datastruct.Message) {
+func (serv *testServ) ProcessTextMessage(ctx *wwdk.Context, msg datastruct.Message) {
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -88,7 +88,7 @@ func (serv *testServ) ProcessTextMessage(ctx *wxweb.Context, msg datastruct.Mess
 }
 
 // ProcessImageMessage set image message handle
-func (serv *testServ) ProcessImageMessage(ctx *wxweb.Context, msg datastruct.Message) {
+func (serv *testServ) ProcessImageMessage(ctx *wwdk.Context, msg datastruct.Message) {
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -98,7 +98,7 @@ func (serv *testServ) ProcessImageMessage(ctx *wxweb.Context, msg datastruct.Mes
 }
 
 // ProcessEmojiMessage set Emoji message Handle
-func ProcessEmojiMessage(ctx *wxweb.Context, msg datastruct.Message, emojiContent appmsg.EmotionMsgContent) {
+func ProcessEmojiMessage(ctx *wwdk.Context, msg datastruct.Message, emojiContent appmsg.EmotionMsgContent) {
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -108,7 +108,7 @@ func ProcessEmojiMessage(ctx *wxweb.Context, msg datastruct.Message, emojiConten
 }
 
 // ProcessRevokeMessage set revoke message handle
-func ProcessRevokeMessage(ctx *wxweb.Context, msg datastruct.Message, revokeContent appmsg.RevokeMsgContent) {
+func ProcessRevokeMessage(ctx *wwdk.Context, msg datastruct.Message, revokeContent appmsg.RevokeMsgContent) {
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -118,7 +118,7 @@ func ProcessRevokeMessage(ctx *wxweb.Context, msg datastruct.Message, revokeCont
 }
 
 // ProcessVideoMessage set video message handle
-func ProcessVideoMessage(ctx *wxweb.Context, msg datastruct.Message) {
+func ProcessVideoMessage(ctx *wwdk.Context, msg datastruct.Message) {
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -128,7 +128,7 @@ func ProcessVideoMessage(ctx *wxweb.Context, msg datastruct.Message) {
 }
 
 // ProcessVoiceMessage set voice message handle
-func ProcessVoiceMessage(ctx *wxweb.Context, msg datastruct.Message) {
+func ProcessVoiceMessage(ctx *wwdk.Context, msg datastruct.Message) {
 	from, err := ctx.App.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
