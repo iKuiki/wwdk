@@ -5,6 +5,7 @@ package wwdk
 import (
 	"encoding/json"
 	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/pkg/errors"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -23,21 +24,20 @@ type storeLoginInfo struct {
 }
 
 // 重置登录信息
-func (wxwb *WechatWeb) resetLoginInfo() error {
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				wxwb.logger.Infof("Recovered in resetLoginInfo: %v\n", r)
-				wxwb.runInfo.PanicCount++
-			}
-		}()
+func (wxwb *WechatWeb) resetLoginInfo() (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			wxwb.logger.Infof("Recovered in resetLoginInfo: %v\n", r)
+			wxwb.runInfo.PanicCount++
+			err = errors.Errorf("panic recovered: %+v", r)
+		}
 	}()
 	if wxwb.loginStorer != nil {
 		wxwb.loginStorer.Truncate()
 	}
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	wxwb.apiRuntime.client.Jar = jar
 	wxwb.loginInfo = wechatLoginInfo{}
@@ -45,14 +45,13 @@ func (wxwb *WechatWeb) resetLoginInfo() error {
 }
 
 // 往storer中写入信息
-func (wxwb *WechatWeb) writeLoginInfo() error {
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				wxwb.logger.Infof("Recovered in writeLoginInfo: %v\n", r)
-				wxwb.runInfo.PanicCount++
-			}
-		}()
+func (wxwb *WechatWeb) writeLoginInfo() (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			wxwb.logger.Infof("Recovered in writeLoginInfo: %v\n", r)
+			wxwb.runInfo.PanicCount++
+			err = errors.Errorf("panic recovered: %+v", r)
+		}
 	}()
 	cookieMap := make(map[string][]*http.Cookie)
 	for _, host := range syncHosts {
@@ -72,33 +71,37 @@ func (wxwb *WechatWeb) writeLoginInfo() error {
 		}
 		data, err := json.Marshal(storeInfo)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		err = wxwb.loginStorer.Writer(data)
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
 }
 
 // 从storer中读取信息
-func (wxwb *WechatWeb) readLoginInfo() error {
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				wxwb.logger.Infof("Recovered in readLoginInfo: %v\n", r)
-				wxwb.runInfo.PanicCount++
-			}
-		}()
+// 返回是否成功读取到信息
+func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			wxwb.logger.Infof("Recovered in readLoginInfo: %v\n", r)
+			wxwb.runInfo.PanicCount++
+			err = errors.Errorf("panic recovered: %+v", r)
+		}
 	}()
 	if wxwb.loginStorer != nil {
 		data, err := wxwb.loginStorer.Read()
 		if err != nil {
-			return err
+			return false, errors.WithStack(err)
 		}
 		var storeInfo storeLoginInfo
 		err = json.Unmarshal(data, &storeInfo)
 		if err != nil {
-			return err
+			return false, errors.WithStack(err)
+		}
+		if storeInfo.DeviceID == "" {
+			// 未读取到信息
+			return false, nil
 		}
 		for _, host := range syncHosts {
 			u, _ := url.Parse("https://" + host)
@@ -110,9 +113,17 @@ func (wxwb *WechatWeb) readLoginInfo() error {
 			sKey:       storeInfo.SKey,
 			PassTicket: storeInfo.PassTicket,
 		}
-		wxwb.runInfo = storeInfo.RunInfo
+		{
+			// 先暂存StartAt，对StartAt不做覆盖
+			started := wxwb.runInfo.StartAt
+			wxwb.runInfo = storeInfo.RunInfo
+			// 还原startat
+			wxwb.runInfo.StartAt = started
+		}
 		wxwb.userInfo.user = storeInfo.User
 		wxwb.apiRuntime.deviceID = storeInfo.DeviceID
+		// 读取到了信息并进行还原
+		return true, nil
 	}
-	return nil
+	return false, nil
 }

@@ -6,7 +6,9 @@ import (
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/ikuiki/wwdk/datastruct/appmsg"
 	"github.com/ikuiki/wwdk/storer"
+	"github.com/mdp/qrterminal"
 	"log"
+	"os"
 	"time"
 )
 
@@ -42,9 +44,29 @@ func main() {
 	if err != nil {
 		panic("RegisterHook VoiceMessageHook: " + err.Error())
 	}
-	err = wx.Login()
-	if err != nil {
-		panic("WxWeb Login error: " + err.Error())
+	loginChan := make(chan wwdk.LoginChannelItem)
+	wx.Login(loginChan)
+	for item := range loginChan {
+		switch item.Code {
+		case wwdk.LoginStatusWaitForScan:
+			qrterminal.Generate(item.Msg, qrterminal.L, os.Stdout)
+		case wwdk.LoginStatusScanedWaitForLogin:
+			fmt.Println("scaned")
+		case wwdk.LoginStatusScanedFinish:
+			fmt.Println("accepted")
+		case wwdk.LoginStatusGotCookie:
+			fmt.Println("got cookie")
+		case wwdk.LoginStatusInitFinish:
+			fmt.Println("init finish")
+		case wwdk.LoginStatusGotContact:
+			fmt.Println("got contact")
+		case wwdk.LoginStatusGotBatchContact:
+			fmt.Println("got batch contact")
+		case wwdk.LoginStatusErrorOccurred:
+			panic(fmt.Sprintf("WxWeb Login error: %+v", item.Err))
+		default:
+			fmt.Printf("unknown code: %+v", item)
+		}
 	}
 	contacts := wx.GetContactList()
 	for _, v := range contacts {

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/ikuiki/wwdk"
+	"github.com/mdp/qrterminal"
+	"os"
 	"testing"
 )
 
@@ -11,9 +13,29 @@ func TestContact(t *testing.T) {
 	if err != nil {
 		panic("NewWechatWeb error: " + err.Error())
 	}
-	err = wx.Login()
-	if err != nil {
-		panic("WxWeb Login error: " + err.Error())
+	loginChan := make(chan wwdk.LoginChannelItem)
+	wx.Login(loginChan)
+	for item := range loginChan {
+		switch item.Code {
+		case wwdk.LoginStatusWaitForScan:
+			qrterminal.Generate(item.Msg, qrterminal.L, os.Stdout)
+		case wwdk.LoginStatusScanedWaitForLogin:
+			fmt.Println("scaned")
+		case wwdk.LoginStatusScanedFinish:
+			fmt.Println("accepted")
+		case wwdk.LoginStatusGotCookie:
+			fmt.Println("got cookie")
+		case wwdk.LoginStatusInitFinish:
+			fmt.Println("init finish")
+		case wwdk.LoginStatusGotContact:
+			fmt.Println("got contact")
+		case wwdk.LoginStatusGotBatchContact:
+			fmt.Println("got batch contact")
+		case wwdk.LoginStatusErrorOccurred:
+			panic(fmt.Sprintf("WxWeb Login error: %+v", item.Err))
+		default:
+			fmt.Printf("unknown code: %+v", item)
+		}
 	}
 	contacts := wx.GetContactList()
 	fmt.Println("")

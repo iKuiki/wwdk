@@ -4,21 +4,49 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
-	"errors"
-	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/ikuiki/wwdk/conf"
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/ikuiki/wwdk/tool"
-	"github.com/mdp/qrterminal"
 )
 
-func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
+// LoginChannelItem 登录时channel内返回的东西
+type LoginChannelItem struct {
+	Err  error
+	Code LoginStatus
+	Msg  string
+}
+
+// LoginStatus 登录状态枚举
+type LoginStatus int32
+
+const (
+	// LoginStatusErrorOccurred 发生异常
+	LoginStatusErrorOccurred LoginStatus = -1
+	// LoginStatusWaitForScan 等待扫码
+	// 返回Msg: 待扫码url
+	LoginStatusWaitForScan LoginStatus = 1
+	// LoginStatusScanedWaitForLogin 用户已经扫码
+	// 返回Msg: 用户头像的base64
+	LoginStatusScanedWaitForLogin LoginStatus = 2
+	// LoginStatusScanedFinish 用户已同意登陆
+	LoginStatusScanedFinish LoginStatus = 3
+	// LoginStatusGotCookie 已获取到Cookie
+	LoginStatusGotCookie LoginStatus = 4
+	// LoginStatusInitFinish 登陆初始化完成
+	LoginStatusInitFinish LoginStatus = 5
+	// LoginStatusGotContact 已获取到联系人
+	LoginStatusGotContact LoginStatus = 6
+	// LoginStatusGotBatchContact 已获取到群聊成员
+	LoginStatusGotBatchContact LoginStatus = 7
+)
+
+func (wxwb *WechatWeb) getUUID(loginChannel chan<- LoginChannelItem) (uuid string) {
 	params := url.Values{}
 	params.Set("appid", conf.AppID)
 	params.Set("fun", "new")
@@ -27,29 +55,25 @@ func (wxwb *WechatWeb) getUUID() (uuid string, err error) {
 	req, _ := http.NewRequest("GET", "https://login.weixin.qq.com/jslogin?"+params.Encode(), nil)
 	resp, err := wxwb.request(req)
 	if err != nil {
-		return "", errors.New("request error: " + err.Error())
+		panic(errors.New("request error: " + err.Error()))
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	ret := tool.ExtractWxWindowRespond(string(body))
 	if ret["window.QRLogin.code"] != "200" {
-		return "", errors.New("window.QRLogin.code = " + ret["window.QRLogin.code"])
+		panic(errors.New("window.QRLogin.code = " + ret["window.QRLogin.code"]))
 	}
-	return ret["window.QRLogin.uuid"], nil
-}
-
-// getQrCode 通过uuid生成二维码并输出到控制台
-func (wxwb *WechatWeb) getQrCode(uuid string) (err error) {
-	if os.Getenv("DEBUG_PRINT_QRURL") == "true" {
-		wxwb.logger.Infof("qrcode url: https://login.weixin.qq.com/l/%s\n", uuid)
+	uuid = ret["window.QRLogin.uuid"]
+	loginChannel <- LoginChannelItem{
+		Code: LoginStatusWaitForScan,
+		Msg:  "https://login.weixin.qq.com/l/" + uuid,
 	}
-	qrterminal.Generate("https://login.weixin.qq.com/l/"+uuid, qrterminal.L, os.Stdout)
-	return nil
+	return uuid
 }
 
 // waitForScan 等待用户扫描二维码登陆
 // 当扫码超时、扫码失败时，应当从getUUID方法重新开始
-func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) {
+func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannelItem) (redirectURL string) {
 	var ret map[string]string
 	scaned := false
 	scaned2TipMap := map[bool]string{
@@ -57,7 +81,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 		true:  "0",
 	}
 	for true {
-		redirectURL, err = func() (redirectURL string, err error) {
+		redirectURL = func() (redirectURL string) {
 			params := url.Values{}
 			params.Set("tip", scaned2TipMap[scaned])
 			params.Set("uuid", uuid)
@@ -66,7 +90,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 			resp, err := wxwb.request(req)
 			if err != nil {
 				wxwb.logger.Infof("waitForScan request error: %v\n", err)
-				return "", nil // return nil error for continue
+				return "" // return empty for continue
 			}
 			defer resp.Body.Close()
 			body, _ := ioutil.ReadAll(resp.Body)
@@ -74,55 +98,63 @@ func (wxwb *WechatWeb) waitForScan(uuid string) (redirectURL string, err error) 
 			switch ret["window.code"] {
 			case "200": // 确认登陆
 				wxwb.logger.Info("Login success\n")
-				return ret["window.redirect_uri"], nil
+				loginChannel <- LoginChannelItem{
+					Code: LoginStatusScanedFinish,
+				}
+				return ret["window.redirect_uri"]
 			case "201": // 用户已扫码
 				scaned = true
 				wxwb.logger.Info("Scan success, waiting for login\n")
-				return "", nil // continue
+				loginChannel <- LoginChannelItem{
+					Code: LoginStatusScanedWaitForLogin,
+					Msg:  ret["window.userAvatar"],
+				}
+				return "" // continue
 			case "400": // 登陆失败(二维码失效)
-				return "", errors.New("Login fail: qrcode has run out")
+				panic(errors.New("Login fail: qrcode has run out"))
 			case "408": // 等待登陆
 				time.Sleep(500 * time.Microsecond)
 			default:
-				return "", errors.New("Login fail: unknown response code: " + ret["window.code"])
+				panic(errors.New("Login fail: unknown response code: " + ret["window.code"]))
 			}
-			return "", nil
+			return
 		}()
-		if err != nil || redirectURL != "" {
+		if redirectURL != "" {
 			break
 		}
 	}
-	return redirectURL, err
+	return redirectURL
 }
 
-func (wxwb *WechatWeb) getCookie(redirectURL string) (err error) {
-
+func (wxwb *WechatWeb) getCookie(redirectURL string, loginChannel chan<- LoginChannelItem) {
 	req, _ := http.NewRequest(`GET`, redirectURL+"&fun=new", nil)
 	resp, err := wxwb.request(req)
 	if err != nil {
-		return errors.New("getCookie request error: " + err.Error())
+		panic(errors.New("getCookie request error: " + err.Error()))
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return errors.New("Read respond body error: " + err.Error())
+		panic(errors.New("Read respond body error: " + err.Error()))
 	}
 	var bodyResp datastruct.GetCookieRespond
 	err = xml.Unmarshal(body, &bodyResp)
 	if err != nil {
-		return errors.New("Unmarshal respond xml error: " + err.Error())
+		panic(errors.New("Unmarshal respond xml error: " + err.Error()))
+	}
+	loginChannel <- LoginChannelItem{
+		Code: LoginStatusGotCookie,
 	}
 	// wxwb.refreshCookie(resp.Cookies()) // 在统一的Request方法已经调用了
 	wxwb.loginInfo.PassTicket = bodyResp.PassTicket
 	wxwb.loginInfo.sKey = bodyResp.Skey
-	return nil
 }
 
-func (wxwb *WechatWeb) wxInit() (err error) {
+func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 	data, err := json.Marshal(datastruct.WxInitRequestBody{
 		BaseRequest: wxwb.baseRequest(),
 	})
 	if err != nil {
-		return errors.New("json.Marshal error: " + err.Error())
+		panic(errors.New("json.Marshal error: " + err.Error()))
 	}
 	params := url.Values{}
 	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
@@ -136,11 +168,11 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 		"https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 		bytes.NewReader(data))
 	if err != nil {
-		return errors.New("create request error: " + err.Error())
+		panic(errors.New("create request error: " + err.Error()))
 	}
 	resp, err := wxwb.request(req)
 	if err != nil {
-		return errors.New("do request error: " + err.Error())
+		panic(errors.New("do request error: " + err.Error()))
 	}
 	defer resp.Body.Close()
 
@@ -148,10 +180,13 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &respStruct)
 	if err != nil {
-		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
+		panic(errors.New("respond json Unmarshal to struct fail: " + err.Error()))
 	}
 	if respStruct.BaseResponse.Ret != 0 {
-		return fmt.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
+		panic(errors.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret))
+	}
+	loginChannel <- LoginChannelItem{
+		Code: LoginStatusInitFinish,
 	}
 	for _, contact := range respStruct.ContactList {
 		wxwb.contactList[contact.UserName] = contact
@@ -159,9 +194,9 @@ func (wxwb *WechatWeb) wxInit() (err error) {
 	wxwb.userInfo.user = respStruct.User
 	wxwb.loginInfo.syncKey = respStruct.SyncKey
 	wxwb.loginInfo.sKey = respStruct.SKey
-	return nil
 }
 
+// 获取完整联系人
 func (wxwb *WechatWeb) getContactList() (err error) {
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
@@ -177,7 +212,7 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
 	}
 	if respStruct.BaseResponse.Ret != 0 {
-		return fmt.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
+		return errors.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
 	}
 	for _, contact := range respStruct.MemberList {
 		wxwb.contactList[contact.UserName] = contact
@@ -185,6 +220,7 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 	return nil
 }
 
+// 获取群聊的成员
 func (wxwb *WechatWeb) getBatchContact() (err error) {
 	dataStruct := datastruct.GetBatchContactRequest{
 		BaseRequest: wxwb.baseRequest(),
@@ -221,7 +257,7 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
 	}
 	if respStruct.BaseResponse.Ret != 0 {
-		return fmt.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
+		return errors.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
 	}
 	for _, contact := range respStruct.ContactList {
 		if c, ok := wxwb.contactList[contact.UserName]; ok {
@@ -235,54 +271,76 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 }
 
 // Login 登陆方法总成
-func (wxwb *WechatWeb) Login() (err error) {
-	wxwb.readLoginInfo()
-	err = wxwb.getContactList()
-	if err != nil {
-		wxwb.logger.Info("stored login info not avaliable\n")
-		wxwb.resetLoginInfo()
-		uuid, err := wxwb.getUUID()
-		if err != nil {
-			return errors.New("Get UUID fail: " + err.Error())
+// param loginChannel 登陆状态channel，从中可以读取到登录情况
+func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
+	// 尝试使用已存在的登录信息登录
+	go func() {
+		defer func() {
+			if e := recover(); e != nil {
+				if err, ok := e.(error); ok {
+					// 发生了panic
+					loginChannel <- LoginChannelItem{
+						Code: LoginStatusErrorOccurred,
+						Err:  err,
+					}
+				} else {
+					wxwb.logger.Errorf("WechatWeb.Login panic: \n%+v\n", e)
+				}
+			}
+		}()
+		// 尝试使用已存在的登录信息登录
+		logined := false
+		readed, _ := wxwb.readLoginInfo()
+		if readed {
+			wxwb.logger.Info("loaded stored login info")
+			if wxwb.getContactList() == nil {
+				// 获取联系人成功，则为已登陆状态
+				logined = true
+				wxwb.logger.Infof("reuse loginInfo [%s] logined at %v\n", wxwb.userInfo.user.NickName, wxwb.runInfo.LoginAt.Format("2006-01-02 15:04:05"))
+			}
 		}
-		err = wxwb.getQrCode(uuid)
-		if err != nil {
-			return errors.New("Get QrCode fail: " + err.Error())
+		if !logined {
+			wxwb.logger.Info("stored login info not avaliable\n")
+			wxwb.resetLoginInfo()
+			uuid := wxwb.getUUID(loginChannel)
+			redirectURL := wxwb.waitForScan(uuid, loginChannel)
+			// panic(redirectUrl)
+			wxwb.getCookie(redirectURL, loginChannel)
+			wxwb.wxInit(loginChannel)
+			err := wxwb.getContactList()
+			if err != nil {
+				loginChannel <- LoginChannelItem{
+					Code: LoginStatusErrorOccurred,
+					Err:  err,
+				}
+				return
+			}
+			// 此处即认为登陆成功
+			wxwb.runInfo.LoginAt = time.Now()
 		}
-		redirectURL, err := wxwb.waitForScan(uuid)
-		if err != nil {
-			return errors.New("waitForScan error: " + err.Error())
+		loginChannel <- LoginChannelItem{
+			Code: LoginStatusGotContact,
 		}
-		// panic(redirectUrl)
-		err = wxwb.getCookie(redirectURL)
+		// err = wxwb.StatusNotify(wxwb.userInfo.user.UserName, wxwb.userInfo.user.UserName, 3)
+		// if err != nil {
+		// 	return errors.New("StatusNotify error: " + err.Error())
+		// }
+		err := wxwb.getBatchContact()
 		if err != nil {
-			return errors.New("getCookie error: " + err.Error())
+			loginChannel <- LoginChannelItem{
+				Code: LoginStatusErrorOccurred,
+				Err:  err,
+			}
+			return
 		}
-		err = wxwb.wxInit()
-		if err != nil {
-			return errors.New("wxInit error: " + err.Error())
+		loginChannel <- LoginChannelItem{
+			Code: LoginStatusGotBatchContact,
 		}
-		// 此处即认为登陆成功
-		wxwb.runInfo.LoginAt = time.Now()
-	} else {
-		wxwb.logger.Infof("reuse loginInfo [%s] logined at %v\n", wxwb.userInfo.user.NickName, wxwb.runInfo.LoginAt.Format("2006-01-02 15:04:05"))
-	}
-	// err = wxwb.StatusNotify(wxwb.userInfo.user.UserName, wxwb.userInfo.user.UserName, 3)
-	// if err != nil {
-	// 	return errors.New("StatusNotify error: " + err.Error())
-	// }
-	err = wxwb.getContactList()
-	if err != nil {
-		return errors.New("getContactList error: " + err.Error())
-	}
-	err = wxwb.getBatchContact()
-	if err != nil {
-		return errors.New("getBatchContact error: " + err.Error())
-	}
-	wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.userInfo.user.NickName, len(wxwb.contactList))
-	// 如有必要，记录login信息到storer
-	wxwb.writeLoginInfo()
-	return nil
+		close(loginChannel)
+		wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.userInfo.user.NickName, len(wxwb.contactList))
+		// 如有必要，记录login信息到storer
+		wxwb.writeLoginInfo()
+	}()
 }
 
 // Logout 退出登录
