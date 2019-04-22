@@ -113,109 +113,110 @@ func (wxwb *WechatWeb) syncCheck() (retCode, selector string, err error) {
 }
 
 // StartServe 启动消息同步服务
-func (wxwb *WechatWeb) StartServe() {
-	avaliable := wxwb.chooseSyncHost()
-	if !avaliable {
-		wxwb.logger.Info("all sync host unavaliable, exit...\n")
-		return
-	}
-	getMessage := func() {
-		gmResp, err := wxwb.getMessage()
-		if err != nil {
-			wxwb.logger.Infof("GetMessage error: %s\n", err.Error())
+func (wxwb *WechatWeb) StartServe(contactChannel chan<- datastruct.Contact, messageChannel chan<- datastruct.Message) {
+	go func() {
+		avaliable := wxwb.chooseSyncHost()
+		if !avaliable {
+			wxwb.logger.Info("all sync host unavaliable, exit...\n")
 			return
 		}
-		if gmResp.SyncCheckKey != nil {
-			wxwb.loginInfo.syncKey = gmResp.SyncCheckKey
-		} else {
-			wxwb.loginInfo.syncKey = gmResp.SyncKey
-		}
-		// 处理新增联系人
-		for _, contact := range gmResp.ModContactList {
-			wxwb.runInfo.ContactModifyCount++
-			wxwb.logger.Infof("Modify contact: %s\n", contact.NickName)
-			oldContact := wxwb.contactList[contact.UserName]
-			wxwb.contactProcesser(&oldContact, &contact)
-			wxwb.contactList[contact.UserName] = contact
-		}
-		// 新消息
-		for _, msg := range gmResp.AddMsgList {
-			if msg.MsgType == datastruct.RevokeMsg {
-				wxwb.runInfo.MessageRevokeCount++
+		getMessage := func() {
+			gmResp, err := wxwb.getMessage()
+			if err != nil {
+				wxwb.logger.Infof("GetMessage error: %s\n", err.Error())
+				return
+			}
+			if gmResp.SyncCheckKey != nil {
+				wxwb.loginInfo.syncKey = gmResp.SyncCheckKey
 			} else {
-				wxwb.runInfo.MessageCount++
+				wxwb.loginInfo.syncKey = gmResp.SyncKey
 			}
-			err = wxwb.messageProcesser(&msg)
-			if err != nil {
-				wxwb.logger.Infof("MessageProcesser error: %s\n", err.Error())
-				continue
+			// 处理新增联系人
+			for _, contact := range gmResp.ModContactList {
+				wxwb.runInfo.ContactModifyCount++
+				wxwb.logger.Infof("Modify contact: %s\n", contact.NickName)
+				contactChannel <- contact
+				wxwb.contactList[contact.UserName] = contact
+			}
+			// 新消息
+			for _, msg := range gmResp.AddMsgList {
+				if msg.MsgType == datastruct.RevokeMsg {
+					wxwb.runInfo.MessageRevokeCount++
+				} else {
+					wxwb.runInfo.MessageCount++
+				}
+				err = wxwb.messageProcesser(&msg, messageChannel)
+				if err != nil {
+					wxwb.logger.Infof("MessageProcesser error: %+v\n", err)
+					continue
+				}
 			}
 		}
-	}
-	for {
-		isBreaked := func() (isBreaked bool) {
-			defer func() {
-				if r := recover(); r != nil {
-					wxwb.logger.Infof("Recovered in StartServe loop: %v\n", r)
-					wxwb.runInfo.PanicCount++
-				}
-			}()
-			code, selector, err := wxwb.syncCheck()
-			if err != nil {
-				wxwb.logger.Infof("SyncCheck error: %s\n", err.Error())
-				return false
-			}
-			if code != "0" {
-				switch code {
-				case "1101":
-					wxwb.logger.Info("User has logout web wechat, exit...\n")
-					return true
-				case "1100":
-					wxwb.logger.Info("sync host unavaliable, choose a new one...\n")
-					avaliable = wxwb.chooseSyncHost()
-					if !avaliable {
-						wxwb.logger.Info("all sync host unavaliable, exit...\n")
-						return true
+		for {
+			isBreaked := func() (isBreaked bool) {
+				defer func() {
+					if r := recover(); r != nil {
+						wxwb.logger.Infof("Recovered in StartServe loop: %v\n", r)
+						wxwb.runInfo.PanicCount++
 					}
+				}()
+				code, selector, err := wxwb.syncCheck()
+				if err != nil {
+					wxwb.logger.Infof("SyncCheck error: %s\n", err.Error())
 					return false
 				}
+				if code != "0" {
+					switch code {
+					case "1101":
+						wxwb.logger.Info("User has logout web wechat, exit...\n")
+						return true
+					case "1100":
+						wxwb.logger.Info("sync host unavaliable, choose a new one...\n")
+						avaliable = wxwb.chooseSyncHost()
+						if !avaliable {
+							wxwb.logger.Info("all sync host unavaliable, exit...\n")
+							return true
+						}
+						return false
+					}
+				}
+				// wxwb.logger.Infof("selector: %v\n", selector)
+				switch selector {
+				case "0":
+					// wxwb.logger.Info("SyncCheck 0\n")
+					// normal
+					// wxwb.logger.Info("no new message\n")
+				case "6":
+					wxwb.logger.Info("selector is 6\n")
+					getMessage()
+				case "7":
+					wxwb.logger.Info("selector is 7\n")
+					getMessage()
+				case "1":
+					wxwb.logger.Info("selector is 1\n")
+					getMessage()
+				case "3":
+					wxwb.logger.Info("selector is 3\n")
+					getMessage()
+				case "4":
+					wxwb.logger.Info("selector is 4\n")
+					getMessage()
+				case "5":
+					wxwb.logger.Info("selector is 5\n")
+					getMessage()
+				case "2":
+					// wxwb.logger.Info("SyncCheck 2\n")
+					getMessage()
+				default:
+					wxwb.logger.Infof("SyncCheck Unknow selector: %s\n", selector)
+				}
+				wxwb.runInfo.SyncCount++
+				time.Sleep(1000 * time.Millisecond)
+				return false
+			}()
+			if isBreaked {
+				break
 			}
-			// wxwb.logger.Infof("selector: %v\n", selector)
-			switch selector {
-			case "0":
-				// wxwb.logger.Info("SyncCheck 0\n")
-				// normal
-				// wxwb.logger.Info("no new message\n")
-			case "6":
-				wxwb.logger.Info("selector is 6\n")
-				getMessage()
-			case "7":
-				wxwb.logger.Info("selector is 7\n")
-				getMessage()
-			case "1":
-				wxwb.logger.Info("selector is 1\n")
-				getMessage()
-			case "3":
-				wxwb.logger.Info("selector is 3\n")
-				getMessage()
-			case "4":
-				wxwb.logger.Info("selector is 4\n")
-				getMessage()
-			case "5":
-				wxwb.logger.Info("selector is 5\n")
-				getMessage()
-			case "2":
-				// wxwb.logger.Info("SyncCheck 2\n")
-				getMessage()
-			default:
-				wxwb.logger.Infof("SyncCheck Unknow selector: %s\n", selector)
-			}
-			wxwb.runInfo.SyncCount++
-			time.Sleep(1000 * time.Millisecond)
-			return false
-		}()
-		if isBreaked {
-			break
 		}
-	}
+	}()
 }

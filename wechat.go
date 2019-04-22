@@ -74,15 +74,13 @@ type apiRuntime struct {
 
 // WechatWeb 微信网页版客户端实例
 type WechatWeb struct {
-	contactList    map[string]datastruct.Contact
-	messageHook    map[datastruct.MessageType][]interface{}
-	modContactHook []interface{}
-	userInfo       userInfo        // 用户信息
-	apiRuntime     apiRuntime      // wechat客户端运行时信息
-	loginInfo      wechatLoginInfo // 登陆信息
-	runInfo        WechatRunInfo   // 运行统计信息
-	loginStorer    storer.Storer   // 存储器，如果有赋值，则用于记录登录信息
-	logger         *golog.Logger   // 日志输出器
+	contactList map[string]datastruct.Contact
+	userInfo    userInfo        // 用户信息
+	apiRuntime  apiRuntime      // wechat客户端运行时信息
+	loginInfo   wechatLoginInfo // 登陆信息
+	runInfo     WechatRunInfo   // 运行统计信息
+	loginStorer storer.Storer   // 存储器，如果有赋值，则用于记录登录信息
+	logger      *golog.Logger   // 日志输出器
 }
 
 // NewWechatWeb 生成微信网页版客户端实例
@@ -93,7 +91,6 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 	}
 	w := &WechatWeb{
 		contactList: make(map[string]datastruct.Contact),
-		messageHook: make(map[datastruct.MessageType][]interface{}),
 		apiRuntime: apiRuntime{
 			userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
 			deviceID:  "e" + tool.GetRandomStringFromNum(15),
