@@ -9,7 +9,7 @@ import (
 	"github.com/ikuiki/wwdk/datastruct"
 )
 
-func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message, messageChannel chan<- datastruct.Message) (err error) {
+func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message, syncChannel chan<- SyncChannelItem) (err error) {
 	defer func() {
 		// 防止外部方法导致的崩溃
 		if err := recover(); err != nil {
@@ -25,18 +25,27 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message, messageChannel 
 	switch msg.MsgType {
 	case datastruct.TextMsg:
 		wxwb.runInfo.MessageRecivedCount++
-		messageChannel <- *msg
+		syncChannel <- SyncChannelItem{
+			Code:    SyncStatusNewMessage,
+			Message: msg,
+		}
 	case datastruct.ImageMsg:
 	case datastruct.AnimationEmotionsMsg:
 	case datastruct.LittleVideoMsg:
 	case datastruct.VoiceMsg:
 		wxwb.runInfo.MessageRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
-		messageChannel <- *msg
+		syncChannel <- SyncChannelItem{
+			Code:    SyncStatusNewMessage,
+			Message: msg,
+		}
 	case datastruct.RevokeMsg:
 		wxwb.runInfo.MessageRevokeRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
-		messageChannel <- *msg
+		syncChannel <- SyncChannelItem{
+			Code:    SyncStatusNewMessage,
+			Message: msg,
+		}
 	default:
 		return errors.Errorf("Unknown MsgType %v: %#v", msg.MsgType, msg)
 	}

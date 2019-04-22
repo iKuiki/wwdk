@@ -1,7 +1,7 @@
 package wwdk
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -112,12 +112,42 @@ func (wxwb *WechatWeb) syncCheck() (retCode, selector string, err error) {
 	// return ret.Selector, nil
 }
 
+// SyncStatus 同步状态
+type SyncStatus int32
+
+const (
+	// SyncStatusModifyContact 同步状态：有联系人变更
+	SyncStatusModifyContact SyncStatus = 1
+	// SyncStatusNewMessage 同步状态：有新信息
+	SyncStatusNewMessage SyncStatus = 2
+	// SyncStatusPanic 致命错误，sync进程退出
+	SyncStatusPanic SyncStatus = -1
+	// SyncStatusErrorOccurred 非致命性错误发生，具体错误请参考Msg
+	SyncStatusErrorOccurred SyncStatus = -2
+)
+
+// SyncChannelItem 同步管道通信要素
+type SyncChannelItem struct {
+	Code    SyncStatus          // 同步状态
+	Contact *datastruct.Contact // 联系人（如果同步状态是有联系人变更则有
+	Message *datastruct.Message // 新信息（如果同步状态是有新信息则有
+	Err     error               // 错误（如有发生
+	Msg     string              // 其他附带信息
+}
+
 // StartServe 启动消息同步服务
-func (wxwb *WechatWeb) StartServe(contactChannel chan<- datastruct.Contact, messageChannel chan<- datastruct.Message) {
+func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 	go func() {
+		// 方法结束时关闭channel
+		defer close(syncChannel)
 		avaliable := wxwb.chooseSyncHost()
 		if !avaliable {
 			wxwb.logger.Info("all sync host unavaliable, exit...\n")
+			syncChannel <- SyncChannelItem{
+				Code: SyncStatusPanic,
+				Err:  errors.New("all sync host unavaliable"),
+				Msg:  "All sync host unavaliable, exit...",
+			}
 			return
 		}
 		getMessage := func() {
@@ -135,7 +165,10 @@ func (wxwb *WechatWeb) StartServe(contactChannel chan<- datastruct.Contact, mess
 			for _, contact := range gmResp.ModContactList {
 				wxwb.runInfo.ContactModifyCount++
 				wxwb.logger.Infof("Modify contact: %s\n", contact.NickName)
-				contactChannel <- contact
+				syncChannel <- SyncChannelItem{
+					Code:    SyncStatusModifyContact,
+					Contact: &contact,
+				}
 				wxwb.contactList[contact.UserName] = contact
 			}
 			// 新消息
@@ -145,9 +178,14 @@ func (wxwb *WechatWeb) StartServe(contactChannel chan<- datastruct.Contact, mess
 				} else {
 					wxwb.runInfo.MessageCount++
 				}
-				err = wxwb.messageProcesser(&msg, messageChannel)
+				err = wxwb.messageProcesser(&msg, syncChannel)
 				if err != nil {
 					wxwb.logger.Infof("MessageProcesser error: %+v\n", err)
+					syncChannel <- SyncChannelItem{
+						Code: SyncStatusErrorOccurred,
+						Err:  err,
+						Msg:  "MessageProcesser error",
+					}
 					continue
 				}
 			}
@@ -156,25 +194,50 @@ func (wxwb *WechatWeb) StartServe(contactChannel chan<- datastruct.Contact, mess
 			isBreaked := func() (isBreaked bool) {
 				defer func() {
 					if r := recover(); r != nil {
-						wxwb.logger.Infof("Recovered in StartServe loop: %v\n", r)
+						wxwb.logger.Infof("Recovered in Sync loop: %v\n", r)
 						wxwb.runInfo.PanicCount++
+						syncChannel <- SyncChannelItem{
+							Code: SyncStatusErrorOccurred,
+							Err:  errors.Errorf("recovered panic: %v", r),
+							Msg:  "Recovered in Sync loop",
+						}
 					}
 				}()
 				code, selector, err := wxwb.syncCheck()
 				if err != nil {
 					wxwb.logger.Infof("SyncCheck error: %s\n", err.Error())
+					syncChannel <- SyncChannelItem{
+						Code: SyncStatusErrorOccurred,
+						Err:  err,
+						Msg:  "SyncCheck error",
+					}
 					return false
 				}
 				if code != "0" {
 					switch code {
 					case "1101":
 						wxwb.logger.Info("User has logout web wechat, exit...\n")
+						syncChannel <- SyncChannelItem{
+							Code: SyncStatusPanic,
+							Err:  errors.New("Err1101: user has logout"),
+							Msg:  "User has logout web wechat",
+						}
 						return true
 					case "1100":
 						wxwb.logger.Info("sync host unavaliable, choose a new one...\n")
+						syncChannel <- SyncChannelItem{
+							Code: SyncStatusErrorOccurred,
+							Err:  errors.New("Err1100: sync host unavaliable"),
+							Msg:  "Sync host unavaliable, choose a new one...",
+						}
 						avaliable = wxwb.chooseSyncHost()
 						if !avaliable {
 							wxwb.logger.Info("all sync host unavaliable, exit...\n")
+							syncChannel <- SyncChannelItem{
+								Code: SyncStatusPanic,
+								Err:  errors.New("all sync host unavaliable, exit"),
+								Msg:  "All sync host unavaliable",
+							}
 							return true
 						}
 						return false
@@ -209,6 +272,11 @@ func (wxwb *WechatWeb) StartServe(contactChannel chan<- datastruct.Contact, mess
 					getMessage()
 				default:
 					wxwb.logger.Infof("SyncCheck Unknow selector: %s\n", selector)
+					syncChannel <- SyncChannelItem{
+						Code: SyncStatusErrorOccurred,
+						Err:  errors.Errorf("syncCheck unknow selector: %s", selector),
+						Msg:  "SyncCheck Unknow selector",
+					}
 				}
 				wxwb.runInfo.SyncCount++
 				time.Sleep(1000 * time.Millisecond)

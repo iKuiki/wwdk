@@ -53,13 +53,12 @@ func main() {
 			fmt.Println("Top Friend: " + v.NickName)
 		}
 	}
-	contactChannel := make(chan datastruct.Contact)
-	messageChannel := make(chan datastruct.Message)
-	wx.StartServe(contactChannel, messageChannel)
-	for {
-		select {
-		case <-contactChannel:
-		case msg := <-messageChannel:
+	syncChannel := make(chan wwdk.SyncChannelItem)
+	wx.StartServe(syncChannel)
+	for item := range syncChannel {
+		switch item.Code {
+		case wwdk.SyncStatusNewMessage:
+			msg := item.Message
 			switch msg.MsgType {
 			case datastruct.TextMsg:
 				processTextMessage(wx, msg)
@@ -89,7 +88,7 @@ func main() {
 	}
 }
 
-func processTextMessage(app *wwdk.WechatWeb, msg datastruct.Message) {
+func processTextMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -116,7 +115,7 @@ func processTextMessage(app *wwdk.WechatWeb, msg datastruct.Message) {
 }
 
 // ProcessImageMessage set image message handle
-func processImageMessage(app *wwdk.WechatWeb, msg datastruct.Message) {
+func processImageMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -126,7 +125,7 @@ func processImageMessage(app *wwdk.WechatWeb, msg datastruct.Message) {
 }
 
 // ProcessEmojiMessage set Emoji message Handle
-func processEmojiMessage(app *wwdk.WechatWeb, msg datastruct.Message, emojiContent appmsg.EmotionMsgContent) {
+func processEmojiMessage(app *wwdk.WechatWeb, msg *datastruct.Message, emojiContent appmsg.EmotionMsgContent) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -136,7 +135,7 @@ func processEmojiMessage(app *wwdk.WechatWeb, msg datastruct.Message, emojiConte
 }
 
 // ProcessRevokeMessage set revoke message handle
-func processRevokeMessage(app *wwdk.WechatWeb, msg datastruct.Message, revokeContent appmsg.RevokeMsgContent) {
+func processRevokeMessage(app *wwdk.WechatWeb, msg *datastruct.Message, revokeContent appmsg.RevokeMsgContent) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -146,7 +145,7 @@ func processRevokeMessage(app *wwdk.WechatWeb, msg datastruct.Message, revokeCon
 }
 
 // ProcessVideoMessage set video message handle
-func processVideoMessage(app *wwdk.WechatWeb, msg datastruct.Message) {
+func processVideoMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())
@@ -156,7 +155,7 @@ func processVideoMessage(app *wwdk.WechatWeb, msg datastruct.Message) {
 }
 
 // ProcessVoiceMessage set voice message handle
-func processVoiceMessage(app *wwdk.WechatWeb, msg datastruct.Message) {
+func processVoiceMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Println("getContact error: " + err.Error())

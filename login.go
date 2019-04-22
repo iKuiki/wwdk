@@ -275,6 +275,7 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 	// 尝试使用已存在的登录信息登录
 	go func() {
+		defer close(loginChannel)
 		defer func() {
 			if e := recover(); e != nil {
 				if err, ok := e.(error); ok {
@@ -336,7 +337,6 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 		loginChannel <- LoginChannelItem{
 			Code: LoginStatusGotBatchContact,
 		}
-		close(loginChannel)
 		wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.userInfo.user.NickName, len(wxwb.contactList))
 		// 如有必要，记录login信息到storer
 		wxwb.writeLoginInfo()
