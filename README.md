@@ -2,7 +2,12 @@
 
 [![License](https://img.shields.io/badge/License-GPL_3.0-blue.svg?style=flat)](LICENSE)
 
-wwdk是web微信对接的sdk
+wwdk是web微信对接的sdk，主要专注于实现微信机器人相关的逻辑，关注文字、音频、视频、图片的对接
+
+TODO：
+- 实现微信加好友请求的处理
+- 实现更多信息类型的兼容
+- 完善doc下的微信web协议记录（如果不懒的话
 
 ---
 
