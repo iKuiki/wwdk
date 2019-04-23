@@ -1,7 +1,7 @@
 package datastruct
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 	"strings"
 )
 
