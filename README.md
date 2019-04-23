@@ -1,6 +1,6 @@
 # wwdk
 
-https://img.shields.io/badge/License-GPL_3.0-blue.svg?style=flat
+[![License](https://img.shields.io/badge/License-GPL_3.0-blue.svg?style=flat)](LICENSE)
 
 wwdk是web微信对接的sdk
 
