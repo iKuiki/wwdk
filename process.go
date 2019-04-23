@@ -30,8 +30,11 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message, syncChannel cha
 			Message: msg,
 		}
 	case datastruct.ImageMsg:
+		fallthrough
 	case datastruct.AnimationEmotionsMsg:
+		fallthrough
 	case datastruct.LittleVideoMsg:
+		fallthrough
 	case datastruct.VoiceMsg:
 		wxwb.runInfo.MessageRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
