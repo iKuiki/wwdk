@@ -132,7 +132,7 @@ type SyncChannelItem struct {
 	Contact *datastruct.Contact // 联系人（如果同步状态是有联系人变更则有
 	Message *datastruct.Message // 新信息（如果同步状态是有新信息则有
 	Err     error               // 错误（如有发生
-	Msg     string              // 其他附带信息
+	// Msg     string              // 其他附带信息
 }
 
 // StartServe 启动消息同步服务
@@ -146,7 +146,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 			syncChannel <- SyncChannelItem{
 				Code: SyncStatusPanic,
 				Err:  errors.New("all sync host unavaliable"),
-				Msg:  "All sync host unavaliable, exit...",
 			}
 			return
 		}
@@ -184,7 +183,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 					syncChannel <- SyncChannelItem{
 						Code: SyncStatusErrorOccurred,
 						Err:  err,
-						Msg:  "MessageProcesser error",
 					}
 					continue
 				}
@@ -199,7 +197,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 						syncChannel <- SyncChannelItem{
 							Code: SyncStatusErrorOccurred,
 							Err:  errors.Errorf("recovered panic: %v", r),
-							Msg:  "Recovered in Sync loop",
 						}
 					}
 				}()
@@ -209,7 +206,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 					syncChannel <- SyncChannelItem{
 						Code: SyncStatusErrorOccurred,
 						Err:  err,
-						Msg:  "SyncCheck error",
 					}
 					return false
 				}
@@ -220,7 +216,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 						syncChannel <- SyncChannelItem{
 							Code: SyncStatusPanic,
 							Err:  errors.New("Err1101: user has logout"),
-							Msg:  "User has logout web wechat",
 						}
 						return true
 					case "1100":
@@ -228,7 +223,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 						syncChannel <- SyncChannelItem{
 							Code: SyncStatusErrorOccurred,
 							Err:  errors.New("Err1100: sync host unavaliable"),
-							Msg:  "Sync host unavaliable, choose a new one...",
 						}
 						avaliable = wxwb.chooseSyncHost()
 						if !avaliable {
@@ -236,7 +230,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 							syncChannel <- SyncChannelItem{
 								Code: SyncStatusPanic,
 								Err:  errors.New("all sync host unavaliable, exit"),
-								Msg:  "All sync host unavaliable",
 							}
 							return true
 						}
@@ -275,7 +268,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 					syncChannel <- SyncChannelItem{
 						Code: SyncStatusErrorOccurred,
 						Err:  errors.Errorf("syncCheck unknow selector: %s", selector),
-						Msg:  "SyncCheck Unknow selector",
 					}
 				}
 				wxwb.runInfo.SyncCount++

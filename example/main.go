@@ -57,12 +57,13 @@ func main() {
 	wx.StartServe(syncChannel)
 	for item := range syncChannel {
 		switch item.Code {
+		case wwdk.SyncStatusModifyContact:
+			fmt.Println("Modify contact: ", item.Contact)
 		case wwdk.SyncStatusNewMessage:
 			msg := item.Message
 			switch msg.MsgType {
 			case datastruct.TextMsg:
 				processTextMessage(wx, msg)
-
 			case datastruct.ImageMsg:
 				processImageMessage(wx, msg)
 			case datastruct.AnimationEmotionsMsg:
@@ -84,6 +85,11 @@ func main() {
 			case datastruct.VoiceMsg:
 				processVoiceMessage(wx, msg)
 			}
+		case wwdk.SyncStatusErrorOccurred:
+			fmt.Printf("error occurred at sync: %+v\n", item.Err)
+		case wwdk.SyncStatusPanic:
+			fmt.Printf("sync panic: %+v\n", err)
+			break
 		}
 	}
 }
