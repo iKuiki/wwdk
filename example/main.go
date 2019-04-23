@@ -16,36 +16,51 @@ import (
 func main() {
 	// 初始化一个文件loginStorer
 	storer := storer.MustNewFileStorer("loginInfo.txt")
+	// 将loginStorer作为配置传入构造函数，可以用来记录登陆状态
 	wx, err := wwdk.NewWechatWeb(storer)
 	if err != nil {
 		panic("Get new wechatweb client error: " + err.Error())
 	}
+	// 创建登陆用channel用于回传登陆信息
 	loginChan := make(chan wwdk.LoginChannelItem)
 	wx.Login(loginChan)
+	// 根据channel返回信息进行处理
 	for item := range loginChan {
 		switch item.Code {
 		case wwdk.LoginStatusWaitForScan:
+			// 返回了登陆二维码链接，输出到屏幕
 			qrterminal.Generate(item.Msg, qrterminal.L, os.Stdout)
 		case wwdk.LoginStatusScanedWaitForLogin:
+			// 用户已扫码
 			fmt.Println("scaned")
 		case wwdk.LoginStatusScanedFinish:
+			// 用户同意登陆
 			fmt.Println("accepted")
 		case wwdk.LoginStatusGotCookie:
+			// 获取到cookie
 			fmt.Println("got cookie")
 		case wwdk.LoginStatusInitFinish:
+			// 初始化完成
 			fmt.Println("init finish")
 		case wwdk.LoginStatusGotContact:
+			// 获取联系人完成
 			fmt.Println("got contact")
 		case wwdk.LoginStatusGotBatchContact:
+			// 获取群成员完成
 			fmt.Println("got batch contact")
 		case wwdk.LoginStatusErrorOccurred:
+			// 登陆失败
 			panic(fmt.Sprintf("WxWeb Login error: %+v", item.Err))
 		default:
 			fmt.Printf("unknown code: %+v", item)
 		}
 	}
+	// 获取联系人
 	contacts := wx.GetContactList()
+	// 创建联系人username->Contact映射
+	contactMap := make(map[string]datastruct.Contact)
 	for _, v := range contacts {
+		contactMap[v.UserName] = v
 		if v.IsStar() {
 			fmt.Println("Star Friend: " + v.NickName)
 		}
@@ -53,44 +68,76 @@ func main() {
 			fmt.Println("Top Friend: " + v.NickName)
 		}
 	}
+	// 创建同步channel
 	syncChannel := make(chan wwdk.SyncChannelItem)
+	// 将channel传入startServe方法，开始同步服务并且将新信息通过syncChannel传回
 	wx.StartServe(syncChannel)
+	// 处理syncChannel传回信息
 	for item := range syncChannel {
-		switch item.Code {
-		case wwdk.SyncStatusModifyContact:
-			fmt.Println("Modify contact: ", item.Contact)
-		case wwdk.SyncStatusNewMessage:
-			msg := item.Message
-			switch msg.MsgType {
-			case datastruct.TextMsg:
-				processTextMessage(wx, msg)
-			case datastruct.ImageMsg:
-				processImageMessage(wx, msg)
-			case datastruct.AnimationEmotionsMsg:
-				var emojiContent appmsg.EmotionMsgContent
-				err := xml.Unmarshal([]byte(msg.GetContent()), &emojiContent)
-				if err != nil {
-					panic(errors.New("Unmarshal message content to struct: " + err.Error()))
+		func() {
+			// 声明一个匿名方法，并添加recover防止panic
+			defer func() {
+				if e := recover(); e != nil {
+					fmt.Println("panic recovered at sync process func: ", e)
 				}
-				processEmojiMessage(wx, msg, emojiContent)
-			case datastruct.RevokeMsg:
-				var revokeContent appmsg.RevokeMsgContent
-				err := xml.Unmarshal([]byte(msg.GetContent()), &revokeContent)
-				if err != nil {
-					panic(errors.New("Unmarshal message content to struct: " + err.Error()))
+			}()
+			// 在子方法内执行逻辑
+			switch item.Code {
+			case wwdk.SyncStatusModifyContact:
+				// 发生联系人变更，处理联系人变更
+				if oldContact, ok := contactMap[item.Contact.UserName]; ok {
+					// 旧联系人存在
+					fmt.Println("Modify contact: ", item.Contact, ", oldContact is: ", oldContact)
+				} else {
+					// 旧联系人不存在，此为新联系人
+					fmt.Println("New contact: ", item.Contact)
 				}
-				processRevokeMessage(wx, msg, revokeContent)
-			case datastruct.LittleVideoMsg:
-				processVideoMessage(wx, msg)
-			case datastruct.VoiceMsg:
-				processVoiceMessage(wx, msg)
+				contactMap[item.Contact.UserName] = *item.Contact
+			// 收到新信息
+			case wwdk.SyncStatusNewMessage:
+				// 根据收到的信息类型分别处理
+				msg := item.Message
+				switch msg.MsgType {
+				case datastruct.TextMsg:
+					// 处理文字信息
+					processTextMessage(wx, msg)
+				case datastruct.ImageMsg:
+					// 处理图片信息
+					processImageMessage(wx, msg)
+				case datastruct.AnimationEmotionsMsg:
+					// 反序列化表情信息附加信息
+					var emojiContent appmsg.EmotionMsgContent
+					err := xml.Unmarshal([]byte(msg.GetContent()), &emojiContent)
+					if err != nil {
+						panic(errors.New("Unmarshal message content to struct: " + err.Error()))
+					}
+					// 处理表情信息
+					processEmojiMessage(wx, msg, emojiContent)
+				case datastruct.RevokeMsg:
+					// 反序列化撤回消息附加信息
+					var revokeContent appmsg.RevokeMsgContent
+					err := xml.Unmarshal([]byte(msg.GetContent()), &revokeContent)
+					if err != nil {
+						panic(errors.New("Unmarshal message content to struct: " + err.Error()))
+					}
+					// 处理撤回消息
+					processRevokeMessage(wx, msg, revokeContent)
+				case datastruct.LittleVideoMsg:
+					// 处理视频信息
+					processVideoMessage(wx, msg)
+				case datastruct.VoiceMsg:
+					// 处理声音消息
+					processVoiceMessage(wx, msg)
+				}
+			case wwdk.SyncStatusErrorOccurred:
+				// 发生非致命性错误
+				fmt.Printf("error occurred at sync: %+v\n", item.Err)
+			case wwdk.SyncStatusPanic:
+				// 发生致命错误，sync中断
+				fmt.Printf("sync panic: %+v\n", err)
+				break
 			}
-		case wwdk.SyncStatusErrorOccurred:
-			fmt.Printf("error occurred at sync: %+v\n", item.Err)
-		case wwdk.SyncStatusPanic:
-			fmt.Printf("sync panic: %+v\n", err)
-			break
-		}
+		}()
 	}
 }
 
@@ -127,7 +174,12 @@ func processImageMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 		log.Println("getContact error: " + err.Error())
 		return
 	}
-	log.Printf("Recived a image msg from %s\n", from.NickName)
+	filename, err := app.SaveMessageImage(*msg)
+	if err != nil {
+		log.Printf("Recived a image msg from %s but save fail: %v\n", from.NickName, err)
+		return
+	}
+	log.Printf("Recived a image %s msg from %s\n", filename, from.NickName)
 }
 
 // ProcessEmojiMessage set Emoji message Handle
@@ -157,7 +209,12 @@ func processVideoMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 		log.Println("getContact error: " + err.Error())
 		return
 	}
-	log.Printf("Recived video from %s", from.NickName)
+	filename, err := app.SaveMessageVideo(*msg)
+	if err != nil {
+		log.Printf("Recived a video msg from %s but save fail: %v\n", from.NickName, err)
+		return
+	}
+	log.Printf("Recived a video %s msg from %s\n", filename, from.NickName)
 }
 
 // ProcessVoiceMessage set voice message handle
@@ -167,5 +224,10 @@ func processVoiceMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 		log.Println("getContact error: " + err.Error())
 		return
 	}
-	log.Printf("Recived voice from %s", from.NickName)
+	filename, err := app.SaveMessageVoice(*msg)
+	if err != nil {
+		log.Printf("Recived a voice msg from %s but save fail: %v\n", from.NickName, err)
+		return
+	}
+	log.Printf("Recived a voice %s msg from %s\n", filename, from.NickName)
 }

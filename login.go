@@ -301,7 +301,10 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 			}
 		}
 		if !logined {
-			wxwb.logger.Info("stored login info not avaliable\n")
+			if readed {
+				// 仅当成功读取了login信息并且登陆失败，才输出此log
+				wxwb.logger.Info("stored login info not avaliable\n")
+			}
 			wxwb.resetLoginInfo()
 			uuid := wxwb.getUUID(loginChannel)
 			redirectURL := wxwb.waitForScan(uuid, loginChannel)
