@@ -1,125 +1,56 @@
 package wwdk
 
 import (
-	"encoding/xml"
-	"errors"
-	"fmt"
+	"github.com/pkg/errors"
 	"html"
 	"runtime/debug"
 	"strings"
 
 	"github.com/ikuiki/wwdk/datastruct"
-	"github.com/ikuiki/wwdk/datastruct/appmsg"
 )
 
-func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message) (err error) {
+func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message, syncChannel chan<- SyncChannelItem) (err error) {
 	defer func() {
 		// 防止外部方法导致的崩溃
 		if err := recover(); err != nil {
-			debug.PrintStack()
-			fmt.Println("messageProcesser panic: ", err)
-			fmt.Println("message data: ", msg)
+			wxwb.logger.Errorf("messageProcesser panic: %v\n", err)
+			wxwb.logger.Errorf("message data: %v\n", msg)
+			wxwb.logger.Errorf("Stack: %s\n", string(debug.Stack()))
 		}
 	}()
-	context := Context{App: wxwb, hasStop: false}
+	// 收到信息分3种情况
+	// 收到文字信息：无需处理
+	// 收到撤回信息：更新的是撤回计数器
+	// 收到其他消息：解码Content后再放入channel
 	switch msg.MsgType {
 	case datastruct.TextMsg:
 		wxwb.runInfo.MessageRecivedCount++
-		for _, v := range wxwb.messageHook[datastruct.TextMsg] {
-			if f, ok := v.(TextMessageHook); ok {
-				f(&context, *msg)
-			}
-			if context.hasStop {
-				break
-			}
+		syncChannel <- SyncChannelItem{
+			Code:    SyncStatusNewMessage,
+			Message: msg,
 		}
 	case datastruct.ImageMsg:
-		wxwb.runInfo.MessageRecivedCount++
-		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
-		for _, v := range wxwb.messageHook[datastruct.ImageMsg] {
-			if f, ok := v.(ImageMessageHook); ok {
-				f(&context, *msg)
-			}
-			if context.hasStop {
-				break
-			}
-		}
+		fallthrough
 	case datastruct.AnimationEmotionsMsg:
+		fallthrough
+	case datastruct.LittleVideoMsg:
+		fallthrough
+	case datastruct.VoiceMsg:
 		wxwb.runInfo.MessageRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
-		var emojiContent appmsg.EmotionMsgContent
-		err := xml.Unmarshal([]byte(msg.Content), &emojiContent)
-		if err != nil {
-			return errors.New("Unmarshal message content to struct: " + err.Error())
-		}
-		for _, v := range wxwb.messageHook[datastruct.AnimationEmotionsMsg] {
-			if f, ok := v.(EmotionMessageHook); ok {
-				f(&context, *msg, emojiContent)
-			}
-			if context.hasStop {
-				break
-			}
+		syncChannel <- SyncChannelItem{
+			Code:    SyncStatusNewMessage,
+			Message: msg,
 		}
 	case datastruct.RevokeMsg:
 		wxwb.runInfo.MessageRevokeRecivedCount++
 		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
-		var revokeContent appmsg.RevokeMsgContent
-		err := xml.Unmarshal([]byte(msg.Content), &revokeContent)
-		if err != nil {
-			return errors.New("Unmarshal message content to struct: " + err.Error())
-		}
-		for _, v := range wxwb.messageHook[datastruct.RevokeMsg] {
-			if f, ok := v.(RevokeMessageHook); ok {
-				f(&context, *msg, revokeContent)
-			}
-			if context.hasStop {
-				break
-			}
-		}
-	case datastruct.LittleVideoMsg:
-		wxwb.runInfo.MessageRecivedCount++
-		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
-		for _, v := range wxwb.messageHook[datastruct.LittleVideoMsg] {
-			if f, ok := v.(VideoMessageHook); ok {
-				f(&context, *msg)
-			}
-			if context.hasStop {
-				break
-			}
-		}
-	case datastruct.VoiceMsg:
-		wxwb.runInfo.MessageRecivedCount++
-		msg.Content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "", -1)
-		for _, v := range wxwb.messageHook[datastruct.VoiceMsg] {
-			if f, ok := v.(VoiceMessageHook); ok {
-				f(&context, *msg)
-			}
-			if context.hasStop {
-				break
-			}
+		syncChannel <- SyncChannelItem{
+			Code:    SyncStatusNewMessage,
+			Message: msg,
 		}
 	default:
-		return fmt.Errorf("Unknown MsgType %v: %#v", msg.MsgType, msg)
+		return errors.Errorf("Unknown MsgType %v: %#v", msg.MsgType, msg)
 	}
 	return nil
-}
-
-func (wxwb *WechatWeb) contactProcesser(oldContact, newContact *datastruct.Contact) (err error) {
-	defer func() {
-		// 防止外部方法导致的崩溃
-		if err := recover(); err != nil {
-			fmt.Println("contactProcesser panic: ", err)
-			fmt.Println("contact data: ", newContact)
-		}
-	}()
-	context := Context{App: wxwb, hasStop: false}
-	for _, v := range wxwb.modContactHook {
-		if f, ok := v.(ModContactHook); ok {
-			f(&context, oldContact, newContact)
-		}
-		if context.hasStop {
-			break
-		}
-	}
-	return
 }

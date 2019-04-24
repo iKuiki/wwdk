@@ -1,7 +1,7 @@
 package tool
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"math/rand"

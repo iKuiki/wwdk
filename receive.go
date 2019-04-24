@@ -3,7 +3,7 @@ package wwdk
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -31,7 +31,7 @@ func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 	params.Set("sid", wxwb.loginInfo.cookie.Wxsid)
 	params.Set("skey", wxwb.loginInfo.sKey)
 	// params.Set("pass_ticket", wxwb.PassTicket)
-	resp, err := wxwb.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync?"+params.Encode(),
+	resp, err := wxwb.apiRuntime.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync?"+params.Encode(),
 		"application/json;charset=UTF-8",
 		bytes.NewReader(data))
 	if err != nil {
@@ -47,7 +47,7 @@ func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 		return gmResp, errors.New("respond error ret: " + strconv.FormatInt(gmResp.BaseResponse.Ret, 10))
 	}
 	// if gmResp.AddMsgCount > 0 {
-	// 	fmt.Println(string(resp))
+	// 	wxwb.logger.Debug(string(resp)+"\n")
 	// 	panic(nil)
 	// }
 	return gmResp, nil
@@ -59,7 +59,7 @@ func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 	params.Set("MsgID", msg.MsgID)
 	params.Set("skey", wxwb.loginInfo.sKey)
 	// params.Set("type", "slave")
-	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg?" + params.Encode())
+	resp, err := wxwb.apiRuntime.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
@@ -81,7 +81,7 @@ func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string
 	params.Set("MsgID", msg.MsgID)
 	params.Set("skey", wxwb.loginInfo.sKey)
 	// params.Set("type", "slave")
-	resp, err := wxwb.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice?" + params.Encode())
+	resp, err := wxwb.apiRuntime.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
@@ -107,7 +107,7 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 		return "", errors.New("create request error: " + err.Error())
 	}
 	req.Header.Set("Range", "bytes=0-")
-	resp, err := wxwb.client.Do(req)
+	resp, err := wxwb.apiRuntime.client.Do(req)
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}

@@ -3,7 +3,7 @@ package wwdk
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -59,7 +59,7 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 
 			ClientMsgID:  tool.GetWxTimeStamp(),
 			Content:      content,
-			FromUserName: wxwb.user.UserName,
+			FromUserName: wxwb.userInfo.user.UserName,
 			LocalID:      tool.GetWxTimeStamp(),
 			ToUserName:   toUserName,
 			Type:         datastruct.TextMsg,
