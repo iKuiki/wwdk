@@ -3,7 +3,6 @@ package wwdk
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,8 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/ikuiki/wwdk/datastruct"
-	"github.com/ikuiki/wwdk/tool"
 )
 
 // getMessage 同步消息
@@ -64,10 +64,16 @@ func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 		return "", errors.New("request error: " + err.Error())
 	}
 	defer resp.Body.Close()
-	filename = msg.MsgID + ".jpg"
-	_, err = tool.WriteToFile(filename, resp.Body)
+	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", errors.New("WriteToFile error: " + err.Error())
+		return "", errors.New("Read io.ReadCloser error: " + err.Error())
+	}
+	filename, err = wxwb.mediaStorer.Storer(MediaFile{
+		FileName:      msg.MsgID + ".png",
+		BinaryContent: d,
+	})
+	if err != nil {
+		return "", errors.New("mediaStorer.Storer error: " + err.Error())
 	}
 	return filename, nil
 }
@@ -86,10 +92,16 @@ func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string
 		return "", errors.New("request error: " + err.Error())
 	}
 	defer resp.Body.Close()
-	filename = msg.MsgID + ".mp3"
-	_, err = tool.WriteToFile(filename, resp.Body)
+	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", errors.New("WriteToFile error: " + err.Error())
+		return "", errors.New("Read io.ReadCloser error: " + err.Error())
+	}
+	filename, err = wxwb.mediaStorer.Storer(MediaFile{
+		FileName:      msg.MsgID + ".mp3",
+		BinaryContent: d,
+	})
+	if err != nil {
+		return "", errors.New("mediaStorer.Storer error: " + err.Error())
 	}
 	return filename, nil
 }
@@ -111,13 +123,42 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
-	filename = msg.MsgID + ".mp4"
-	n, err := tool.WriteToFile(filename, resp.Body)
+	defer resp.Body.Close()
+	d, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", errors.New("WriteToFile error: " + err.Error())
+		return "", errors.New("Read io.ReadCloser error: " + err.Error())
 	}
-	if int64(n) != resp.ContentLength {
-		return filename, errors.New("File size wrong")
+	filename, err = wxwb.mediaStorer.Storer(MediaFile{
+		FileName:      msg.MsgID + ".mp4",
+		BinaryContent: d,
+	})
+	if err != nil {
+		return "", errors.New("mediaStorer.Storer error: " + err.Error())
+	}
+	return filename, nil
+}
+
+// SaveContactImg 保存联系人头像
+func (wxwb *WechatWeb) SaveContactImg(contact datastruct.Contact) (filename string, err error) {
+	req, err := http.NewRequest("GET", "https://wx2.qq.com"+contact.HeadImgURL+wxwb.loginInfo.sKey, nil)
+	if err != nil {
+		return "", errors.New("create request error: " + err.Error())
+	}
+	resp, err := wxwb.apiRuntime.client.Do(req)
+	if err != nil {
+		return "", errors.New("request error: " + err.Error())
+	}
+	defer resp.Body.Close()
+	d, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.New("Read io.ReadCloser error: " + err.Error())
+	}
+	filename, err = wxwb.mediaStorer.Storer(MediaFile{
+		FileName:      contact.UserName + ".png",
+		BinaryContent: d,
+	})
+	if err != nil {
+		return "", errors.New("mediaStorer.Storer error: " + err.Error())
 	}
 	return filename, nil
 }

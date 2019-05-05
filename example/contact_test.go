@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/ikuiki/wwdk"
-	"github.com/mdp/qrterminal"
 	"os"
 	"testing"
+
+	"github.com/ikuiki/wwdk"
+	"github.com/mdp/qrterminal"
 )
 
 func TestContact(t *testing.T) {
@@ -31,6 +32,7 @@ func TestContact(t *testing.T) {
 			fmt.Println("got contact")
 		case wwdk.LoginStatusGotBatchContact:
 			fmt.Println("got batch contact")
+			break
 		case wwdk.LoginStatusErrorOccurred:
 			panic(fmt.Sprintf("WxWeb Login error: %+v", item.Err))
 		default:
@@ -161,6 +163,14 @@ func TestContact(t *testing.T) {
 	fmt.Println("")
 	for _, v := range contacts {
 		fmt.Printf("%s VerifyFlag: %v\n", v.NickName, v.VerifyFlag)
+	}
+	fmt.Println("try to save user headImg")
+	for _, v := range contacts {
+		if f, e := wx.SaveContactImg(v); e != nil {
+			fmt.Printf("Save head img for user %s error: %+v\n", v.NickName, e)
+		} else {
+			fmt.Printf("Save head img for user %s success: %s\n", v.NickName, f)
+		}
 	}
 	wx.Logout()
 }

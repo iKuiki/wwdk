@@ -3,14 +3,15 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/ikuiki/wwdk"
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/ikuiki/wwdk/datastruct/appmsg"
 	"github.com/ikuiki/wwdk/storer"
 	"github.com/mdp/qrterminal"
 	"github.com/pkg/errors"
-	"log"
-	"os"
 )
 
 func main() {
@@ -48,6 +49,7 @@ func main() {
 		case wwdk.LoginStatusGotBatchContact:
 			// 获取群成员完成
 			fmt.Println("got batch contact")
+			break
 		case wwdk.LoginStatusErrorOccurred:
 			// 登陆失败
 			panic(fmt.Sprintf("WxWeb Login error: %+v", item.Err))
