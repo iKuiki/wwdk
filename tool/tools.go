@@ -1,11 +1,7 @@
 package tool
 
 import (
-	"github.com/pkg/errors"
-	"io"
-	"io/ioutil"
 	"math/rand"
-	"os"
 	"strconv"
 	"time"
 )
@@ -24,22 +20,4 @@ func GetRandomStringFromNum(length int) string {
 		result = append(result, bytes[r.Intn(len(bytes))])
 	}
 	return string(result)
-}
-
-// WriteToFile 将io流写入文件
-func WriteToFile(filename string, data io.ReadCloser) (n int, err error) {
-	f, err := os.Create(filename)
-	if err != nil {
-		return 0, errors.New("create " + filename + " error: " + err.Error())
-	}
-	defer f.Close()
-	d, err := ioutil.ReadAll(data)
-	if err != nil {
-		return 0, errors.New("Read io.ReadCloser error: " + err.Error())
-	}
-	n, err = f.Write(d)
-	if err != nil {
-		return 0, errors.New("Write to file error: " + err.Error())
-	}
-	return n, nil
 }

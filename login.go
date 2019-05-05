@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/ikuiki/wwdk/conf"
 	"github.com/ikuiki/wwdk/datastruct"
@@ -183,7 +184,7 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 		panic(errors.New("respond json Unmarshal to struct fail: " + err.Error()))
 	}
 	if respStruct.BaseResponse.Ret != 0 {
-		panic(errors.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret))
+		panic(errors.Errorf("respond ret(%d) error: %s", respStruct.BaseResponse.Ret, respStruct.BaseResponse.ErrMsg))
 	}
 	loginChannel <- LoginChannelItem{
 		Code: LoginStatusInitFinish,

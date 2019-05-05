@@ -2,17 +2,20 @@ package wwdk
 
 import (
 	"fmt"
+
 	"github.com/ikuiki/wwdk/storer"
 	"github.com/kataras/golog"
 	"github.com/pkg/errors"
+
 	// "crypto/tls"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
 
+	"time"
+
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/ikuiki/wwdk/tool"
-	"time"
 )
 
 // wechatCookie 微信登陆后的cookie凭据，登陆后的消息同步等操作需要此凭据
@@ -81,6 +84,7 @@ type WechatWeb struct {
 	runInfo     WechatRunInfo   // 运行统计信息
 	loginStorer storer.Storer   // 存储器，如果有赋值，则用于记录登录信息
 	logger      *golog.Logger   // 日志输出器
+	mediaStorer MediaStorer     // 媒体存储器，用于处理微信的媒体信息（如用户头像、发送的图片、视频、音频等
 }
 
 // NewWechatWeb 生成微信网页版客户端实例
@@ -114,7 +118,8 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 		runInfo: WechatRunInfo{
 			StartAt: time.Now(),
 		},
-		logger: golog.Default.Clone(),
+		logger:      golog.Default.Clone(),
+		mediaStorer: NewLocalMediaStorer("./"),
 	}
 	for _, c := range configs {
 		switch c.(type) {
@@ -122,6 +127,8 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 			w.loginStorer = c.(storer.Storer)
 		case *golog.Logger:
 			w.logger = c.(*golog.Logger)
+		case MediaStorer:
+			w.mediaStorer = c.(MediaStorer)
 		default:
 			return &WechatWeb{}, fmt.Errorf("unknown config: %#v", c)
 		}
