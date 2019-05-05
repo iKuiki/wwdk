@@ -34,6 +34,8 @@
 | UserName         | 临时用户识别码，消息都通过这个识别码发送和接收      |
 | VerifyFlag       | 用户类别？<br/>公众号为24，微信团队为56             |
 
+PS: 用户头像为uri，需要带上主机名wx2.qq.com并以https请求，并且要在url末拼接上skey作为查询参数，以及需要提交cookie
+
 #### ContactFlag联系人标记解析
 ContactFlag Value的值为对应选项相加的和
 
