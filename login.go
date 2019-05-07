@@ -190,7 +190,7 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 		Code: LoginStatusInitFinish,
 	}
 	for _, contact := range respStruct.ContactList {
-		wxwb.contactList[contact.UserName] = contact
+		wxwb.userInfo.contactList[contact.UserName] = contact
 	}
 	wxwb.userInfo.user = respStruct.User
 	wxwb.loginInfo.syncKey = respStruct.SyncKey
@@ -216,7 +216,7 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 		return errors.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
 	}
 	for _, contact := range respStruct.MemberList {
-		wxwb.contactList[contact.UserName] = contact
+		wxwb.userInfo.contactList[contact.UserName] = contact
 	}
 	return nil
 }
@@ -226,7 +226,7 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 	dataStruct := datastruct.GetBatchContactRequest{
 		BaseRequest: wxwb.baseRequest(),
 	}
-	for _, contact := range wxwb.contactList {
+	for _, contact := range wxwb.userInfo.contactList {
 		if contact.IsChatroom() {
 			dataStruct.List = append(dataStruct.List, datastruct.GetBatchContactRequestListItem{
 				UserName: contact.UserName,
@@ -261,11 +261,11 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 		return errors.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
 	}
 	for _, contact := range respStruct.ContactList {
-		if c, ok := wxwb.contactList[contact.UserName]; ok {
+		if c, ok := wxwb.userInfo.contactList[contact.UserName]; ok {
 			c.MemberCount = contact.MemberCount
 			c.MemberList = contact.MemberList
 			c.EncryChatRoomID = contact.EncryChatRoomID
-			wxwb.contactList[c.UserName] = c
+			wxwb.userInfo.contactList[c.UserName] = c
 		}
 	}
 	return
@@ -341,7 +341,7 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 		loginChannel <- LoginChannelItem{
 			Code: LoginStatusGotBatchContact,
 		}
-		wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.userInfo.user.NickName, len(wxwb.contactList))
+		wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.userInfo.user.NickName, len(wxwb.userInfo.contactList))
 		// 如有必要，记录login信息到storer
 		wxwb.writeLoginInfo()
 	}()
