@@ -6,8 +6,26 @@ import (
 	"github.com/pkg/errors"
 )
 
+// MediaType 媒体类型
+type MediaType int32
+
+const (
+	// MediaTypeUserHeadImg 用户头像媒体类型
+	MediaTypeUserHeadImg MediaType = 1
+	// MediaTypeContactHeadImg 联系人头像媒体类型
+	MediaTypeContactHeadImg MediaType = 2
+	// MediaTypeMessageImage 信息图片媒体类型
+	MediaTypeMessageImage MediaType = 3
+	// MediaTypeMessageVoice 信息音频媒体类型
+	MediaTypeMessageVoice MediaType = 4
+	// MediaTypeMessageVideo 信息视频媒体类型
+	MediaTypeMessageVideo MediaType = 5
+)
+
 // MediaFile 媒体文件
 type MediaFile struct {
+	// MediaType 媒体类型
+	MediaType MediaType
 	// FileName 文件名
 	FileName string
 	// BinaryContent 文件的二进制内容
