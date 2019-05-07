@@ -1,13 +1,14 @@
 package wwdk
 
 import (
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/ikuiki/wwdk/tool"
@@ -168,7 +169,7 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 					Code:    SyncStatusModifyContact,
 					Contact: &contact,
 				}
-				wxwb.contactList[contact.UserName] = contact
+				wxwb.userInfo.contactList[contact.UserName] = contact
 			}
 			// 新消息
 			for _, msg := range gmResp.AddMsgList {

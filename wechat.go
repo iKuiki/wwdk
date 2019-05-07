@@ -77,7 +77,6 @@ type apiRuntime struct {
 
 // WechatWeb 微信网页版客户端实例
 type WechatWeb struct {
-	contactList map[string]datastruct.Contact
 	userInfo    userInfo        // 用户信息
 	apiRuntime  apiRuntime      // wechat客户端运行时信息
 	loginInfo   wechatLoginInfo // 登陆信息
@@ -94,7 +93,9 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 		return &WechatWeb{}, err
 	}
 	w := &WechatWeb{
-		contactList: make(map[string]datastruct.Contact),
+		userInfo: userInfo{
+			contactList: make(map[string]datastruct.Contact),
+		},
 		apiRuntime: apiRuntime{
 			userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
 			deviceID:  "e" + tool.GetRandomStringFromNum(15),
