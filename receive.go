@@ -192,3 +192,29 @@ func (wxwb *WechatWeb) SaveUserImg(user datastruct.User) (filename string, err e
 	}
 	return filename, nil
 }
+
+// SaveMemberImg 保存群成员的头像
+func (wxwb *WechatWeb) SaveMemberImg(member datastruct.Member, chatroomID string) (filename string, err error) {
+	req, err := http.NewRequest("GET", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username="+member.UserName+"&chatroomid="+chatroomID+"&skey=", nil)
+	if err != nil {
+		return "", errors.New("create request error: " + err.Error())
+	}
+	resp, err := wxwb.apiRuntime.client.Do(req)
+	if err != nil {
+		return "", errors.New("request error: " + err.Error())
+	}
+	defer resp.Body.Close()
+	d, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.New("Read io.ReadCloser error: " + err.Error())
+	}
+	filename, err = wxwb.mediaStorer.Storer(MediaFile{
+		MediaType:     MediaTypeMemberHeadImg,
+		FileName:      member.UserName + ".png",
+		BinaryContent: d,
+	})
+	if err != nil {
+		return "", errors.New("mediaStorer.Storer error: " + err.Error())
+	}
+	return filename, nil
+}
