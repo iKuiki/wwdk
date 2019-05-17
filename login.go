@@ -197,7 +197,8 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 	wxwb.loginInfo.sKey = respStruct.SKey
 }
 
-// 获取完整联系人
+// 获取联系人
+// 注：坑！此处获取到的居然不是完整的联系人，必须和init中获取到的合并后才是完整的联系人列表
 func (wxwb *WechatWeb) getContactList() (err error) {
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
