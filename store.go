@@ -13,14 +13,15 @@ import (
 
 // storeLoginInfo 用于储存的登录信息
 type storeLoginInfo struct {
-	Cookies    map[string][]*http.Cookie
-	Cookie     wechatCookie
-	SyncKey    *datastruct.SyncKey
-	SKey       string
-	PassTicket string
-	RunInfo    WechatRunInfo // 运行统计信息
-	DeviceID   string        // 由客户端生成，为e+15位随机数
-	userInfo   userInfo      // 用户信息
+	Cookies     map[string][]*http.Cookie
+	Cookie      wechatCookie
+	SyncKey     *datastruct.SyncKey
+	SKey        string
+	PassTicket  string
+	RunInfo     WechatRunInfo    // 运行统计信息
+	DeviceID    string           // 由客户端生成，为e+15位随机数
+	User        *datastruct.User // 用户信息
+	ContactList map[string]datastruct.Contact
 }
 
 // 重置登录信息
@@ -60,14 +61,15 @@ func (wxwb *WechatWeb) writeLoginInfo() (err error) {
 	}
 	if wxwb.loginStorer != nil {
 		storeInfo := storeLoginInfo{
-			Cookies:    cookieMap,
-			Cookie:     wxwb.loginInfo.cookie,
-			SyncKey:    wxwb.loginInfo.syncKey,
-			SKey:       wxwb.loginInfo.sKey,
-			PassTicket: wxwb.loginInfo.PassTicket,
-			userInfo:   wxwb.userInfo,
-			DeviceID:   wxwb.apiRuntime.deviceID,
-			RunInfo:    wxwb.runInfo,
+			Cookies:     cookieMap,
+			Cookie:      wxwb.loginInfo.cookie,
+			SyncKey:     wxwb.loginInfo.syncKey,
+			SKey:        wxwb.loginInfo.sKey,
+			PassTicket:  wxwb.loginInfo.PassTicket,
+			User:        wxwb.userInfo.user,
+			ContactList: wxwb.userInfo.contactList,
+			DeviceID:    wxwb.apiRuntime.deviceID,
+			RunInfo:     wxwb.runInfo,
 		}
 		data, err := json.Marshal(storeInfo)
 		if err != nil {
@@ -120,7 +122,13 @@ func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 			// 还原startat
 			wxwb.runInfo.StartAt = started
 		}
-		wxwb.userInfo = storeInfo.userInfo
+		if storeInfo.User == nil {
+			return false, nil
+		}
+		wxwb.userInfo.user = storeInfo.User
+		for _, contact := range storeInfo.ContactList {
+			wxwb.userInfo.contactList[contact.UserName] = contact
+		}
 		wxwb.apiRuntime.deviceID = storeInfo.DeviceID
 		// 读取到了信息并进行还原
 		return true, nil
