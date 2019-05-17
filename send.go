@@ -46,7 +46,7 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 		return errors.New("Unmarshal respond json fail: " + err.Error())
 	}
 	if snResp.BaseResponse.Ret != 0 {
-		return errors.New("respond error ret: " + strconv.FormatInt(snResp.BaseResponse.Ret, 10))
+		return errors.Errorf("respond error ret(%d): %s", snResp.BaseResponse.Ret, snResp.BaseResponse.ErrMsg)
 	}
 	return nil
 }
@@ -90,7 +90,7 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 		return nil, errors.New("UnMarshal respond json fail: " + err.Error())
 	}
 	if smResp.BaseResponse.Ret != 0 {
-		return nil, errors.New("Respond error ret: " + strconv.FormatInt(smResp.BaseResponse.Ret, 10))
+		return nil, errors.Errorf("Respond error ret(%d): %s", smResp.BaseResponse.Ret, smResp.BaseResponse.ErrMsg)
 	}
 	wxwb.runInfo.MessageCount++
 	wxwb.runInfo.MessageSentCount++
@@ -128,7 +128,7 @@ func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName strin
 		return nil, errors.New("UnMarshal respond json fail: " + err.Error())
 	}
 	if rmResp.BaseResponse.Ret != 0 {
-		return nil, errors.New("Respond error ret: " + strconv.FormatInt(rmResp.BaseResponse.Ret, 10))
+		return nil, errors.Errorf("Respond error ret(%d): %s", rmResp.BaseResponse.Ret, rmResp.BaseResponse.ErrMsg)
 	}
 	wxwb.runInfo.MessageRevokeCount++
 	wxwb.runInfo.MessageRevokeSentCount++
@@ -166,7 +166,7 @@ func (wxwb *WechatWeb) ModifyUserRemakName(userName, remarkName string) (revokeM
 		return nil, errors.New("UnMarshal respond json fail: " + err.Error())
 	}
 	if murResp.BaseResponse.Ret != 0 {
-		return nil, errors.New("Respond error ret: " + strconv.FormatInt(murResp.BaseResponse.Ret, 10))
+		return nil, errors.Errorf("Respond error ret(%d): %s", murResp.BaseResponse.Ret, murResp.BaseResponse.ErrMsg)
 	}
 	return &murResp, nil
 }
@@ -201,7 +201,7 @@ func (wxwb *WechatWeb) ModifyChatRoomTopic(userName, newTopic string) (revokeMes
 		return nil, errors.New("UnMarshal respond json fail: " + err.Error())
 	}
 	if mctResp.BaseResponse.Ret != 0 {
-		return nil, errors.New("Respond error ret: " + strconv.FormatInt(mctResp.BaseResponse.Ret, 10))
+		return nil, errors.Errorf("Respond error ret(%d): %s", mctResp.BaseResponse.Ret, mctResp.BaseResponse.ErrMsg)
 	}
 	return &mctResp, nil
 }
