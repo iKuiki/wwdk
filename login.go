@@ -213,7 +213,7 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
 	}
 	if respStruct.BaseResponse.Ret != 0 {
-		return errors.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
+		return errors.Errorf("respond ret error(%d): %s", respStruct.BaseResponse.Ret, respStruct.BaseResponse.ErrMsg)
 	}
 	for _, contact := range respStruct.MemberList {
 		wxwb.userInfo.contactList[contact.UserName] = contact
@@ -258,7 +258,7 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
 	}
 	if respStruct.BaseResponse.Ret != 0 {
-		return errors.Errorf("respond ret error: %d", respStruct.BaseResponse.Ret)
+		return errors.Errorf("respond ret error(%d): %s", respStruct.BaseResponse.Ret, respStruct.BaseResponse.ErrMsg)
 	}
 	for _, contact := range respStruct.ContactList {
 		if c, ok := wxwb.userInfo.contactList[contact.UserName]; ok {

@@ -44,7 +44,7 @@ func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 		return gmResp, errors.New("Unmarshal respond json fail: " + err.Error())
 	}
 	if gmResp.BaseResponse.Ret != 0 {
-		return gmResp, errors.New("respond error ret: " + strconv.FormatInt(gmResp.BaseResponse.Ret, 10))
+		return gmResp, errors.Errorf("respond error ret(%d): %s", gmResp.BaseResponse.Ret, gmResp.BaseResponse.ErrMsg)
 	}
 	// if gmResp.AddMsgCount > 0 {
 	// 	wxwb.logger.Debug(string(resp)+"\n")
