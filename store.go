@@ -20,7 +20,7 @@ type storeLoginInfo struct {
 	PassTicket string
 	RunInfo    WechatRunInfo // 运行统计信息
 	DeviceID   string        // 由客户端生成，为e+15位随机数
-	User       *datastruct.User
+	userInfo   userInfo      // 用户信息
 }
 
 // 重置登录信息
@@ -65,7 +65,7 @@ func (wxwb *WechatWeb) writeLoginInfo() (err error) {
 			SyncKey:    wxwb.loginInfo.syncKey,
 			SKey:       wxwb.loginInfo.sKey,
 			PassTicket: wxwb.loginInfo.PassTicket,
-			User:       wxwb.userInfo.user,
+			userInfo:   wxwb.userInfo,
 			DeviceID:   wxwb.apiRuntime.deviceID,
 			RunInfo:    wxwb.runInfo,
 		}
@@ -120,7 +120,7 @@ func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 			// 还原startat
 			wxwb.runInfo.StartAt = started
 		}
-		wxwb.userInfo.user = storeInfo.User
+		wxwb.userInfo = storeInfo.userInfo
 		wxwb.apiRuntime.deviceID = storeInfo.DeviceID
 		// 读取到了信息并进行还原
 		return true, nil
