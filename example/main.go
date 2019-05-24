@@ -9,7 +9,7 @@ import (
 	"github.com/ikuiki/wwdk"
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/ikuiki/wwdk/datastruct/appmsg"
-	"github.com/ikuiki/wwdk/storer"
+	"github.com/ikuiki/storer"
 	"github.com/mdp/qrterminal"
 	"github.com/pkg/errors"
 )
