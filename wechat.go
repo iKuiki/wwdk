@@ -3,7 +3,7 @@ package wwdk
 import (
 	"fmt"
 
-	"github.com/ikuiki/wwdk/storer"
+	"github.com/ikuiki/storer"
 	"github.com/kataras/golog"
 	"github.com/pkg/errors"
 

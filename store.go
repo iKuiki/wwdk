@@ -75,7 +75,7 @@ func (wxwb *WechatWeb) writeLoginInfo() (err error) {
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		err = wxwb.loginStorer.Writer(data)
+		err = wxwb.loginStorer.Write(data)
 		return errors.WithStack(err)
 	}
 	return nil
