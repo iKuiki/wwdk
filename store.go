@@ -41,7 +41,16 @@ func (wxwb *WechatWeb) resetLoginInfo() (err error) {
 		return errors.WithStack(err)
 	}
 	wxwb.apiRuntime.client.Jar = jar
+	// 重置loginInfo
 	wxwb.loginInfo = wechatLoginInfo{}
+	// 重置runInfo
+	wxwb.runInfo = WechatRunInfo{
+		StartAt: wxwb.runInfo.StartAt,
+	}
+	// 切记也要重置用户信息与联系人啊
+	wxwb.userInfo = userInfo{
+		contactList: make(map[string]datastruct.Contact),
+	}
 	return nil
 }
 
@@ -101,10 +110,12 @@ func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 		if err != nil {
 			return false, errors.WithStack(err)
 		}
-		if storeInfo.DeviceID == "" {
-			// 未读取到信息
+		if storeInfo.DeviceID == "" || storeInfo.User == nil {
+			// 只要deviceID或userInfo中的User为空
+			// 则判定为未读取到登陆信息
 			return false, nil
 		}
+		// 认为读取到了登陆信息，则开始还原
 		for _, host := range syncHosts {
 			u, _ := url.Parse("https://" + host)
 			wxwb.apiRuntime.client.Jar.SetCookies(u, storeInfo.Cookies[host])
@@ -122,15 +133,12 @@ func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 			// 还原startat
 			wxwb.runInfo.StartAt = started
 		}
-		if storeInfo.User == nil {
-			return false, nil
-		}
 		wxwb.userInfo.user = storeInfo.User
 		for _, contact := range storeInfo.ContactList {
 			wxwb.userInfo.contactList[contact.UserName] = contact
 		}
 		wxwb.apiRuntime.deviceID = storeInfo.DeviceID
-		// 读取到了信息并进行还原
+		// 还原完成
 		return true, nil
 	}
 	return false, nil
