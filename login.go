@@ -159,7 +159,7 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 	// 	bytes.NewReader(data))
 
 	req, err := http.NewRequest("POST",
-		"https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
+		"https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 		bytes.NewReader(data))
 	if err != nil {
 		panic(errors.New("create request error: " + err.Error()))
@@ -177,7 +177,7 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 		panic(errors.New("respond json Unmarshal to struct fail: " + err.Error()))
 	}
 	if respStruct.BaseResponse.Ret != 0 {
-		panic(errors.Errorf("respond ret(%d) error: %s", respStruct.BaseResponse.Ret, respStruct.BaseResponse.ErrMsg))
+		panic(errors.Errorf("respond ret(%d) error: %s", respStruct.BaseResponse.Ret, string(body)))
 	}
 	loginChannel <- LoginChannelItem{
 		Code: LoginStatusInitFinish,
@@ -207,7 +207,7 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
 	}
 	if respStruct.BaseResponse.Ret != 0 {
-		return errors.Errorf("respond ret error(%d): %s", respStruct.BaseResponse.Ret, respStruct.BaseResponse.ErrMsg)
+		return errors.Errorf("respond ret error(%d): %s", respStruct.BaseResponse.Ret, string(body))
 	}
 	for _, contact := range respStruct.MemberList {
 		wxwb.userInfo.contactList[contact.UserName] = contact
@@ -252,7 +252,7 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
 	}
 	if respStruct.BaseResponse.Ret != 0 {
-		return errors.Errorf("respond ret error(%d): %s", respStruct.BaseResponse.Ret, respStruct.BaseResponse.ErrMsg)
+		return errors.Errorf("respond ret error(%d): %s", respStruct.BaseResponse.Ret, string(body))
 	}
 	for _, contact := range respStruct.ContactList {
 		if c, ok := wxwb.userInfo.contactList[contact.UserName]; ok {

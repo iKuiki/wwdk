@@ -116,13 +116,13 @@ window.code = 200;window.redirect_uri = "https://wx.qq.com/cgi-bin/mmwebwx-bin/w
 
 ## 初始化
 
-| Key         | Value                                             | Remark                 |
-| ----------- | ------------------------------------------------- | ---------------------- |
-| Request URL | <https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit> |                        |
-| Method      | Post                                              |                        |
-| Cookie      | Need                                              |                        |
-| Param       | r                                                 | 13位时间戳取反         |
-| Param       | pass_ticket                                       | 获取登陆参数时获取到的 |
+| Key         | Value                                              | Remark                 |
+| ----------- | -------------------------------------------------- | ---------------------- |
+| Request URL | <https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit> |                        |
+| Method      | Post                                               |                        |
+| Cookie      | Need                                               |                        |
+| Param       | r                                                  | 13位时间戳取反         |
+| Param       | pass_ticket                                        | 获取登陆参数时获取到的 |
 
 *Body (json):*
 
@@ -139,7 +139,9 @@ window.code = 200;window.redirect_uri = "https://wx.qq.com/cgi-bin/mmwebwx-bin/w
 
 **Response:**
 
-返回为一个json对象，内包括用户信息、联系人(此列表不全，之后用获取联系人的接口获取完整联系人列表)、同步信息等
-*该json中主要需要用到的数据为User信息与synckey，synckey用于后续同步状态时使用，而联系人虽然不全，但也不能丢弃，有一部分联系人只有这个接口会返回，其余联系人可以之后通过获取联系人接口获取完整列表再合并*
+返回为一个json对象，内包括用户信息、联系人(此列表可能不全，如果不全，之后用获取联系人的接口获取联系人列表合并后即为完整的)、同步信息等
+*该json中主要需要用到的数据为User信息、联系人列表与synckey，synckey用于后续同步状态时使用*
 
 到此登陆就成功了
+
+注：**应该有2个版本的登陆方法，不同微信号对应不通方法，还需考证**
