@@ -13,7 +13,6 @@
 		"--security-opt",
 		"seccomp=unconfined"
 	],
-	"postCreateCommand": "go mod download",
 	"settings": {
 		"go.gopath": "/go"
 	}
