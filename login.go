@@ -76,15 +76,10 @@ func (wxwb *WechatWeb) getUUID(loginChannel chan<- LoginChannelItem) (uuid strin
 // 当扫码超时、扫码失败时，应当从getUUID方法重新开始
 func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannelItem) (redirectURL string) {
 	var ret map[string]string
-	scaned := false
-	scaned2TipMap := map[bool]string{
-		false: "1",
-		true:  "0",
-	}
 	for true {
 		redirectURL = func() (redirectURL string) {
 			params := url.Values{}
-			params.Set("tip", scaned2TipMap[scaned])
+			params.Set("tip", "0")
 			params.Set("uuid", uuid)
 			params.Set("_", tool.GetWxTimeStamp())
 			req, _ := http.NewRequest(`GET`, "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?"+params.Encode(), nil)
@@ -104,7 +99,6 @@ func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannel
 				}
 				return ret["window.redirect_uri"]
 			case "201": // 用户已扫码
-				scaned = true
 				wxwb.logger.Info("Scan success, waiting for login\n")
 				loginChannel <- LoginChannelItem{
 					Code: LoginStatusScanedWaitForLogin,
@@ -128,7 +122,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannel
 }
 
 func (wxwb *WechatWeb) getCookie(redirectURL string, loginChannel chan<- LoginChannelItem) {
-	req, _ := http.NewRequest(`GET`, redirectURL+"&fun=new", nil)
+	req, _ := http.NewRequest(`GET`, redirectURL+"&fun=new&version=v2", nil)
 	resp, err := wxwb.request(req)
 	if err != nil {
 		panic(errors.New("getCookie request error: " + err.Error()))
@@ -145,9 +139,8 @@ func (wxwb *WechatWeb) getCookie(redirectURL string, loginChannel chan<- LoginCh
 	loginChannel <- LoginChannelItem{
 		Code: LoginStatusGotCookie,
 	}
-	// wxwb.refreshCookie(resp.Cookies()) // 在统一的Request方法已经调用了
-	wxwb.loginInfo.PassTicket = bodyResp.PassTicket
 	wxwb.loginInfo.sKey = bodyResp.Skey
+	wxwb.loginInfo.PassTicket = bodyResp.PassTicket
 }
 
 func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
@@ -159,14 +152,14 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 	}
 	params := url.Values{}
 	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
-	params.Set("skey", wxwb.loginInfo.sKey)
+	// params.Set("skey", wxwb.loginInfo.sKey)
 	params.Set("r", tool.GetWxTimeStamp())
 	// resp, err := wxwb.apiRuntime.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 	// 	"application/json;charset=UTF-8",
 	// 	bytes.NewReader(data))
 
 	req, err := http.NewRequest("POST",
-		"https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
+		"https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 		bytes.NewReader(data))
 	if err != nil {
 		panic(errors.New("create request error: " + err.Error()))

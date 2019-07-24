@@ -24,7 +24,6 @@
 | ----------- | --------------------------------- | -------------------- |
 | Request URL | <https://login.wx.qq.com/jslogin> |                      |
 | Method      | Get                               |                      |
-| Cookie      | No                                |                      |
 | Param       | appid                             | 填wx782c26e4c19acffb |
 | Param       | fun                               | 填new                |
 | Param       | lang                              | zh_CN或en_US         |
@@ -53,21 +52,30 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "gfNHoe0rgA==";
 | Method      | Get                                                  |                            |
 | Param       | loginicon                                            | 填true                     |
 | Param       | uuid                                                 | 之前获取的uuid             |
-| Param       | tip                                                  | 1-未扫描 0-已扫描          |
+| Param       | tip                                                  | 填0                        |
 | Param       | r                                                    | 13位时间戳取反(貌似可省略) |
 | Param       | _                                                    | 13位unix时间戳             |
 
 **Response:**
 
-| Key               | Value                       | Remark                                                    |
-| ----------------- | --------------------------- | --------------------------------------------------------- |
-| window.code       | 200<br/>201<br/>400<br/>408 | 确认登陆<br/>已扫码<br/>登陆超时(二维码失效)<br/>等待登陆 |
-| window.userAvatar | data:img/jpeg;base64        | base64编码的用户头像，仅当code=200时才有                  |
+| Key                 | Value                       | Remark                                                     |
+| ------------------- | --------------------------- | ---------------------------------------------------------- |
+| window.code         | 200<br/>201<br/>400<br/>408 | 确认登陆<br/>已扫码<br/>登陆超时(二维码失效)<br/>等待登陆  |
+| window.userAvatar   | data:img/jpeg;base64        | base64编码的用户头像，仅当code=201时才有                   |
+| window.redirect_uri | redirect_uri                | 下一跳地址，获取到这个地址以后访问这个地址获取下一步的信息 |
 
 *Example:*
 
 ``` javascript
-window.code=408;window.userAvatar='data:img/jpeg;base64,iVBORw...'
+window.code = 408;
+
+// Or
+
+window.code=201;window.userAvatar='data:img/jpeg;base64,iVBORw...'
+
+// Or
+
+window.code = 200;window.redirect_uri = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?ticket=Aeuxxxxxxxxxxxxxxxxxxxx@qrticket_0&uuid=Yaxxx-xxxx==&lang=zh_&scan=1560000000";
 ```
 
 注：**若用户取消登陆，返回仍为408，旧的二维码仍可重复使用，用户重新扫旧的二维码后会再次返回201**
@@ -77,6 +85,8 @@ window.code=408;window.userAvatar='data:img/jpeg;base64,iVBORw...'
 ---
 
 ## 获取登陆参数
+
+此处其实就是在上一步获取到redirect_uri后在其后拼接```&fun=new&version=v2```即可
 
 | Key         | Value                                                      | Remark                 |
 | ----------- | ---------------------------------------------------------- | ---------------------- |
@@ -106,28 +116,29 @@ window.code=408;window.userAvatar='data:img/jpeg;base64,iVBORw...'
 
 ## 初始化
 
-| Key         | Value                                              | Remark                 |
-| ----------- | -------------------------------------------------- | ---------------------- |
-| Request URL | <https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit> |                        |
-| Method      | Post                                               |                        |
-| Cookie      | Need                                               |                        |
-| Param       | r                                                  | 13位时间戳取反         |
-| Param       | pass_ticket                                        | 获取登陆参数时获取到的 |
+| Key         | Value                                             | Remark                 |
+| ----------- | ------------------------------------------------- | ---------------------- |
+| Request URL | <https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit> |                        |
+| Method      | Post                                              |                        |
+| Cookie      | Need                                              |                        |
+| Param       | r                                                 | 13位时间戳取反         |
+| Param       | pass_ticket                                       | 获取登陆参数时获取到的 |
 
 *Body (json):*
 
 ``` json
 {"BaseRequest":
     {
-        "Uin":"216547950",
-        "Sid":"QQ9iwKokvmPs7c/7",
-        "Skey":"@crypt_a6a25b34_68efb91dcbec1fe990bf33d8fe770034",
-        "DeviceID":"e987736822175688"
+        "Uin":"210000000",
+        "Sid":"QQxxxxxxxxxxxxxx",
+        "Skey":"@crypt_a6xxxxxx_6xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "DeviceID":"e980000000000000"
     }
 }
 ```
 
 **Response:**
+
 返回为一个json对象，内包括用户信息、联系人(此列表不全，之后用获取联系人的接口获取完整联系人列表)、同步信息等
 *该json中主要需要用到的数据为User信息与synckey，synckey用于后续同步状态时使用，而联系人可以之后通过获取联系人接口获取完整列表*
 
