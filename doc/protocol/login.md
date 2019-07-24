@@ -140,6 +140,6 @@ window.code = 200;window.redirect_uri = "https://wx.qq.com/cgi-bin/mmwebwx-bin/w
 **Response:**
 
 返回为一个json对象，内包括用户信息、联系人(此列表不全，之后用获取联系人的接口获取完整联系人列表)、同步信息等
-*该json中主要需要用到的数据为User信息与synckey，synckey用于后续同步状态时使用，而联系人可以之后通过获取联系人接口获取完整列表*
+*该json中主要需要用到的数据为User信息与synckey，synckey用于后续同步状态时使用，而联系人虽然不全，但也不能丢弃，有一部分联系人只有这个接口会返回，其余联系人可以之后通过获取联系人接口获取完整列表再合并*
 
 到此登陆就成功了
