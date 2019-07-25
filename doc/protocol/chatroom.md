@@ -83,12 +83,16 @@ Body里MemberList为要添加进入群聊的联系人的UserName
 }
 ```
 
+---
+
 ## 修改群名
 
-| Key         | Value                                                                        | Remark |
-| ----------- | ---------------------------------------------------------------------------- | ------ |
-| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxupdatechatroom?fun=modtopic> |        |
-| Method      | POST                                                                         |        |
+| Key         | Value                                                           | Remark                             |
+| ----------- | --------------------------------------------------------------- | ---------------------------------- |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxupdatechatroom> |                                    |
+| Method      | POST                                                            |                                    |
+| Param       | fun                                                             | 填modtopic                         |
+| Param       | pass_ticket                                                     | 部分Domain需要传，保险起见可以都传 |
 
 **Body (json):**
 
@@ -102,5 +106,19 @@ Body里MemberList为要添加进入群聊的联系人的UserName
         "Skey": "@crypt_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         "DeviceID": "e78000000000000"
     }
+}
+```
+
+**Response:**
+
+返回为json对象，无重要内容
+
+``` json{
+    "BaseResponse": {
+        "Ret": 0,
+        "ErrMsg": ""
+    },
+    "MemberCount": 0,
+    "MemberList": []
 }
 ```
