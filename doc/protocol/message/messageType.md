@@ -12,7 +12,7 @@
 | 51     | 手机客户端切换聊天对象                    |
 | 10000  | 拓展消息类型，已知有红包、停止共享实时位置、AA收款     |
 | 10002  | 撤回消息                           |
- 
+
 ### Type 3 Detail
 | SpecialField | UseFor                  |
 |:-------------|:------------------------|
@@ -28,7 +28,6 @@
 |:--------------|:---------------------------------------------------------------------------|
 | Url           | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg                      |
 | Method        | Get                                                                        |
-| Cookie        | Need                                                                       |
 | Param         | MsgID(webwxsync接口拿到的)<br>skey(wxinit接口拿到的)<br>type:代表图片大小，已知的可选项为slave、big |
 
 ### Type 34 Detail
@@ -46,7 +45,6 @@
 |:----------------|:-----------------------------------------------------|
 | Url             | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice |
 | Method          | Get                                                  |
-| Cookie          | Need                                                 |
 | Header          | Range: bytes=0-                                      |
 | Param           | msgid(webwxsync接口拿到的)<br>skey(wxinit接口拿到的)           |
 
@@ -65,7 +63,6 @@
 |:----------------|:-----------------------------------------------------|
 | Url             | https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo |
 | Method          | Get                                                  |
-| Cookie          | Need                                                 |
 | Header          | Range: bytes=0-                                      |
 | Param           | msgid(webwxsync接口拿到的)<br>skey(wxinit接口拿到的)           |
 

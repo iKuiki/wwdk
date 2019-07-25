@@ -42,7 +42,6 @@
 | ----------- | -------------------------------------------------------- | ---------------------------------- |
 | Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxsendmsg> |                                    |
 | Method      | POST                                                     |                                    |
-| Cookie      | Need                                                     |                                    |
 | Param       | pass_ticket                                              | 部分Domain需要传，保险起见可以都传 |
 
 **Body (Json):**
