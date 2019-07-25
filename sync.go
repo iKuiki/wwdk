@@ -14,25 +14,6 @@ import (
 	"github.com/ikuiki/wwdk/tool"
 )
 
-var syncHosts = []string{
-	"wx2.qq.com",
-	"webpush.wx.qq.com",
-	"webpush.wx2.qq.com",
-	"wx8.qq.com",
-	"webpush.wx8.qq.com",
-	"qq.com",
-	"webpush.wx.qq.com",
-	"web2.wechat.com",
-	"webpush.web2.wechat.com",
-	"wechat.com",
-	"webpush.web.wechat.com",
-	"webpush.weixin.qq.com",
-	"webpush.wechat.com",
-	"webpush1.wechat.com",
-	"webpush2.wechat.com",
-	"webpush2.wx.qq.com",
-}
-
 // assembleSyncKey 组装synckey
 // 将同步需要的synckey组装为请求字符串
 func assembleSyncKey(syncKey *datastruct.SyncKey) string {
@@ -63,25 +44,9 @@ func analysisSyncResp(syncResp string) (result datastruct.SyncCheckRespond) {
 	return result
 }
 
-func (wxwb *WechatWeb) chooseSyncHost() bool {
-	wxwb.logger.Info("choose sync host...\n")
-	for _, host := range syncHosts {
-		wxwb.apiRuntime.syncHost = host
-		code, _, _ := wxwb.syncCheck()
-		if code == `0` {
-			wxwb.logger.Infof("sync host [%s] avaliable\n", host)
-			return true
-		}
-	}
-	return false
-}
-
 // syncCheck 同步状态
 // 轮询微信服务器，如果有新的状态，会通过此接口返回需要同步的信息
 func (wxwb *WechatWeb) syncCheck() (retCode, selector string, err error) {
-	if wxwb.apiRuntime.syncHost == "" {
-		return "", "", errors.New("sync host empty")
-	}
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
 	params.Set("sid", wxwb.loginInfo.cookie.Wxsid)
@@ -89,7 +54,7 @@ func (wxwb *WechatWeb) syncCheck() (retCode, selector string, err error) {
 	params.Set("deviceid", wxwb.apiRuntime.deviceID)
 	params.Set("synckey", assembleSyncKey(wxwb.loginInfo.syncKey))
 	params.Set("_", tool.GetWxTimeStamp())
-	req, err := http.NewRequest("GET", "https://"+wxwb.apiRuntime.syncHost+"/cgi-bin/mmwebwx-bin/synccheck?"+params.Encode(), nil)
+	req, err := http.NewRequest("GET", "https://webpush."+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/synccheck?"+params.Encode(), nil)
 	if err != nil {
 		return "", "", errors.New("create request error: " + err.Error())
 	}
@@ -141,15 +106,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 	go func() {
 		// 方法结束时关闭channel
 		defer close(syncChannel)
-		avaliable := wxwb.chooseSyncHost()
-		if !avaliable {
-			wxwb.logger.Info("all sync host unavaliable, exit...\n")
-			syncChannel <- SyncChannelItem{
-				Code: SyncStatusPanic,
-				Err:  errors.New("all sync host unavaliable"),
-			}
-			return
-		}
 		getMessage := func() {
 			gmResp, err := wxwb.getMessage()
 			if err != nil {
@@ -224,15 +180,6 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 						syncChannel <- SyncChannelItem{
 							Code: SyncStatusErrorOccurred,
 							Err:  errors.New("Err1100: sync host unavaliable"),
-						}
-						avaliable = wxwb.chooseSyncHost()
-						if !avaliable {
-							wxwb.logger.Info("all sync host unavaliable, exit...\n")
-							syncChannel <- SyncChannelItem{
-								Code: SyncStatusPanic,
-								Err:  errors.New("all sync host unavaliable, exit"),
-							}
-							return true
 						}
 						return false
 					}

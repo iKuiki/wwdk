@@ -20,6 +20,7 @@ type storeLoginInfo struct {
 	PassTicket  string
 	RunInfo     WechatRunInfo    // 运行统计信息
 	DeviceID    string           // 由客户端生成，为e+15位随机数
+	APIDomain   string           // 当前的apiDomain，从RedirectURL中解析
 	User        *datastruct.User // 用户信息
 	ContactList map[string]datastruct.Contact
 }
@@ -64,7 +65,13 @@ func (wxwb *WechatWeb) writeLoginInfo() (err error) {
 		}
 	}()
 	cookieMap := make(map[string][]*http.Cookie)
-	for _, host := range syncHosts {
+	for _, host := range []string{
+		wxwb.apiRuntime.apiDomain,
+		"webpush." + wxwb.apiRuntime.apiDomain,
+		"file." + wxwb.apiRuntime.apiDomain,
+		// "login." + wxwb.apiRuntime.apiDomain,
+		".qq.com",
+	} {
 		u, _ := url.Parse("https://" + host)
 		cookieMap[host] = wxwb.apiRuntime.client.Jar.Cookies(u)
 	}
@@ -78,6 +85,7 @@ func (wxwb *WechatWeb) writeLoginInfo() (err error) {
 			User:        wxwb.userInfo.user,
 			ContactList: wxwb.userInfo.contactList,
 			DeviceID:    wxwb.apiRuntime.deviceID,
+			APIDomain:   wxwb.apiRuntime.apiDomain,
 			RunInfo:     wxwb.runInfo,
 		}
 		data, err := json.Marshal(storeInfo)
@@ -116,7 +124,15 @@ func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 			return false, nil
 		}
 		// 认为读取到了登陆信息，则开始还原
-		for _, host := range syncHosts {
+		wxwb.apiRuntime.deviceID = storeInfo.DeviceID
+		wxwb.apiRuntime.apiDomain = storeInfo.APIDomain
+		for _, host := range []string{
+			wxwb.apiRuntime.apiDomain,
+			"webpush." + wxwb.apiRuntime.apiDomain,
+			"file." + wxwb.apiRuntime.apiDomain,
+			// "login." + wxwb.apiRuntime.apiDomain,
+			".qq.com",
+		} {
 			u, _ := url.Parse("https://" + host)
 			wxwb.apiRuntime.client.Jar.SetCookies(u, storeInfo.Cookies[host])
 		}
@@ -137,7 +153,6 @@ func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 		for _, contact := range storeInfo.ContactList {
 			wxwb.userInfo.contactList[contact.UserName] = contact
 		}
-		wxwb.apiRuntime.deviceID = storeInfo.DeviceID
 		// 还原完成
 		return true, nil
 	}

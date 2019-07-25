@@ -29,7 +29,7 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 	}
 	params := url.Values{}
 	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
-	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify?"+params.Encode(), bytes.NewReader(data))
+	req, err := http.NewRequest("POST", "https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxstatusnotify?"+params.Encode(), bytes.NewReader(data))
 	if err != nil {
 		return errors.New("create request error: " + err.Error())
 	}
@@ -71,7 +71,7 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 	}
 	params := url.Values{}
 	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
-	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg?"+params.Encode(), bytes.NewReader(body))
+	req, err := http.NewRequest("POST", "https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxsendmsg?"+params.Encode(), bytes.NewReader(body))
 	if err != nil {
 		return nil, errors.New("create request error: " + err.Error())
 	}
@@ -109,7 +109,7 @@ func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName strin
 	if err != nil {
 		return nil, errors.New("Marshal body to json fail: " + err.Error())
 	}
-	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg", bytes.NewReader(body))
+	req, err := http.NewRequest("POST", "https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxrevokemsg", bytes.NewReader(body))
 	if err != nil {
 		return nil, errors.New("create request error: " + err.Error())
 	}
@@ -147,7 +147,7 @@ func (wxwb *WechatWeb) ModifyUserRemakName(userName, remarkName string) (revokeM
 	if err != nil {
 		return nil, errors.New("Marshal body to json fail: " + err.Error())
 	}
-	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxoplog", bytes.NewReader(body))
+	req, err := http.NewRequest("POST", "https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxoplog", bytes.NewReader(body))
 	if err != nil {
 		return nil, errors.New("create request error: " + err.Error())
 	}
@@ -182,7 +182,7 @@ func (wxwb *WechatWeb) ModifyChatRoomTopic(userName, newTopic string) (revokeMes
 	if err != nil {
 		return nil, errors.New("Marshal body to json fail: " + err.Error())
 	}
-	req, err := http.NewRequest("POST", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxupdatechatroom?fun=modtopic", bytes.NewReader(body))
+	req, err := http.NewRequest("POST", "https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxupdatechatroom?fun=modtopic", bytes.NewReader(body))
 	if err != nil {
 		return nil, errors.New("create request error: " + err.Error())
 	}

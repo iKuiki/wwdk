@@ -53,7 +53,7 @@ func (wxwb *WechatWeb) getUUID(loginChannel chan<- LoginChannelItem) (uuid strin
 	params.Set("fun", "new")
 	params.Set("lang", conf.Lang)
 	params.Set("_", tool.GetWxTimeStamp())
-	req, _ := http.NewRequest("GET", "https://login.weixin.qq.com/jslogin?"+params.Encode(), nil)
+	req, _ := http.NewRequest("GET", "https://login."+wxwb.apiRuntime.apiDomain+"/jslogin?"+params.Encode(), nil)
 	resp, err := wxwb.request(req)
 	if err != nil {
 		panic(errors.New("request error: " + err.Error()))
@@ -84,7 +84,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannel
 			tip = "0" // 在第二次轮询的时候tip就为0了
 			params.Set("uuid", uuid)
 			params.Set("_", tool.GetWxTimeStamp())
-			req, _ := http.NewRequest(`GET`, "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?"+params.Encode(), nil)
+			req, _ := http.NewRequest(`GET`, "https://login."+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/login?"+params.Encode(), nil)
 			resp, err := wxwb.request(req)
 			if err != nil {
 				wxwb.logger.Infof("waitForScan request error: %v\n", err)
@@ -124,7 +124,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannel
 }
 
 func (wxwb *WechatWeb) getCookie(redirectURL string, loginChannel chan<- LoginChannelItem) {
-	req, _ := http.NewRequest(`GET`, redirectURL+"&fun=new&version=v2", nil)
+	req, _ := http.NewRequest(`GET`, redirectURL+"&fun=new", nil) // 统一不加version=v2了
 	resp, err := wxwb.request(req)
 	if err != nil {
 		panic(errors.New("getCookie request error: " + err.Error()))
@@ -156,12 +156,12 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
 	// params.Set("skey", wxwb.loginInfo.sKey)
 	params.Set("r", tool.GetWxTimeStamp())
-	// resp, err := wxwb.apiRuntime.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
+	// resp, err := wxwb.apiRuntime.client.Post("https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 	// 	"application/json;charset=UTF-8",
 	// 	bytes.NewReader(data))
 
 	req, err := http.NewRequest("POST",
-		"https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
+		"https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 		bytes.NewReader(data))
 	if err != nil {
 		panic(errors.New("create request error: " + err.Error()))
@@ -197,7 +197,7 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 func (wxwb *WechatWeb) getContactList() (err error) {
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
-	resp, err := wxwb.apiRuntime.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact?" + params.Encode())
+	resp, err := wxwb.apiRuntime.client.Get("https://" + wxwb.apiRuntime.apiDomain + "/cgi-bin/mmwebwx-bin/webwxgetcontact?" + params.Encode())
 	if err != nil {
 		return errors.New("request error: " + err.Error())
 	}
@@ -240,7 +240,7 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 	params := url.Values{}
 	params.Set("type", "ex")
 	params.Set("r", tool.GetWxTimeStamp())
-	resp, err := wxwb.apiRuntime.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?"+params.Encode(),
+	resp, err := wxwb.apiRuntime.client.Post("https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?"+params.Encode(),
 		"application/json;charset=UTF-8",
 		bytes.NewReader(data))
 	if err != nil {
@@ -305,6 +305,10 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 			wxwb.resetLoginInfo()
 			uuid := wxwb.getUUID(loginChannel)
 			redirectURL := wxwb.waitForScan(uuid, loginChannel)
+			// 解析apiDomain版本
+			u, _ := url.Parse(redirectURL)
+			wxwb.apiRuntime.apiDomain = u.Host
+			wxwb.logger.Info("apiDomain decided: ", u.Host)
 			// panic(redirectUrl)
 			wxwb.getCookie(redirectURL, loginChannel)
 			wxwb.wxInit(loginChannel)
@@ -352,7 +356,7 @@ func (wxwb *WechatWeb) Logout() (err error) {
 	form := url.Values{}
 	form.Set("sid", wxwb.loginInfo.cookie.Wxsid)
 	form.Set("uin", wxwb.loginInfo.cookie.Wxuin)
-	resp, err := wxwb.apiRuntime.client.PostForm("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxlogout?"+params.Encode(), form)
+	resp, err := wxwb.apiRuntime.client.PostForm("https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxlogout?"+params.Encode(), form)
 	if err != nil {
 		return errors.New("request error: " + err.Error())
 	}

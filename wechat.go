@@ -70,7 +70,7 @@ type userInfo struct {
 // apiRuntime 微信web客户端运行时信息
 type apiRuntime struct {
 	userAgent string
-	syncHost  string
+	apiDomain string // 当前的apiDomain，从用户扫码登陆后返回的RedirectURL中解析
 	client    *http.Client
 	deviceID  string // 由客户端生成，为e+15位随机数
 }
@@ -99,6 +99,7 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 		apiRuntime: apiRuntime{
 			userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
 			deviceID:  "e" + tool.GetRandomStringFromNum(15),
+			apiDomain: "wx.qq.com", // 默认域名
 			client: &http.Client{
 				Transport: &http.Transport{
 					Dial: (&net.Dialer{

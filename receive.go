@@ -30,7 +30,7 @@ func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err er
 	params.Set("sid", wxwb.loginInfo.cookie.Wxsid)
 	params.Set("skey", wxwb.loginInfo.sKey)
 	// params.Set("pass_ticket", wxwb.PassTicket)
-	resp, err := wxwb.apiRuntime.client.Post("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsync?"+params.Encode(),
+	resp, err := wxwb.apiRuntime.client.Post("https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxsync?"+params.Encode(),
 		"application/json;charset=UTF-8",
 		bytes.NewReader(data))
 	if err != nil {
@@ -58,7 +58,7 @@ func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 	params.Set("MsgID", msg.MsgID)
 	params.Set("skey", wxwb.loginInfo.sKey)
 	// params.Set("type", "slave")
-	resp, err := wxwb.apiRuntime.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetmsgimg?" + params.Encode())
+	resp, err := wxwb.apiRuntime.client.Get("https://" + wxwb.apiRuntime.apiDomain + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
@@ -87,7 +87,7 @@ func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string
 	params.Set("MsgID", msg.MsgID)
 	params.Set("skey", wxwb.loginInfo.sKey)
 	// params.Set("type", "slave")
-	resp, err := wxwb.apiRuntime.client.Get("https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvoice?" + params.Encode())
+	resp, err := wxwb.apiRuntime.client.Get("https://" + wxwb.apiRuntime.apiDomain + "/cgi-bin/mmwebwx-bin/webwxgetvoice?" + params.Encode())
 	if err != nil {
 		return "", errors.New("request error: " + err.Error())
 	}
@@ -115,7 +115,7 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 	params := url.Values{}
 	params.Set("msgid", msg.MsgID)
 	params.Set("skey", wxwb.loginInfo.sKey)
-	req, err := http.NewRequest("GET", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo?"+params.Encode(), strings.NewReader(""))
+	req, err := http.NewRequest("GET", "https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxgetvideo?"+params.Encode(), strings.NewReader(""))
 	if err != nil {
 		return "", errors.New("create request error: " + err.Error())
 	}
@@ -142,7 +142,7 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 
 // SaveContactImg 保存联系人头像
 func (wxwb *WechatWeb) SaveContactImg(contact datastruct.Contact) (filename string, err error) {
-	req, err := http.NewRequest("GET", "https://wx2.qq.com"+contact.HeadImgURL+wxwb.loginInfo.sKey, nil)
+	req, err := http.NewRequest("GET", "https://"+wxwb.apiRuntime.apiDomain+contact.HeadImgURL+wxwb.loginInfo.sKey, nil)
 	if err != nil {
 		return "", errors.New("create request error: " + err.Error())
 	}
@@ -168,7 +168,7 @@ func (wxwb *WechatWeb) SaveContactImg(contact datastruct.Contact) (filename stri
 
 // SaveUserImg 保存登陆用户的头像
 func (wxwb *WechatWeb) SaveUserImg(user datastruct.User) (filename string, err error) {
-	req, err := http.NewRequest("GET", "https://wx2.qq.com"+user.HeadImgURL, nil)
+	req, err := http.NewRequest("GET", "https://"+wxwb.apiRuntime.apiDomain+user.HeadImgURL, nil)
 	if err != nil {
 		return "", errors.New("create request error: " + err.Error())
 	}
@@ -194,7 +194,7 @@ func (wxwb *WechatWeb) SaveUserImg(user datastruct.User) (filename string, err e
 
 // SaveMemberImg 保存群成员的头像
 func (wxwb *WechatWeb) SaveMemberImg(member datastruct.Member, chatroomID string) (filename string, err error) {
-	req, err := http.NewRequest("GET", "https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username="+member.UserName+"&chatroomid="+chatroomID+"&skey=", nil)
+	req, err := http.NewRequest("GET", "https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username="+member.UserName+"&chatroomid="+chatroomID+"&skey=", nil)
 	if err != nil {
 		return "", errors.New("create request error: " + err.Error())
 	}
