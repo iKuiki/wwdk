@@ -3,6 +3,7 @@
 - [群管理](#%e7%be%a4%e7%ae%a1%e7%90%86)
   - [好友拉群](#%e5%a5%bd%e5%8f%8b%e6%8b%89%e7%be%a4)
   - [添加新成员](#%e6%b7%bb%e5%8a%a0%e6%96%b0%e6%88%90%e5%91%98)
+  - [删除群成员](#%e5%88%a0%e9%99%a4%e7%be%a4%e6%88%90%e5%91%98)
   - [修改群名](#%e4%bf%ae%e6%94%b9%e7%be%a4%e5%90%8d)
 
 ## 好友拉群
@@ -126,7 +127,7 @@ Body里MemberList为要添加进入群聊的联系人的UserName
     "MemberCount": 1,
     "MemberList": [{
         "Uin": 0,
-        "UserName": "@xxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // 被添加的联系人的UserName
+        "UserName": "@xxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // 被添加的联系人的UserName，可添加多个，用英文逗号分隔即可
         "NickName": "xxxx", // 被添加的联系人的昵称
         "AttrStatus": 0,
         "PYInitial": "",
@@ -142,7 +143,52 @@ Body里MemberList为要添加进入群聊的联系人的UserName
 
 ---
 
+## 删除群成员
+
+如果为管理员，则可以移除群成员
+
+| Key         | Value                                                           | Remark                             |
+| ----------- | --------------------------------------------------------------- | ---------------------------------- |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxupdatechatroom> |                                    |
+| Method      | POST                                                            |                                    |
+| Param       | fun                                                             | 填delmember                        |
+| Param       | pass_ticket                                                     | 部分Domain需要传，保险起见可以都传 |
+
+**Body:**
+
+``` json
+{
+    "DelMemberList": "@xxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // 要移除的群成员的UserName
+    "ChatRoomName": "@@xxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // 目标群的UserName
+    "BaseRequest": {
+        "Uin": 200000000,
+        "Sid": "xxxxxxxxxxxxxxxx",
+        "Skey": "@crypt_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "DeviceID": "e78000000000000"
+    }
+}
+```
+
+**Response:**
+
+返回为json对象，只要判断未出错即可，无其他重要内容
+
+``` json
+{
+    "BaseResponse": {
+        "Ret": 1,
+        "ErrMsg": ""
+    },
+    "MemberCount": 0,
+    "MemberList": []
+}
+```
+
+---
+
 ## 修改群名
+
+修改群聊的标题
 
 | Key         | Value                                                           | Remark                             |
 | ----------- | --------------------------------------------------------------- | ---------------------------------- |
