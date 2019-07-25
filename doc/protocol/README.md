@@ -4,6 +4,7 @@
   - [web微信的工作流程](#web%e5%be%ae%e4%bf%a1%e7%9a%84%e5%b7%a5%e4%bd%9c%e6%b5%81%e7%a8%8b)
   - [一种特别的返回格式](#%e4%b8%80%e7%a7%8d%e7%89%b9%e5%88%ab%e7%9a%84%e8%bf%94%e5%9b%9e%e6%a0%bc%e5%bc%8f)
   - [关于cookie](#%e5%85%b3%e4%ba%8ecookie)
+  - [关于Domain（极其重要）](#%e5%85%b3%e4%ba%8edomain%e6%9e%81%e5%85%b6%e9%87%8d%e8%a6%81)
 
 ---
 
@@ -79,3 +80,13 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "gfNHoe0rgA==";
 ```
 
 ---
+
+## 关于Domain（极其重要）
+
+经过研究发现，网页版微信会根据微信账号的不同，分配不同的domain来处理（可能是出于负载均衡的目的），而分配domain以后，之后的所有请求都必须用配套的domain来请求，否则就会出错。这个坑，我是对我2个微信号分析了很久才发现规律，一开始只是觉得很乱，然后偶尔一两个接口用错domain也没关系，但是有些关键接口用错domain则会直接导致失败。而这个domain的来源，在于用户扫码登陆后获取到的redirectURL中的domain。这个获取到的domain，我们在下文中就称它为apiDomain好了，与之配套的还有上传文件用的uploadDomain、接收推送信息的syncDomain，他们3个都需要相互匹配才能保证功能正常。
+
+apiDomain、uploadDomain、syncDomain的相互关系为：```uploadDomain="file."+apiDomain; syncDomain="webpush."+syncDomain```
+
+另外过程中还发现，根据domain的不同，某些接口的参数也会有细微差异，体现在字段pass_ticket上，部分domain有传此参数，而部分domain没用传此参数，出于通用考虑，可以统一都传此参数，目前暂未发现不良影响
+
+另外，登陆前其实还会用到一个loginDomain，不过那个是登陆之前，还没被分配domain，所以用混是无所谓的。```loginDomain="login."+apiDomain```

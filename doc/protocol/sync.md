@@ -11,18 +11,18 @@
 
 ## 同步状态
 
-| Key         | Value                                                      | Remark                                                |
-| ----------- | ---------------------------------------------------------- | ----------------------------------------------------- |
-| Request URL | <https://webpush.wx2.qq.com/cgi-bin/mmwebwx-bin/synccheck> |                                                       |
-| Method      | Get                                                        |                                                       |
-| Cookie      | Need                                                       |                                                       |
-| Param       | r                                                          | 13位unix时间戳                                        |
-| Param       | skey                                                       | 登陆凭据skey                                          |
-| Param       | sid                                                        | 登陆凭据sid                                           |
-| Param       | uin                                                        | 登陆凭据uin                                           |
-| Param       | deviceid                                                   |                                                       |
-| Param       | synckey                                                    | 同步key，由"\|"分割为1_xxx\|2_xxx\|3_xxx\|4_xxx的格式 |
-| Param       | _                                                          | 13位unix时间戳                                        |
+| Key         | Value                                                         | Remark                                                |
+| ----------- | ------------------------------------------------------------- | ----------------------------------------------------- |
+| Request URL | <https://webpush.{{apiDomain}}/cgi-bin/mmwebwx-bin/synccheck> |                                                       |
+| Method      | Get                                                           |                                                       |
+| Cookie      | Need                                                          |                                                       |
+| Param       | r                                                             | 13位unix时间戳                                        |
+| Param       | skey                                                          | 登陆凭据skey                                          |
+| Param       | sid                                                           | 登陆凭据sid                                           |
+| Param       | uin                                                           | 登陆凭据uin                                           |
+| Param       | deviceid                                                      |                                                       |
+| Param       | synckey                                                       | 同步key，由"\|"分割为1_xxx\|2_xxx\|3_xxx\|4_xxx的格式 |
+| Param       | _                                                             | 13位unix时间戳                                        |
 
 **Response:**
 
@@ -34,5 +34,5 @@
 *Example:*
 
 ``` javascript
-window.synccheck={retcode:"0",selector:"2"}
+window.synccheck={retcode:"0",selector:"2"} // selector的值的含义还需要再推敲
 ```

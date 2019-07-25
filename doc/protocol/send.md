@@ -11,12 +11,11 @@
 
 将指定联系人的消息设为已读
 
-| Key         | Value                                                      |
-| ----------- | ---------------------------------------------------------- |
-| Request URL | <https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify> |
-| Method      | POST                                                       |
-| Cookie      | Need                                                       |
-| PARAM       | pass_ticket                                                |
+| Key         | Value                                                         | Remark                             |
+| ----------- | ------------------------------------------------------------- | ---------------------------------- |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxstatusnotify> |                                    |
+| Method      | POST                                                          |                                    |
+| PARAM       | pass_ticket                                                   | 部分Domain需要传，保险起见可以都传 |
 
 **Body (json):**
 
@@ -39,30 +38,30 @@
 
 ## 发送消息
 
-| Key         | Value                                                 |
-| ----------- | ----------------------------------------------------- |
-| Request URL | <https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg> |
-| Method      | POST                                                  |
-| Cookie      | Need                                                  |
-| Param       | pass_ticket                                           |
+| Key         | Value                                                    | Remark                             |
+| ----------- | -------------------------------------------------------- | ---------------------------------- |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxsendmsg> |                                    |
+| Method      | POST                                                     |                                    |
+| Cookie      | Need                                                     |                                    |
+| Param       | pass_ticket                                              | 部分Domain需要传，保险起见可以都传 |
 
 **Body (Json):**
 
 ``` json
 {
     "BaseRequest": {
-        "Uin": 216547950,
-        "Sid": "Hga/ND66ty7ptu4f",
-        "Skey": "@crypt_a6a25b34_2df15eec5697a324849770ce822e2b67",
-        "DeviceID": "e680668306876822"
+        "Uin": 200000000,
+        "Sid": "xxxxxxxxxxxxxxxx",
+        "Skey": "@crypt_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "DeviceID": "e680000000000000"
     },
     "Msg": {
         "Type": 1,
-        "Content": "hhh",
-        "FromUserName": "@be6d9f4847c79706435ca6bd55aa2f673848851278cc5b0001c49720ee9c3e04",
-        "ToUserName": "@77d902e96d228e4eb17ee4f02c6e12ce",
-        "LocalID": "14908900889660665",
-        "ClientMsgId": "14908900889660665"
+        "Content": "hello world", // 消息内容
+        "FromUserName": "@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // 自己的username
+        "ToUserName": "@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // 对方的username
+        "LocalID": "14900000000000000",
+        "ClientMsgId": "14900000000000000"
     },
     "Scene": 0
 }
@@ -72,25 +71,24 @@
 
 ## 撤回消息
 
-| Key         | Value                                                   |
-| ----------- | ------------------------------------------------------- |
-| Request URL | <https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg> |
-| Method      | POST                                                    |
-| Cookie      | Need                                                    |
+| Key         | Value                                                      | Remark |
+| ----------- | ---------------------------------------------------------- | ------ |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxrevokemsg> |        |
+| Method      | POST                                                       |        |
 
 Body (json):
 
 ``` json
 {
     "BaseRequest": {
-        "Uin": 216547950,
-        "Sid": "1R+tNd8DPJkULlu+",
-        "Skey": "@crypt_a6a25b34_cb08394069b5dba8d090c48ea84849a8",
-        "DeviceID": "e935523984078190"
+        "Uin": 200000000,
+        "Sid": "xxxxxxxxxxxxxxxx",
+        "Skey": "@crypt_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "DeviceID": "e680000000000000"
     },
-    "SvrMsgId": "5918499768689813400",
-    "ToUserName": "@8d0cb0307ce18d0c8c51dd788060bf56",
-    "ClientMsgId": "14908762377750838"
+    "SvrMsgId": "5910000000000000000", // 发送消息时服务器返回的服务器端消息ID
+    "ToUserName": "@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // 目标用户
+    "ClientMsgId": "14900000000000000" // 当时的本地消息ID
 }
 ```
 
