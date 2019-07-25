@@ -90,15 +90,15 @@ window.code = 200;window.redirect_uri = "https://wx.qq.com/cgi-bin/mmwebwx-bin/w
 
 注：**有部分domain版本在此处还需要添加一个```&version=v2```的参数，需要考证通用性的问题**
 
-| Key         | Value                                                         | Remark                 |
-| ----------- | ------------------------------------------------------------- | ---------------------- |
-| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxnewloginpage> |                        |
-| Method      | Get                                                           |                        |
-| Param       | ticket                                                        |                        |
-| Param       | uuid                                                          |                        |
-| Param       | scan                                                          | 扫描成功后返回的时间戳 |
-| Param       | fun                                                           | 填new                  |
-| Param       | version                                                       | 填v2                   |
+| Key         | Value                                                         | Remark                                       |
+| ----------- | ------------------------------------------------------------- | -------------------------------------------- |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxnewloginpage> |                                              |
+| Method      | Get                                                           |                                              |
+| Param       | ticket                                                        |                                              |
+| Param       | uuid                                                          |                                              |
+| Param       | scan                                                          | 扫描成功后返回的时间戳                       |
+| Param       | fun                                                           | 填new                                        |
+| Param       | version                                                       | 填v2(只有部分domain需要此参数，可以统一不填) |
 
 **Response:**
 
@@ -128,8 +128,8 @@ window.code = 200;window.redirect_uri = "https://wx.qq.com/cgi-bin/mmwebwx-bin/w
 *Body (json):*
 
 ``` json
-{"BaseRequest":
-    {
+{
+    "BaseRequest": {
         "Uin":"210000000",
         "Sid":"QQxxxxxxxxxxxxxx",
         "Skey":"@crypt_a6xxxxxx_6xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",

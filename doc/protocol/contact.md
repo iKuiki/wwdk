@@ -2,7 +2,7 @@
 
 - [联系人管理](#%e8%81%94%e7%b3%bb%e4%ba%ba%e7%ae%a1%e7%90%86)
   - [获取联系人列表](#%e8%8e%b7%e5%8f%96%e8%81%94%e7%b3%bb%e4%ba%ba%e5%88%97%e8%a1%a8)
-  - [获取群成员列表](#%e8%8e%b7%e5%8f%96%e7%be%a4%e6%88%90%e5%91%98%e5%88%97%e8%a1%a8)
+  - [批量获取联系人](#%e6%89%b9%e9%87%8f%e8%8e%b7%e5%8f%96%e8%81%94%e7%b3%bb%e4%ba%ba)
   - [修改用户备注](#%e4%bf%ae%e6%94%b9%e7%94%a8%e6%88%b7%e5%a4%87%e6%b3%a8)
 
 ## 获取联系人列表
@@ -17,7 +17,7 @@
 | Param       | r                                                           | 13位时间戳取反                     |
 | Param       | seq                                                         | 填0                                |
 | Param       | skey                                                        | 获取登陆参数时获取到的             |
-| PARAM       | pass_ticket                                                 | 部分Domain需要传，保险起见可以都传 |
+| Param       | pass_ticket                                                 | 部分Domain需要传，保险起见可以都传 |
 
 **Response:**
 
@@ -70,10 +70,16 @@
 
 ---
 
-## 获取群成员列表
+## 批量获取联系人
 
-此方法可以获取指定群的群成员列表，可以一次获取多个群，所以直接将所有群的username一起打包请求，就可以一次拿到所有群的群成员列表了
-群username列表要用json打包在请求的body中
+此方法用于批量获取联系人，它有2个用途：
+
+- 获取群聊的成员列表
+- 获取群成员的详细信息
+
+在官方web微信中，这两种用法是分开的，所以建议分开调用
+在获取群聊成员列表时，获取到的成员信息是简略信息，只有相当简陋的内容（几乎只有名字）
+而获取群成员的详细信息是，要将目标成员的username作为UserName字段，群username作为EncryChatRoomId字段写入body的json的List中，这样返回的群成员详细信息就与好友的返回信息近似了
 
 注:*群判定方法为username开头为@@*
 
@@ -96,9 +102,13 @@
         "DeviceID": "e60000000000000000"
     },
     "Count": 1,
-    "List": [
+    "List": [ // 此List中填入要获取详细信息的目标对象，目标可以是群也可以是群成员
         {
+            // 如果是获取群的成员列表，此处填群UserName
+            // 如果是获取群成员的详情，此处填群成员的UserName
             "UserName": "@@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            // 如果是获取群的成员列表，此处留空
+            // 如果是获取群成员的详情，此处填群UserName
             "EncryChatRoomId": ""
         }
     ]
@@ -176,7 +186,6 @@
 | ----------- | ------------------------------------------------------ |
 | Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxoplog> |
 | Method      | POST                                                   |
-| Cookie      | Need                                                   |
 
 **Body (json):**
 

@@ -22,10 +22,10 @@
 ``` json
 {"BaseRequest":
     {
-        "Uin":216547950,
-        "Sid":"sUCEDniMkkAj6Wxh",
-        "Skey":"@crypt_a6a25b34_525e3d8eb6358a022dffa7ad6f3806b2",
-        "DeviceID":"e575465866227354"
+        "Uin":"210000000",
+        "Sid":"QQxxxxxxxxxxxxxx",
+        "Skey":"@crypt_a6xxxxxx_6xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "DeviceID":"e980000000000000"
     },
     "Code":1,
     "FromUserName":"@ae820581771d028ec2540c22b57ee02289811811caa08ec8d88e7cdb0f04502e", // 自己的用户id
