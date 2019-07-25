@@ -76,10 +76,12 @@ func (wxwb *WechatWeb) getUUID(loginChannel chan<- LoginChannelItem) (uuid strin
 // 当扫码超时、扫码失败时，应当从getUUID方法重新开始
 func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannelItem) (redirectURL string) {
 	var ret map[string]string
+	tip := "1"
 	for true {
 		redirectURL = func() (redirectURL string) {
 			params := url.Values{}
-			params.Set("tip", "0")
+			params.Set("tip", tip)
+			tip = "0" // 在第二次轮询的时候tip就为0了
 			params.Set("uuid", uuid)
 			params.Set("_", tool.GetWxTimeStamp())
 			req, _ := http.NewRequest(`GET`, "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?"+params.Encode(), nil)
