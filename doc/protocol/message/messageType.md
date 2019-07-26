@@ -1,114 +1,31 @@
 # 微信信息类型解析
 
-| TypeId | Description                    |
-|:-------|:-------------------------------|
-| 1      | 文字消息                           |
-| 3      | 图片消息                           |
-| 34     | 音频消息                           |
-| 42     | 名片                             |
-| 43     | 小视频消息                          |
-| 47     | 动画表情                           |
-| 49     | app消息类型，已知有转账、开始共享实时位置、合并转发聊天记录、收到文件 |
-| 51     | 手机客户端切换聊天对象                    |
-| 10000  | 拓展消息类型，已知有红包、停止共享实时位置、AA收款     |
-| 10002  | 撤回消息                           |
+消息根据MsgType来分为很多类型，有些消息单单依据MsgType还不够，还要依靠更多信息来判断类别（比如AppMsgType）
 
-## Type 3 图片消息
+| 消息类型\字段    | MsgType | AppMsgType | Status | ImgStatus | Content          | Remark                                           |
+| :--------------- | :------ | :--------- | :----- | :-------- | :--------------- | :----------------------------------------------- |
+| 文字消息         | 1       | 0          | 3      | 1         | 消息内容         |                                                  |
+| 发送位置         | 1       | 0          | 3      | 1         | 地名             | SubMsgType为48                                   |
+| 图片消息         | 3       | 0          | 3      | 2         | @xxxx            |                                                  |
+| 音频消息         | 34      | 0          | 3      | 1         | @xxxx            |                                                  |
+| 添加好友消息     | 37      | 0          | 3      | 1         | xml              | 发件人一定是fmessage，RecommendInfo里有对方信息  |
+| 名片             | 42      | 0          | 3      | 1         | xml              |                                                  |
+| 视频消息         | 43      | 0          | 3      | 1         | @xxxx            |                                                  |
+| 自定义动画表情   | 47      | 0          | 3      | 2         | xml              |                                                  |
+| 有版权动画表情   | 47      | 0          | 3      | 2         | 空               | 与自定义的相比，有版权的Content是空的            |
+| 收到图文消息     | 49      | 5          | 3      | 2         | xml              | FileName为网页标题,URL为页面地址                 |
+| 收到文件         | 49      | 6          | 3      | 1         | xml              |                                                  |
+| 转账             | 49      | 2000       | 3      | 1         | xml              |                                                  |
+| 开始共享位置     | 49      | 17         | 3      | 1         | xml              | FileName为「我发起了位置共享」                   |
+| 合并转发聊天记录 | 49      | 0          | 3      | 1         | 不支持,在手机看  | 该类型暂不支持，请在手机上查看                   |
+| 手机进入聊天界面 | 51      | 0          | 3      | 1         | None             | StatusNotifyUserName中为目标UserName             |
+| 红包             | 10000   | 0          | 3      | 1         | 红包请在手机查看 | 灰色无边框：收到红包，请在手机上查看             |
+| 停止共享实时位置 | 10000   | 0          | 4      | 1         | 位置共享已经结束 | 灰字无边框：位置共享已经结束                     |
+| AA收款           | 10000   | 0          | 3      | 1         | 群收款手机查看   | 灰字无边框：群收款消息，请在手机上查看           |
+| 撤回消息         | 10002   | 0          | 4      | 1         | xml              | 撤回消息的xml中包含了被撤回的消息的MsgID         |
+| 小程序消息       | 49      | 33         | 3      | 2         | xml              | xml中有小程序分享的一些详情,包括标题、跳转地址等 |
+| 通过好友验证消息 | 10000   | 0          | 4      | 1         | 已添加可聊天     | 灰字无边框：你已添加了K2，现在可以开始聊天了。   |
 
-| SpecialField | UseFor                  |
-|:-------------|:------------------------|
-| ImgStatus    | 2                       |
-| Status       | 3                       |
+当MsgType为49时，都代表这是一个基于app的消息，需要根据AppMsgType来判断消息类型，网页版只有处理收到文件的App消息类型（AppMsgType=6）其他的App消息只能简单显示
 
-## Type 34 音频消息
-
-| SpecialField | UseFor                  |
-|:-------------|:------------------------|
-| ImgStatus    | 1                       |
-| Status       | 3                       |
-
-## Type 43 小视频消息
-
-| SpecialField | UseFor                |
-|:-------------|:----------------------|
-| ImgStatus    | 1                     |
-| Status       | 3                     |
-
-## Type47 动画表情
-
-| SpecialField | UseFor             |
-|:-------------|:-------------------|
-| Content      | html转义的xml，记录了表情地址 |
-| ImgStatus    | 2                  |
-| Status       | 3                  |
-
-## Type 49 程序消息
-
-### AppMsgType 6 收到文件
-
-| SpecialField | UseFor |
-|:-------------|:-------|
-| AppMsgType   | 6      |
-| FileName     | 记录文件名  |
-| Status       | 3      |
-| ImgStatus    | 1      |
-
-### AppMsgType 2000 收到转账
-
-| SpecialField | UseFor |
-|:-------------|:-------|
-| AppMsgType   | 2000   |
-| FileName     | ???    |
-| Status       | 3      |
-| ImgStatus    | 1      |
-
-### AppMsgType 17 开始共享实时位置
-
-| SpecialField | UseFor |
-|:-------------|:-------|
-| AppMsgType   | 17     |
-| FileName     | ???    |
-| Status       | 3      |
-| ImgStatus    | 1      |
-
-### AppMsgType 0 合并转发聊天记录
-
-| SpecialField | UseFor |
-|:-------------|:-------|
-| AppMsgType   | 0      |
-| Status       | 3      |
-| ImgStatus    | 1      |
-
-## Type 10000 扩展消息类型
-
-### AppMsgType 0 停止共享实时位置
-
-| SpecialField | UseFor |
-|:-------------|:-------|
-| AppMsgType   | 0      |
-| Content      | ???    |
-| Status       | 4      |
-
-### AppMsgType 0 红包
-
-| SpecialField | UseFor |
-|:-------------|:-------|
-| AppMsgType   | 0      |
-| Content      | ???    |
-| Status       | 4      |
-
-### AppMsgType 0 AA收款
-
-| SpecialField | UseFor |
-|:-------------|:-------|
-| AppMsgType   | 0      |
-| Content      | ???    |
-| Status       | 4      |
-| ImgStatus    | 1      |
-
-## Type 10002 撤回消息
-
-| SpecialField | UseFor |
-|:-------------|:-------|
-| Status       | 4      |
-| ImgStatus    | 1      |
+当MsgType为10000时，消息的Content会直接以灰色的没有边框的文字显示在聊天框中，区分消息类型只能依靠Content
