@@ -10,6 +10,7 @@
   - [接收文件](#%e6%8e%a5%e6%94%b6%e6%96%87%e4%bb%b6)
   - [接收名片](#%e6%8e%a5%e6%94%b6%e5%90%8d%e7%89%87)
   - [接收定位](#%e6%8e%a5%e6%94%b6%e5%ae%9a%e4%bd%8d)
+  - [接收撤回消息](#%e6%8e%a5%e6%94%b6%e6%92%a4%e5%9b%9e%e6%b6%88%e6%81%af)
 
 ---
 
@@ -539,3 +540,73 @@
 ```
 
 如果要获取地址地图截图，将Content中地名后面的uri拼接到{{apiDomain}}后面即可
+
+---
+
+## 接收撤回消息
+
+当收到撤回消息是，Msg本体如下，MsgType=10002
+
+``` json
+{
+    "MsgId": "55000000000000000",
+    "FromUserName": "@xxxxxxxxxxxxxxxxxxx",
+    "ToUserName": "@xxxxxxxxxxxxxxxxxxx",
+    "MsgType": 10002,
+    "Content": "&lt;sysmsg type=\"revokemsg\"&gt;<br/>\t&lt;revokemsg&gt;<br/>\t\t&lt;session&gt;wxid_xxxxxxx&lt;/session&gt;<br/>\t\t&lt;oldmsgid&gt;1660000000&lt;/oldmsgid&gt;<br/>\t\t&lt;msgid&gt;41000000000000000&lt;/msgid&gt;<br/>\t\t&lt;replacemsg&gt;&lt;![CDATA[\"xx\" 撤回了一条消息]]&gt;&lt;/replacemsg&gt;<br/>\t&lt;/revokemsg&gt;<br/>&lt;/sysmsg&gt;<br/>",
+    "Status": 4,
+    "ImgStatus": 1,
+    "CreateTime": 1560000000,
+    "VoiceLength": 0,
+    "PlayLength": 0,
+    "FileName": "",
+    "FileSize": "",
+    "MediaId": "",
+    "Url": "",
+    "AppMsgType": 0,
+    "StatusNotifyCode": 0,
+    "StatusNotifyUserName": "",
+    "RecommendInfo": {
+        "UserName": "",
+        "NickName": "",
+        "QQNum": 0,
+        "Province": "",
+        "City": "",
+        "Content": "",
+        "Signature": "",
+        "Alias": "",
+        "Scene": 0,
+        "VerifyFlag": 0,
+        "AttrStatus": 0,
+        "Sex": 0,
+        "Ticket": "",
+        "OpCode": 0
+    },
+    "ForwardFlag": 0,
+    "AppInfo": {
+        "AppID": "",
+        "Type": 0
+    },
+    "HasProductId": 0,
+    "Ticket": "",
+    "ImgHeight": 0,
+    "ImgWidth": 0,
+    "SubMsgType": 0,
+    "NewMsgId": 55000000000000000,
+    "OriContent": "",
+    "EncryFileName": ""
+}
+```
+
+撤回消息中很重要的被撤回的MsgID在消息content中的xml里，将content进行Unescape后得进行html渲染（主要是\t和br换行）到如下xml对象
+
+``` xml
+<sysmsg type=\"revokemsg\">
+    <revokemsg>
+        <session>wxid_xxxxxxx</session>
+        <oldmsgid>1660000000</oldmsgid>
+        <msgid>41000000000000000</msgid><!--就这条最重要，这条标记着被撤回的消息的ID-->
+        <replacemsg><![CDATA[\"xx\" 撤回了一条消息]]></replacemsg>
+    </revokemsg>
+</sysmsg>
+```
