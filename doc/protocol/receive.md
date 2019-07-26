@@ -2,6 +2,82 @@
 
 当webwxsync接口接收到新信息时，媒体类的信息需要二次处理
 
+- [接收信息](#%e6%8e%a5%e6%94%b6%e4%bf%a1%e6%81%af)
+  - [接收图片](#%e6%8e%a5%e6%94%b6%e5%9b%be%e7%89%87)
+  - [接收文件](#%e6%8e%a5%e6%94%b6%e6%96%87%e4%bb%b6)
+
+## 接收图片
+
+当接收到图片消息时，Msg会是如下模样
+其中需要用到的消息只有MsgID，其余内容并未发现有用之处
+
+``` json
+{
+    "MsgId": "4600000000000000000",
+    "FromUserName": "@@xxxxxxxxxxxxxxxxx",
+    "ToUserName": "@xxxxxxxxxxx",
+    "MsgType": 3, // type = 3代表是图片消息
+    "Content": "@xxxxxxxxxxx:<br/>@xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "Status": 3,
+    "ImgStatus": 2,
+    "CreateTime": 1560000000,
+    "VoiceLength": 0,
+    "PlayLength": 0,
+    "FileName": "",
+    "FileSize": "",
+    "MediaId": "",
+    "Url": "",
+    "AppMsgType": 0,
+    "StatusNotifyCode": 0,
+    "StatusNotifyUserName": "",
+    "RecommendInfo": {
+        "UserName": "",
+        "NickName": "",
+        "QQNum": 0,
+        "Province": "",
+        "City": "",
+        "Content": "",
+        "Signature": "",
+        "Alias": "",
+        "Scene": 0,
+        "VerifyFlag": 0,
+        "AttrStatus": 0,
+        "Sex": 0,
+        "Ticket": "",
+        "OpCode": 0
+    },
+    "ForwardFlag": 0,
+    "AppInfo": {
+        "AppID": "",
+        "Type": 0
+    },
+    "HasProductId": 0,
+    "Ticket": "",
+    "ImgHeight": 0,
+    "ImgWidth": 0,
+    "SubMsgType": 0,
+    "NewMsgId": 4600000000000000000,
+    "OriContent": "",
+    "EncryFileName": ""
+}
+```
+
+要下载图片内容，则调用以下api
+
+| Key         | Value                                                      | Remark             |
+| ----------- | ---------------------------------------------------------- | ------------------ |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetmsgimg> |                    |
+| Method      | Get                                                        |                    |
+| Param       | MsgID                                                      | 填上面的MsgID      |
+| Param       | skey                                                       | 填登陆信息中的skey |
+| Param       | type                                                       | 填slave            |
+
+**Response:**
+
+返回值的body可以直接保存为图片，文件类型可以参考Header中的Content-Type
+
+---
+
 ## 接收文件
 
 当收到文件消息，Msg会长下面这样
