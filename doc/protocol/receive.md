@@ -8,6 +8,9 @@
   - [接收视频](#%e6%8e%a5%e6%94%b6%e8%a7%86%e9%a2%91)
   - [接收动图](#%e6%8e%a5%e6%94%b6%e5%8a%a8%e5%9b%be)
   - [接收文件](#%e6%8e%a5%e6%94%b6%e6%96%87%e4%bb%b6)
+  - [接收名片](#%e6%8e%a5%e6%94%b6%e5%90%8d%e7%89%87)
+
+---
 
 ## 接收图片
 
@@ -412,3 +415,63 @@
 **Response:**
 
 返回值的body可以直接保存为文件，文件名在Header的Content-Disposition字段中
+
+---
+
+## 接收名片
+
+接收到名片后，Msg如下（MsgType=42）
+
+``` json
+{
+    "MsgId": "8500000000000000000",
+    "FromUserName": "@@xxxxxxxxxxx",
+    "ToUserName": "@xxxxxxxxx",
+    "MsgType": 42, // 名片消息MsgType为42
+    // Content中是一个xml对象，个人名片字段更多(但基本都是空值)，公众号名片少几个字段，但是都有填值
+    "Content": "@xxxxxxxxxxx:<br/>&lt;?xml version=\"1.0\"?&gt;<br/>&lt;msg bigheadimgurl=\"http://wx.qlogo.cn/mmhead/ver_1/xxxx/0\" smallheadimgurl=\"http://wx.qlogo.cn/mmhead/ver_1/xxxx/132\" username=\"v1_xxxx@stranger\" nickname=\"xxxx\"  shortpy=\"\" alias=\"\" imagestatus=\"3\" scene=\"17\" province=\"\" city=\"\" sign=\"\" sex=\"0\" certflag=\"0\" certinfo=\"\" brandIconUrl=\"\" brandHomeUrl=\"\" brandSubscriptConfigUrl=\"\" brandFlags=\"0\" regionCode=\"\" antispamticket=\"v2_xxxx@stranger\" /&gt;<br/>",
+    "Status": 3,
+    "ImgStatus": 1,
+    "CreateTime": 1560000000,
+    "VoiceLength": 0,
+    "PlayLength": 0,
+    "FileName": "",
+    "FileSize": "",
+    "MediaId": "",
+    "Url": "",
+    "AppMsgType": 0,
+    "StatusNotifyCode": 0,
+    "StatusNotifyUserName": "",
+    "RecommendInfo": {
+        "UserName": "@xxxxxxxxxxxxxxx", // 名片中对方的UserName
+        "NickName": "xxx", // 对方的昵称
+        "QQNum": 0,
+        "Province": "",
+        "City": "",
+        "Content": "",
+        "Signature": "",
+        "Alias": "",
+        "Scene": 17, // 固定值17？
+        "VerifyFlag": 0, // 这个VerifyFlag可以用来判定公众号，公众号是24
+        "AttrStatus": 32,
+        "Sex": 0,
+        "Ticket": "",
+        "OpCode": 0
+    },
+    "ForwardFlag": 0,
+    "AppInfo": {
+        "AppID": "",
+        "Type": 0
+    },
+    "HasProductId": 0,
+    "Ticket": "",
+    "ImgHeight": 0,
+    "ImgWidth": 0,
+    "SubMsgType": 0,
+    "NewMsgId": 8500000000000000000,
+    "OriContent": "",
+    "EncryFileName": ""
+}
+```
+
+现在收到名片后无法添加为联系人or关注，所以没有后续处理了
