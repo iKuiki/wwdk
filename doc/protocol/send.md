@@ -10,6 +10,7 @@
   - [发送图片消息](#%e5%8f%91%e9%80%81%e5%9b%be%e7%89%87%e6%b6%88%e6%81%af)
   - [发送视频消息](#%e5%8f%91%e9%80%81%e8%a7%86%e9%a2%91%e6%b6%88%e6%81%af)
   - [发送动图消息](#%e5%8f%91%e9%80%81%e5%8a%a8%e5%9b%be%e6%b6%88%e6%81%af)
+  - [发送文件](#%e5%8f%91%e9%80%81%e6%96%87%e4%bb%b6)
 
 ## 消息已读
 
@@ -301,3 +302,63 @@ uploadmediarequest字段需要将一下json对象作为字符串传入
 ```
 
 发送动图消息后的返回与发送文字消息后的返回也一毛一样，我就也不重复了
+
+
+---
+
+## 发送文件
+
+发送文件需要先调用上传文件的接口将文件上传后获取MediaID，获取到MediaID后调用如下接口
+
+| Key         | Value                                                       | Remark                             |
+| ----------- | ----------------------------------------------------------- | ---------------------------------- |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxsendappmsg> |                                    |
+| Method      | POST                                                        |                                    |
+| Param       | fun                                                         | 填async                            |
+| Param       | f                                                           | 填json                             |
+| Param       | pass_ticket                                                 | 部分Domain需要传，保险起见可以都传 |
+
+**Body (Json):**
+
+``` json
+{
+    "BaseRequest": {
+        "Uin":"210000000",
+        "Sid":"QQxxxxxxxxxxxxxx",
+        "Skey":"@crypt_a6xxxxxx_6xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "DeviceID":"e980000000000000"
+    },
+    "Msg": {
+        "Type": 6, // 文件的MsgType为6
+        // Content内为一个xml对象，包含了appid(固定)、上传的文件名、文件大小、上传后的MediaId、文件后缀这几个信息
+        "Content": "<appmsg appid='wxeb7ec651dd0aefa9' sdkver=''><title>fileName.txt</title><des></des><action></action><type>6</type><content></content><url></url><lowurl></lowurl><appattach><totallen>1024</totallen><attachid>@crypt_xxxxxxxxxxxx</attachid><fileext>txt</fileext></appattach><extinfo></extinfo></appmsg>",
+        "FromUserName": "@xxxxxx", // 发件人UserName，填自己的
+        "ToUserName": "@@xxxxxxxxx", // 收件人的UserName
+        "LocalID": "15600000000000000", // 官方用的17位Unix时间戳，不过用14位应该也可以
+        "ClientMsgId": "15600000000000000" // 官方用的17位Unix时间戳，不过用14位应该也可以
+    },
+    "Scene": 0 // 填0
+}
+```
+
+上面Msg中的Content是一个这样的xml对象
+
+``` xml
+<appmsg appid='wxeb7ec651dd0aefa9' sdkver=''> <!--appid为固定的，就填wxeb7ec651dd0aefa9即可-->
+    <title>fileName.txt</title> <!--文件名-->
+    <des></des>
+    <action></action>
+    <type>6</type> <!--固定填写6-->
+    <content></content>
+    <url></url>
+    <lowurl></lowurl>
+    <appattach>
+        <totallen>1024</totallen> <!--文件大小-->
+        <attachid>@crypt_xxxxxxxxxxxx</attachid> <!--调用上传文件接口获得的MediaId-->
+        <fileext>txt</fileext> <!--文件后缀-->
+    </appattach>
+    <extinfo></extinfo>
+</appmsg>
+```
+
+发送文件后的返回与发送文字消息后的返回也一毛一样，我就也不重复了
