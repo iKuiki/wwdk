@@ -7,6 +7,7 @@
   - [撤回消息](#%e6%92%a4%e5%9b%9e%e6%b6%88%e6%81%af)
   - [转发被撤回的图片消息](#%e8%bd%ac%e5%8f%91%e8%a2%ab%e6%92%a4%e5%9b%9e%e7%9a%84%e5%9b%be%e7%89%87%e6%b6%88%e6%81%af)
   - [上传文件](#%e4%b8%8a%e4%bc%a0%e6%96%87%e4%bb%b6)
+  - [发送图片消息](#%e5%8f%91%e9%80%81%e5%9b%be%e7%89%87%e6%b6%88%e6%81%af)
 
 ## 消息已读
 
@@ -60,10 +61,25 @@
         "Content": "hello world", // 消息内容
         "FromUserName": "@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // 自己的username
         "ToUserName": "@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // 对方的username
-        "LocalID": "14900000000000000",
-        "ClientMsgId": "14900000000000000"
+        "LocalID": "14900000000000000", // 直接传13位Unix时间戳即可
+        "ClientMsgId": "14900000000000000" // 直接传13位Unix时间戳即可
     },
     "Scene": 0
+}
+```
+
+**Response:**
+
+返回是一个json对象，里面有MsgID，撤回消息时需要用到MsgID
+
+``` json
+{
+    "BaseResponse": {
+        "Ret": 0,
+        "ErrMsg": ""
+    },
+    "MsgID": "2900000000000000000",
+    "LocalID": "15600000000000000"
 }
 ```
 
@@ -167,3 +183,42 @@ uploadmediarequest字段需要将一下json对象作为字符串传入
     "EncryFileName": "xxxx%2Emp4" // urlEncode后的文件名
 }
 ```
+
+---
+
+## 发送图片消息
+
+发送图片消息需要先调用上传文件的接口将文件上传后获取MediaID，获取到MediaID后调用如下接口
+
+| Key         | Value                                                       | Remark                             |
+| ----------- | ----------------------------------------------------------- | ---------------------------------- |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxsendmsgimg> |                                    |
+| Method      | POST                                                        |                                    |
+| Param       | fun                                                         | 填async                            |
+| Param       | f                                                           | 填json                             |
+| Param       | pass_ticket                                                 | 部分Domain需要传，保险起见可以都传 |
+
+**Body (Json):**
+
+``` json
+{
+    "BaseRequest": {
+        "Uin":"210000000",
+        "Sid":"QQxxxxxxxxxxxxxx",
+        "Skey":"@crypt_a6xxxxxx_6xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "DeviceID":"e980000000000000"
+    },
+    "Msg": {
+        "Type": 3, // 图片消息的MsgType为3
+        "MediaId": "@crypt_xxxxxxxxxxx", // 填通过上传文件接口获取到的MediaId
+        "Content": "", // 图片消息没有内容
+        "FromUserName": "@xxxx", // 发件人UserName，填自己的
+        "ToUserName": "@@xxxxxxxx", // 收件人的UserName
+        "LocalID": "15600000000000000", // 官方用的17位Unix时间戳，不过用14位应该也可以
+        "ClientMsgId": "15600000000000000" // 官方用的17位Unix时间戳，不过用14位应该也可以
+    },
+    "Scene": 0 // 填0
+}
+```
+
+发送图片消息后的返回与发送文字消息后的返回一毛一样，我就不重复了
