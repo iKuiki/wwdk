@@ -6,6 +6,7 @@
   - [接收图片](#%e6%8e%a5%e6%94%b6%e5%9b%be%e7%89%87)
   - [接收语音](#%e6%8e%a5%e6%94%b6%e8%af%ad%e9%9f%b3)
   - [接收视频](#%e6%8e%a5%e6%94%b6%e8%a7%86%e9%a2%91)
+  - [接收动图](#%e6%8e%a5%e6%94%b6%e5%8a%a8%e5%9b%be)
   - [接收文件](#%e6%8e%a5%e6%94%b6%e6%96%87%e4%bb%b6)
 
 ## 接收图片
@@ -69,13 +70,13 @@
 要下载图片内容，则调用以下api
 注：**type参数用于请求缩略图，请求原图时不要添加该参数**
 
-| Key         | Value                                                      | Remark                                                      |
-| ----------- | ---------------------------------------------------------- | ----------------------------------------------------------- |
-| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetmsgimg> |                                                             |
-| Method      | Get                                                        |                                                             |
-| Param       | MsgID                                                      | 填消息的MsgID(注意参数名大小写)                             |
-| Param       | skey                                                       | 填登陆信息中的skey                                          |
-| Param       | type                                                       | 填slave(如果填此参数，则为请求缩略图，删除此参数则请求原图) |
+| Key         | Value                                                      | Remark                                     |
+| ----------- | ---------------------------------------------------------- | ------------------------------------------ |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetmsgimg> |                                            |
+| Method      | Get                                                        |                                            |
+| Param       | MsgID                                                      | 填消息的MsgID(注意参数名大小写)            |
+| Param       | skey                                                       | 填登陆信息中的skey                         |
+| Param       | type                                                       | 填slave为缩略图,不填为原图,如果是动图用big |
 
 **Response:**
 
@@ -228,6 +229,68 @@
 **Response:**
 
 返回值的body可以直接保存为视频，文件类型可以参考Header中的Content-Type，一般而言基本是mp4
+
+---
+
+## 接收动图
+
+如果MsgType为47则为动态表情消息,消息本地如下
+
+``` json
+{
+    "MsgId": "67000000000000000",
+    "FromUserName": "@@xxxxxxxxxxxxxxxxxxxxxxxxx",
+    "ToUserName": "@xxxxxxxxxxxxxxxxxxxxxxxxx",
+    "MsgType": 47, // MsgType 47为动态表情消息
+    // Content中无实质性消息
+    // Content中如果是群聊,则有发言人的UserName
+    // 需要小心一个陷阱,如果是群聊中自己发的,前面是没用UserName的,所以不要尝试获取UserName,会异常
+    "Content": "@xxxxxxxxxxxxxxxxxxxxxxxxx:<br/>&lt;msg&gt;&lt;emoji fromusername=\"xxx\" tousername=\"xxx\" type=\"2\" idbuffer=\"media:0_0\" md5=\"xxxx\" len=\"1024\" productid=\"\" androidmd5=\"xxxx\" androidlen=\"1024\" s60v3md5=\"xxxx\" s60v3len=\"1024\" s60v5md5=\"xxxx\" s60v5len=\"1024\" cdnurl=\"http://emoji.qpic.cn/wx_emoji/xxxxxxxx/\" designerid=\"\" thumburl=\"\" encrypturl=\"http://emoji.qpic.cn/wx_emoji/xxxx/\" aeskey=\"xxxx\" externurl=\"http://emoji.qpic.cn/wx_emoji/xxxx/\" externmd5=\"xxxx\" width=\"80\" height=\"80\" tpurl=\"\" tpauthkey=\"\" attachedtext=\"\" attachedtextcolor=\"\" lensid=\"\"&gt;&lt;/emoji&gt;&lt;/msg&gt;",
+    "Status": 3,
+    "ImgStatus": 2,
+    "CreateTime": 1560000000,
+    "VoiceLength": 0,
+    "PlayLength": 0,
+    "FileName": "",
+    "FileSize": "",
+    "MediaId": "",
+    "Url": "",
+    "AppMsgType": 0,
+    "StatusNotifyCode": 0,
+    "StatusNotifyUserName": "",
+    "RecommendInfo": {
+        "UserName": "",
+        "NickName": "",
+        "QQNum": 0,
+        "Province": "",
+        "City": "",
+        "Content": "",
+        "Signature": "",
+        "Alias": "",
+        "Scene": 0,
+        "VerifyFlag": 0,
+        "AttrStatus": 0,
+        "Sex": 0,
+        "Ticket": "",
+        "OpCode": 0
+    },
+    "ForwardFlag": 0,
+    "AppInfo": {
+        "AppID": "",
+        "Type": 0
+    },
+    "HasProductId": 0,
+    "Ticket": "",
+    "ImgHeight": 80,
+    "ImgWidth": 80,
+    "SubMsgType": 0,
+    "NewMsgId": 67000000000000000,
+    "OriContent": "",
+    "EncryFileName": ""
+}
+```
+
+获取动图本地可以调用保存图片的接口webwxgetmsgimg来保存即可,不过type参数在官方案例中是big
 
 ---
 
