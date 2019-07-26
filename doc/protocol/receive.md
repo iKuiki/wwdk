@@ -4,6 +4,7 @@
 
 - [接收信息](#%e6%8e%a5%e6%94%b6%e4%bf%a1%e6%81%af)
   - [接收图片](#%e6%8e%a5%e6%94%b6%e5%9b%be%e7%89%87)
+  - [接收视频](#%e6%8e%a5%e6%94%b6%e8%a7%86%e9%a2%91)
   - [接收文件](#%e6%8e%a5%e6%94%b6%e6%96%87%e4%bb%b6)
 
 ## 接收图片
@@ -69,13 +70,86 @@
 | ----------- | ---------------------------------------------------------- | ----------------------------------------------------------- |
 | Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetmsgimg> |                                                             |
 | Method      | Get                                                        |                                                             |
-| Param       | MsgID                                                      | 填上面的MsgID                                               |
+| Param       | MsgID                                                      | 填消息的MsgID(注意参数名大小写)                             |
 | Param       | skey                                                       | 填登陆信息中的skey                                          |
 | Param       | type                                                       | 填slave(如果填此参数，则为请求缩略图，删除此参数则请求原图) |
 
 **Response:**
 
 返回值的body可以直接保存为图片，文件类型可以参考Header中的Content-Type
+
+---
+
+## 接收视频
+
+如果接到视频消息，Msg会长的像下面这样
+
+``` json
+{
+    "MsgId": "6000000000000000000",
+    "FromUserName": "@xxxxxxxxxxx",
+    "ToUserName": "@@xxxxxxxxxxxxxxxxxxxxxxxxx",
+    "MsgType": 43, // 43则为视频消息
+    // Content中有视频的分辨率、大小、md5等信息，不过都不是关键信息，可以忽略
+    "Content": "&lt;?xml version=\"1.0\"?&gt;<br/>&lt;msg&gt;<br/>\t&lt;videomsg aeskey=\"qwerty\" cdnthumbaeskey=\"qwerty\" cdnvideourl=\"abcd\" cdnthumburl=\"abcd\" length=\"1000\" playlength=\"1\" cdnthumblength=\"1000\" cdnthumbwidth=\"200\" cdnthumbheight=\"400\" fromusername=\"xxx\" md5=\"xxx\" newmd5=\"xxx\" isad=\"0\" /&gt;<br/>&lt;/msg&gt;<br/>",
+    "Status": 3,
+    "ImgStatus": 1,
+    "CreateTime": 1560000000,
+    "VoiceLength": 0,
+    "PlayLength": 1,
+    "FileName": "",
+    "FileSize": "",
+    "MediaId": "",
+    "Url": "",
+    "AppMsgType": 0,
+    "StatusNotifyCode": 0,
+    "StatusNotifyUserName": "",
+    "RecommendInfo": {
+        "UserName": "",
+        "NickName": "",
+        "QQNum": 0,
+        "Province": "",
+        "City": "",
+        "Content": "",
+        "Signature": "",
+        "Alias": "",
+        "Scene": 0,
+        "VerifyFlag": 0,
+        "AttrStatus": 0,
+        "Sex": 0,
+        "Ticket": "",
+        "OpCode": 0
+    },
+    "ForwardFlag": 0,
+    "AppInfo": {
+        "AppID": "",
+        "Type": 0
+    },
+    "HasProductId": 0,
+    "Ticket": "",
+    "ImgHeight": 400, // 宽
+    "ImgWidth": 200, // 高
+    "SubMsgType": 0,
+    "NewMsgId": 6000000000000000000,
+    "OriContent": "",
+    "EncryFileName": ""
+}
+```
+
+视频的缩略图可以调用查看图片消息的缩略图的接口获取，要下载视频可以通过如下接口下载
+
+注：**type参数用于请求缩略图，请求原图时不要添加该参数**
+
+| Key         | Value                                                     | Remark             |
+| ----------- | --------------------------------------------------------- | ------------------ |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetvideo> |                    |
+| Method      | Get                                                       |                    |
+| Param       | msgid                                                     | 填消息的MsgID      |
+| Param       | skey                                                      | 填登陆信息中的skey |
+
+**Response:**
+
+返回值的body可以直接保存为视频，文件类型可以参考Header中的Content-Type，一般而言基本是mp4
 
 ---
 
