@@ -63,14 +63,15 @@
 ```
 
 要下载图片内容，则调用以下api
+注：**type参数用于请求缩略图，请求原图时不要添加该参数**
 
-| Key         | Value                                                      | Remark             |
-| ----------- | ---------------------------------------------------------- | ------------------ |
-| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetmsgimg> |                    |
-| Method      | Get                                                        |                    |
-| Param       | MsgID                                                      | 填上面的MsgID      |
-| Param       | skey                                                       | 填登陆信息中的skey |
-| Param       | type                                                       | 填slave            |
+| Key         | Value                                                      | Remark                                                      |
+| ----------- | ---------------------------------------------------------- | ----------------------------------------------------------- |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetmsgimg> |                                                             |
+| Method      | Get                                                        |                                                             |
+| Param       | MsgID                                                      | 填上面的MsgID                                               |
+| Param       | skey                                                       | 填登陆信息中的skey                                          |
+| Param       | type                                                       | 填slave(如果填此参数，则为请求缩略图，删除此参数则请求原图) |
 
 **Response:**
 
