@@ -263,3 +263,6 @@ window.synccheck={retcode:"0",selector:"2"} // selector的值的含义还需要�
     }
 }
 ```
+
+AddMsgList中的Msg的处理，需要依据MsgType来区分消息类型，对MsgType的具体分析可参考此处：[MsgType解析](message/messageType.md)
+而遇到需要保存附件的消息，如图片消息、音视频消息、文件消息，则需要在收到消息后再调用对应接口保存附件，可以参考[保存消息附件](receive.md)
