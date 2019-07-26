@@ -148,12 +148,13 @@
 
 注：**type参数用于请求缩略图，请求原图时不要添加该参数**
 
-| Key         | Value                                                     | Remark             |
-| ----------- | --------------------------------------------------------- | ------------------ |
-| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetvoice> |                    |
-| Method      | Get                                                       |                    |
-| Param       | msgid                                                     | 填消息的MsgID      |
-| Param       | skey                                                      | 填登陆信息中的skey |
+| Key         | Value                                                     | Remark                   |
+| ----------- | --------------------------------------------------------- | ------------------------ |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetvoice> |                          |
+| Method      | Get                                                       |                          |
+| Header      | Range: bytes=0-                                           | 很隐蔽，一不小心要漏掉了 |
+| Param       | msgid                                                     | 填消息的MsgID            |
+| Param       | skey                                                      | 填登陆信息中的skey       |
 
 **Response:**
 
@@ -222,12 +223,13 @@
 
 注：**type参数用于请求缩略图，请求原图时不要添加该参数**
 
-| Key         | Value                                                     | Remark             |
-| ----------- | --------------------------------------------------------- | ------------------ |
-| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetvideo> |                    |
-| Method      | Get                                                       |                    |
-| Param       | msgid                                                     | 填消息的MsgID      |
-| Param       | skey                                                      | 填登陆信息中的skey |
+| Key         | Value                                                     | Remark                   |
+| ----------- | --------------------------------------------------------- | ------------------------ |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetvideo> |                          |
+| Method      | Get                                                       |                          |
+| Header      | Range: bytes=0-                                           | 很隐蔽，一不小心要漏掉了 |
+| Param       | msgid                                                     | 填消息的MsgID            |
+| Param       | skey                                                      | 填登陆信息中的skey       |
 
 **Response:**
 
