@@ -19,6 +19,7 @@ import (
 )
 
 // wechatCookie 微信登陆后的cookie凭据，登陆后的消息同步等操作需要此凭据
+// TODO: delete
 type wechatCookie struct {
 	Wxsid      string
 	Wxuin      string // 应该是用户的唯一识别号，同一个用户每次登陆此字段都相同
@@ -28,6 +29,7 @@ type wechatCookie struct {
 	// loadTime   string // 登陆时间(10位时间戳字符串)
 }
 
+// TODO: delete
 type wechatLoginInfo struct {
 	cookie     wechatCookie
 	syncKey    *datastruct.SyncKey
@@ -138,6 +140,7 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 	return w, nil
 }
 
+// TODO: delete
 func (wxwb *WechatWeb) baseRequest() (baseRequest *datastruct.BaseRequest) {
 	return &datastruct.BaseRequest{
 		Uin:      wxwb.loginInfo.cookie.Wxuin,
@@ -148,6 +151,7 @@ func (wxwb *WechatWeb) baseRequest() (baseRequest *datastruct.BaseRequest) {
 }
 
 // refreshCookie 根据response更新cookie
+// TODO: delete
 func (wxwb *WechatWeb) refreshCookie(cookies []*http.Cookie) {
 	for _, c := range cookies {
 		switch c.Name {
@@ -168,6 +172,7 @@ func (wxwb *WechatWeb) refreshCookie(cookies []*http.Cookie) {
 }
 
 // 统一请求
+// TODO: delete
 func (wxwb *WechatWeb) request(req *http.Request) (resp *http.Response, err error) {
 	if req == nil {
 		return nil, errors.New("request is nil")

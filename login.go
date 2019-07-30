@@ -47,6 +47,7 @@ const (
 	LoginStatusGotBatchContact LoginStatus = 7
 )
 
+// TODO: delete
 func (wxwb *WechatWeb) getUUID(loginChannel chan<- LoginChannelItem) (uuid string) {
 	params := url.Values{}
 	params.Set("appid", conf.AppID)
@@ -78,6 +79,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannel
 	var ret map[string]string
 	tip := "1"
 	for true {
+		// TODO: delete
 		redirectURL = func() (redirectURL string) {
 			params := url.Values{}
 			params.Set("tip", tip)
@@ -123,6 +125,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannel
 	return redirectURL
 }
 
+// TODO: delete
 func (wxwb *WechatWeb) getCookie(redirectURL string, loginChannel chan<- LoginChannelItem) {
 	req, _ := http.NewRequest(`GET`, redirectURL+"&fun=new", nil) // 统一不加version=v2了
 	resp, err := wxwb.request(req)
@@ -145,6 +148,7 @@ func (wxwb *WechatWeb) getCookie(redirectURL string, loginChannel chan<- LoginCh
 	wxwb.loginInfo.PassTicket = bodyResp.PassTicket
 }
 
+// TODO: delete
 func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 	data, err := json.Marshal(datastruct.WxInitRequestBody{
 		BaseRequest: wxwb.baseRequest(),
