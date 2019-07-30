@@ -89,7 +89,10 @@ func (api *WechatwebAPI) WebwxNewLoginPage(redirectURL string) (body []byte, err
 	return
 }
 
-// WebwxInit
+// WebwxInit 初始化微信
+// 当获取到登陆凭证后，即可调用此接口初始化微信获取基本信息
+// @return user 当前登陆的用户的信息
+// @return contactList 部分联系人列表⚠️此列表不全，要和后面获取联系人的列表合并，切记切记
 func (api *WechatwebAPI) WebwxInit() (user *datastruct.User, contactList []datastruct.Contact, body []byte, err error) {
 	data, err := json.Marshal(datastruct.WxInitRequestBody{
 		BaseRequest: api.baseRequest(),
