@@ -173,6 +173,7 @@ func (wxwb *WechatWeb) ModifyUserRemakName(userName, remarkName string) (revokeM
 }
 
 // ModifyChatRoomTopic 修改群名
+// TODO: delete
 func (wxwb *WechatWeb) ModifyChatRoomTopic(userName, newTopic string) (revokeMessageRespond *datastruct.ModifyChatRoomTopicRespond, err error) {
 	mctReq := datastruct.ModifyChatRoomTopicRequest{
 		BaseRequest:  wxwb.baseRequest(),

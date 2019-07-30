@@ -94,7 +94,7 @@ func (api *WechatwebAPI) WebwxNewLoginPage(redirectURL string) (body []byte, err
 // @return user 当前登陆的用户的信息
 // @return contactList 部分联系人列表⚠️此列表不全，要和后面获取联系人的列表合并，切记切记
 func (api *WechatwebAPI) WebwxInit() (user *datastruct.User, contactList []datastruct.Contact, body []byte, err error) {
-	data, err := json.Marshal(datastruct.WxInitRequestBody{
+	reqBody, err := json.Marshal(datastruct.WxInitRequestBody{
 		BaseRequest: api.baseRequest(),
 	})
 	if err != nil {
@@ -107,11 +107,11 @@ func (api *WechatwebAPI) WebwxInit() (user *datastruct.User, contactList []datas
 	params.Set("r", tool.GetWxTimeStamp())
 	// resp, err := api.apiRuntime.client.Post("https://"+api.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
 	// 	"application/json;charset=UTF-8",
-	// 	bytes.NewReader(data))
+	// 	bytes.NewReader(reqBody))
 
 	req, err := http.NewRequest("POST",
 		"https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
-		bytes.NewReader(data))
+		bytes.NewReader(reqBody))
 	if err != nil {
 		err = errors.New("create request error: " + err.Error())
 		return

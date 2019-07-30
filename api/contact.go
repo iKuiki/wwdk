@@ -51,7 +51,7 @@ func (api *WechatwebAPI) BatchGetContact(contactItemList []datastruct.BatchGetCo
 	if dataStruct.Count == 0 {
 		return
 	}
-	data, err := json.Marshal(dataStruct)
+	reqBody, err := json.Marshal(dataStruct)
 	if err != nil {
 		err = errors.New("json.Marshal error: " + err.Error())
 		return
@@ -61,7 +61,7 @@ func (api *WechatwebAPI) BatchGetContact(contactItemList []datastruct.BatchGetCo
 	params.Set("r", tool.GetWxTimeStamp())
 	resp, err := api.client.Post("https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?"+params.Encode(),
 		"application/json;charset=UTF-8",
-		bytes.NewReader(data))
+		bytes.NewReader(reqBody))
 	if err != nil {
 		err = errors.New("request error: " + err.Error())
 		return
@@ -83,6 +83,8 @@ func (api *WechatwebAPI) BatchGetContact(contactItemList []datastruct.BatchGetCo
 }
 
 // ModifyUserRemakName 修改联系人备注
+// @param userName 要修改的联系人的UserName
+// @param remarkName 新的备注
 func (api *WechatwebAPI) ModifyUserRemakName(userName, remarkName string) (body []byte, err error) {
 	murReq := datastruct.ModifyRemarkRequest{
 		BaseRequest: api.baseRequest(),
@@ -90,12 +92,12 @@ func (api *WechatwebAPI) ModifyUserRemakName(userName, remarkName string) (body 
 		RemarkName:  remarkName,
 		UserName:    userName,
 	}
-	body, err = json.Marshal(murReq)
+	reqBody, err := json.Marshal(murReq)
 	if err != nil {
-		err = errors.New("Marshal body to json fail: " + err.Error())
+		err = errors.New("Marshal reqBody to json fail: " + err.Error())
 		return
 	}
-	req, err := http.NewRequest("POST", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxoplog", bytes.NewReader(body))
+	req, err := http.NewRequest("POST", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxoplog", bytes.NewReader(reqBody))
 	if err != nil {
 		err = errors.New("create request error: " + err.Error())
 		return
@@ -107,12 +109,12 @@ func (api *WechatwebAPI) ModifyUserRemakName(userName, remarkName string) (body 
 	}
 	defer resp.Body.Close()
 	var murResp datastruct.ModifyRemarkRespond
-	respBody, err := ioutil.ReadAll(resp.Body)
+	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		err = errors.New("read response body error: " + err.Error())
 		return
 	}
-	err = json.Unmarshal(respBody, &murResp)
+	err = json.Unmarshal(body, &murResp)
 	if err != nil {
 		err = errors.New("UnMarshal respond json fail: " + err.Error())
 		return
