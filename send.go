@@ -14,6 +14,7 @@ import (
 )
 
 // StatusNotify 消息已读通知
+// TODO: delete
 func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64) (err error) {
 	msgID, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
 	reqBody := datastruct.StatusNotifyRequest{
@@ -52,6 +53,7 @@ func (wxwb *WechatWeb) StatusNotify(fromUserName, toUserName string, code int64)
 }
 
 // SendTextMessage 发送消息
+// TODO: delete
 func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageRespond *datastruct.SendMessageRespond, err error) {
 	msgReq := datastruct.SendMessageRequest{
 		BaseRequest: wxwb.baseRequest(),
@@ -98,6 +100,7 @@ func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (sendMessageR
 }
 
 // SendRevokeMessage 撤回消息
+// TODO: delete
 func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName string) (revokeMessageRespond *datastruct.RevokeMessageRespond, err error) {
 	srmReq := datastruct.RevokeMessageRequest{
 		BaseRequest: wxwb.baseRequest(),
