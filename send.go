@@ -136,6 +136,7 @@ func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName strin
 }
 
 // ModifyUserRemakName 修改用户备注
+// TODO: delete
 func (wxwb *WechatWeb) ModifyUserRemakName(userName, remarkName string) (revokeMessageRespond *datastruct.ModifyRemarkRespond, err error) {
 	murReq := datastruct.ModifyRemarkRequest{
 		BaseRequest: wxwb.baseRequest(),

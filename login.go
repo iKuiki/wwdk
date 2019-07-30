@@ -223,12 +223,12 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 
 // 获取群聊的成员
 func (wxwb *WechatWeb) getBatchContact() (err error) {
-	dataStruct := datastruct.GetBatchContactRequest{
+	dataStruct := datastruct.BatchGetContactRequest{
 		BaseRequest: wxwb.baseRequest(),
 	}
 	for _, contact := range wxwb.userInfo.contactList {
 		if contact.IsChatroom() {
-			dataStruct.List = append(dataStruct.List, datastruct.GetBatchContactRequestListItem{
+			dataStruct.List = append(dataStruct.List, datastruct.BatchGetContactRequestListItem{
 				UserName: contact.UserName,
 			})
 		}
@@ -252,7 +252,7 @@ func (wxwb *WechatWeb) getBatchContact() (err error) {
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	respStruct := datastruct.GetBatchContactResponse{}
+	respStruct := datastruct.BatchGetContactResponse{}
 	err = json.Unmarshal(body, &respStruct)
 	if err != nil {
 		return errors.New("respond json Unmarshal to struct fail: " + err.Error())

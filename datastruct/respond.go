@@ -43,8 +43,8 @@ type GetContactRespond struct {
 	Seq          int64         `json:"Seq"`
 }
 
-// GetBatchContactResponse 获取群组联系人的返回
-type GetBatchContactResponse struct {
+// BatchGetContactResponse 获取群组联系人的返回
+type BatchGetContactResponse struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
 	ContactList  []Contact     `json:"ContactList"`
 	Count        int64         `json:"Count"`

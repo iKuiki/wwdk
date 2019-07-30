@@ -13,17 +13,17 @@ type WxInitRequestBody struct {
 	BaseRequest *BaseRequest `json:"BaseRequest"`
 }
 
-// GetBatchContactRequestListItem 获取群组联系人的请求的列表元素
-type GetBatchContactRequestListItem struct {
+// BatchGetContactRequestListItem 获取群组联系人的请求的列表元素
+type BatchGetContactRequestListItem struct {
 	ChatRoomID string `json:"ChatRoomId"`
 	UserName   string `json:"UserName"`
 }
 
-// GetBatchContactRequest 获取群组联系人的请求
-type GetBatchContactRequest struct {
+// BatchGetContactRequest 获取群组联系人的请求
+type BatchGetContactRequest struct {
 	BaseRequest *BaseRequest                     `json:"BaseRequest"`
 	Count       int64                            `json:"Count"`
-	List        []GetBatchContactRequestListItem `json:"List"`
+	List        []BatchGetContactRequestListItem `json:"List"`
 }
 
 // GetMessageRequest 获取新消息的轮询请求
