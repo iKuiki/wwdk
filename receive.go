@@ -16,9 +16,10 @@ import (
 
 // getMessage 同步消息
 // 如果同步状态接口返回有新消息需要同步，通过此接口从服务器中获取新消息
-func (wxwb *WechatWeb) getMessage() (gmResp datastruct.GetMessageRespond, err error) {
-	gmResp = datastruct.GetMessageRespond{}
-	data, err := json.Marshal(datastruct.GetMessageRequest{
+// TODO: delete
+func (wxwb *WechatWeb) getMessage() (gmResp datastruct.WebwxSyncRespond, err error) {
+	gmResp = datastruct.WebwxSyncRespond{}
+	data, err := json.Marshal(datastruct.WebwxSyncRequest{
 		BaseRequest: wxwb.baseRequest(),
 		SyncKey:     wxwb.loginInfo.syncKey,
 		Rr:          ^time.Now().Unix() + 1,

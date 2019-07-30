@@ -16,6 +16,7 @@ import (
 
 // assembleSyncKey 组装synckey
 // 将同步需要的synckey组装为请求字符串
+// TODO: delete
 func assembleSyncKey(syncKey *datastruct.SyncKey) string {
 	keys := make([]string, 0)
 	for _, v := range syncKey.List {
@@ -28,6 +29,7 @@ func assembleSyncKey(syncKey *datastruct.SyncKey) string {
 
 // analysisSyncResp 解析同步状态返回值
 // 同步状态返回的接口
+// TODO: delete
 func analysisSyncResp(syncResp string) (result datastruct.SyncCheckRespond) {
 	syncResp = strings.TrimPrefix(syncResp, "{")
 	syncResp = strings.TrimSuffix(syncResp, "}")
@@ -46,6 +48,7 @@ func analysisSyncResp(syncResp string) (result datastruct.SyncCheckRespond) {
 
 // syncCheck 同步状态
 // 轮询微信服务器，如果有新的状态，会通过此接口返回需要同步的信息
+// TODO: delete
 func (wxwb *WechatWeb) syncCheck() (retCode, selector string, err error) {
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())

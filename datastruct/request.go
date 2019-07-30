@@ -26,8 +26,8 @@ type BatchGetContactRequest struct {
 	List        []BatchGetContactRequestListItem `json:"List"`
 }
 
-// GetMessageRequest 获取新消息的轮询请求
-type GetMessageRequest struct {
+// WebwxSyncRequest 获取新消息的轮询请求
+type WebwxSyncRequest struct {
 	BaseRequest *BaseRequest `json:"BaseRequest"`
 	SyncKey     *SyncKey     `json:"SyncKey"`
 	Rr          int64        `json:"rr"`
