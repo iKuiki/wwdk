@@ -2,6 +2,7 @@ package datastruct
 
 import (
 	"github.com/pkg/errors"
+	"regexp"
 	"strings"
 )
 
@@ -100,11 +101,13 @@ func (msg Message) IsChatroom() bool {
 // GetMemberUserName 获取群组消息的发件人
 func (msg Message) GetMemberUserName() (userName string, err error) {
 	if msg.IsChatroom() {
-		splitIndex := strings.Index(msg.Content, ":")
+		splitIndex := strings.Index(msg.Content, ":<br/>")
 		if splitIndex == -1 {
 			err = errors.New("userName not found")
 		} else {
-			userName = msg.Content[:splitIndex]
+			if match, _ := regexp.MatchString("^@\\w+$", msg.Content[:splitIndex]); match {
+				userName = msg.Content[:splitIndex]
+			}
 		}
 	} else {
 		err = errors.New("this message is not chatroon message")
@@ -115,13 +118,12 @@ func (msg Message) GetMemberUserName() (userName string, err error) {
 // GetMemberMsgContent 获取群组消息的内容
 func (msg Message) GetMemberMsgContent() (content string, err error) {
 	if msg.IsChatroom() {
-		splitIndex := strings.Index(msg.Content, ":")
+		splitIndex := strings.Index(msg.Content, ":<br/>")
 		if splitIndex == -1 {
 			err = errors.New("content not found")
 		} else {
-			content = msg.Content[splitIndex+1:]
-			if strings.HasPrefix(content, "<br/>") {
-				content = content[5:]
+			if match, _ := regexp.MatchString("^@\\w+$", msg.Content[:splitIndex]); match {
+				content = msg.Content[splitIndex+1:]
 			}
 		}
 	} else {

@@ -89,10 +89,10 @@ func main() {
 				// 发生联系人变更，处理联系人变更
 				if oldContact, ok := contactMap[item.Contact.UserName]; ok {
 					// 旧联系人存在
-					fmt.Println("Modify contact: ", item.Contact, ", oldContact is: ", oldContact)
+					fmt.Println("Modify contact: ", item.Contact.NickName, ", oldContact is: ", oldContact.NickName)
 				} else {
 					// 旧联系人不存在，此为新联系人
-					fmt.Println("New contact: ", item.Contact)
+					fmt.Println("New contact: ", item.Contact.NickName)
 				}
 				contactMap[item.Contact.UserName] = *item.Contact
 			// 收到新信息

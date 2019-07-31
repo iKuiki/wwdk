@@ -21,7 +21,27 @@ func (wxwb *WechatWeb) GetUser() (user datastruct.User, err error) {
 func (wxwb *WechatWeb) GetContact(username string) (contact datastruct.Contact, err error) {
 	contact, ok := wxwb.userInfo.contactList[username]
 	if !ok {
-		err = errors.New("User not found")
+		// 尝试获取一次
+		contactList, _, _ := wxwb.api.BatchGetContact([]datastruct.BatchGetContactRequestListItem{
+			datastruct.BatchGetContactRequestListItem{
+				UserName: username,
+			},
+		})
+		for _, c := range contactList {
+			wxwb.userInfo.contactList[c.UserName] = c
+			if c.UserName == username {
+				wxwb.logger.Infof("User %s not found, but BatchGetContact got that", c.NickName)
+				wxwb.syncChannel <- SyncChannelItem{
+					Code:    SyncStatusModifyContact,
+					Contact: &c,
+				}
+				contact, ok = c, true
+			}
+		}
+		// 仍旧获取失败
+		if !ok {
+			err = errors.New("User not found")
+		}
 	}
 	return
 }

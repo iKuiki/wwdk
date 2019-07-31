@@ -34,6 +34,7 @@ type SyncChannelItem struct {
 
 // StartServe 启动消息同步服务
 func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
+	wxwb.syncChannel = syncChannel
 	go func() {
 		// 方法结束时关闭channel
 		defer close(syncChannel)
@@ -95,6 +96,7 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 							Code: SyncStatusPanic,
 							Err:  errors.New("Err1101: user has logout"),
 						}
+						return true
 					}
 					wxwb.logger.Infof("SyncCheck error: %s\n", err.Error())
 					syncChannel <- SyncChannelItem{
