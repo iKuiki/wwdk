@@ -43,8 +43,8 @@ type GetContactRespond struct {
 	Seq          int64         `json:"Seq"`
 }
 
-// GetBatchContactResponse 获取群组联系人的返回
-type GetBatchContactResponse struct {
+// BatchGetContactResponse 获取群组联系人的返回
+type BatchGetContactResponse struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
 	ContactList  []Contact     `json:"ContactList"`
 	Count        int64         `json:"Count"`
@@ -56,21 +56,24 @@ type SyncCheckRespond struct {
 	Selector string `json:"selector"`
 }
 
-// GetMessageRespond 取回消息的返回
-type GetMessageRespond struct {
-	BaseResponse    *BaseResponse `json:"BaseResponse"`
-	AddMsgCount     int64         `json:"AddMsgCount"`
-	AddMsgList      []Message     `json:"AddMsgList"`
-	ContinueFlag    int64         `json:"ContinueFlag"`
-	DelContactCount int64         `json:"DelContactCount"`
-	DelContactList  []struct {
-		ContactFlag int64  `json:"ContactFlag"`
-		UserName    string `json:"UserName"`
-	} `json:"DelContactList"`
-	ModChatRoomMemberCount int64         `json:"ModChatRoomMemberCount"`
-	ModChatRoomMemberList  []interface{} `json:"ModChatRoomMemberList"`
-	ModContactCount        int64         `json:"ModContactCount"`
-	ModContactList         []Contact     `json:"ModContactList"`
+// WebwxSyncRespondDelContactListItem 同步时发现的已删除的联系人
+type WebwxSyncRespondDelContactListItem struct {
+	ContactFlag int64  `json:"ContactFlag"`
+	UserName    string `json:"UserName"`
+}
+
+// WebwxSyncRespond 取回消息的返回
+type WebwxSyncRespond struct {
+	BaseResponse           *BaseResponse                        `json:"BaseResponse"`
+	AddMsgCount            int64                                `json:"AddMsgCount"`
+	AddMsgList             []Message                            `json:"AddMsgList"`
+	ContinueFlag           int64                                `json:"ContinueFlag"`
+	DelContactCount        int64                                `json:"DelContactCount"`
+	DelContactList         []WebwxSyncRespondDelContactListItem `json:"DelContactList"`
+	ModChatRoomMemberCount int64                                `json:"ModChatRoomMemberCount"`
+	ModChatRoomMemberList  []interface{}                        `json:"ModChatRoomMemberList"`
+	ModContactCount        int64                                `json:"ModContactCount"`
+	ModContactList         []Contact                            `json:"ModContactList"`
 	Profile                *struct {
 		Alias     string `json:"Alias"`
 		BindEmail struct {

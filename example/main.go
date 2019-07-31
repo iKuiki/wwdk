@@ -6,10 +6,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/ikuiki/storer"
 	"github.com/ikuiki/wwdk"
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/ikuiki/wwdk/datastruct/appmsg"
-	"github.com/ikuiki/storer"
 	"github.com/mdp/qrterminal"
 	"github.com/pkg/errors"
 )
@@ -46,7 +46,7 @@ func main() {
 		case wwdk.LoginStatusGotContact:
 			// 获取联系人完成
 			fmt.Println("got contact")
-		case wwdk.LoginStatusGotBatchContact:
+		case wwdk.LoginStatusBatchGotContact:
 			// 获取群成员完成
 			fmt.Println("got batch contact")
 			break

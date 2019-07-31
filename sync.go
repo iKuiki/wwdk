@@ -1,82 +1,13 @@
 package wwdk
 
 import (
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
+	"github.com/ikuiki/wwdk/api"
 	"time"
 
 	"github.com/pkg/errors"
 
 	"github.com/ikuiki/wwdk/datastruct"
-	"github.com/ikuiki/wwdk/tool"
 )
-
-// assembleSyncKey 组装synckey
-// 将同步需要的synckey组装为请求字符串
-func assembleSyncKey(syncKey *datastruct.SyncKey) string {
-	keys := make([]string, 0)
-	for _, v := range syncKey.List {
-		keys = append(keys, strconv.FormatInt(v.Key, 10)+"_"+strconv.FormatInt(v.Val, 10))
-	}
-	ret := strings.Join(keys, "|")
-	// return url.QueryEscape(ret)
-	return ret
-}
-
-// analysisSyncResp 解析同步状态返回值
-// 同步状态返回的接口
-func analysisSyncResp(syncResp string) (result datastruct.SyncCheckRespond) {
-	syncResp = strings.TrimPrefix(syncResp, "{")
-	syncResp = strings.TrimSuffix(syncResp, "}")
-	arr := strings.Split(syncResp, ",")
-	result = datastruct.SyncCheckRespond{}
-	for _, v := range arr {
-		if strings.HasPrefix(v, "retcode") {
-			result.Retcode = strings.TrimPrefix(strings.TrimSuffix(v, `"`), `retcode:"`)
-		}
-		if strings.HasPrefix(v, "selector") {
-			result.Selector = strings.TrimPrefix(strings.TrimSuffix(v, `"`), `selector:"`)
-		}
-	}
-	return result
-}
-
-// syncCheck 同步状态
-// 轮询微信服务器，如果有新的状态，会通过此接口返回需要同步的信息
-func (wxwb *WechatWeb) syncCheck() (retCode, selector string, err error) {
-	params := url.Values{}
-	params.Set("r", tool.GetWxTimeStamp())
-	params.Set("sid", wxwb.loginInfo.cookie.Wxsid)
-	params.Set("uin", wxwb.loginInfo.cookie.Wxuin)
-	params.Set("deviceid", wxwb.apiRuntime.deviceID)
-	params.Set("synckey", assembleSyncKey(wxwb.loginInfo.syncKey))
-	params.Set("_", tool.GetWxTimeStamp())
-	req, err := http.NewRequest("GET", "https://webpush."+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/synccheck?"+params.Encode(), nil)
-	if err != nil {
-		return "", "", errors.New("create request error: " + err.Error())
-	}
-	resp, err := wxwb.request(req)
-	if err != nil {
-		return "", "", errors.New("request error: " + err.Error())
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	retArr := tool.ExtractWxWindowRespond(string(body))
-
-	ret := analysisSyncResp(retArr["window.synccheck"])
-	return ret.Retcode, ret.Selector, nil
-
-	// if ret.Retcode != "0" {
-	// 	if ret.Retcode == "1101" {
-	// 		return "Logout", nil
-	// 	}
-	// 	return "", errors.New("respond Retcode " + ret.Retcode)
-	// }
-	// return ret.Selector, nil
-}
 
 // SyncStatus 同步状态
 type SyncStatus int32
@@ -107,18 +38,13 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 		// 方法结束时关闭channel
 		defer close(syncChannel)
 		getMessage := func() {
-			gmResp, err := wxwb.getMessage()
+			modContacts, delContacts, addMessage, _, err := wxwb.api.WebwxSync()
 			if err != nil {
-				wxwb.logger.Infof("GetMessage error: %s\n", err.Error())
+				wxwb.logger.Infof("WebwxSync error: %s\n", err.Error())
 				return
 			}
-			if gmResp.SyncCheckKey != nil {
-				wxwb.loginInfo.syncKey = gmResp.SyncCheckKey
-			} else {
-				wxwb.loginInfo.syncKey = gmResp.SyncKey
-			}
 			// 处理新增联系人
-			for _, contact := range gmResp.ModContactList {
+			for _, contact := range modContacts {
 				wxwb.runInfo.ContactModifyCount++
 				wxwb.logger.Infof("Modify contact: %s\n", contact.NickName)
 				syncChannel <- SyncChannelItem{
@@ -127,8 +53,12 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 				}
 				wxwb.userInfo.contactList[contact.UserName] = contact
 			}
+			// 处理删除的联系人
+			for _, delContact := range delContacts {
+				delete(wxwb.userInfo.contactList, delContact.UserName)
+			}
 			// 新消息
-			for _, msg := range gmResp.AddMsgList {
+			for _, msg := range addMessage {
 				if msg.MsgType == datastruct.RevokeMsg {
 					wxwb.runInfo.MessageRevokeCount++
 				} else {
@@ -157,32 +87,21 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 						}
 					}
 				}()
-				code, selector, err := wxwb.syncCheck()
+				_, selector, _, err := wxwb.api.SyncCheck()
 				if err != nil {
+					if err == api.ErrLogout {
+						wxwb.logger.Info("User has logout web wechat, exit...\n")
+						syncChannel <- SyncChannelItem{
+							Code: SyncStatusPanic,
+							Err:  errors.New("Err1101: user has logout"),
+						}
+					}
 					wxwb.logger.Infof("SyncCheck error: %s\n", err.Error())
 					syncChannel <- SyncChannelItem{
 						Code: SyncStatusErrorOccurred,
 						Err:  err,
 					}
 					return false
-				}
-				if code != "0" {
-					switch code {
-					case "1101":
-						wxwb.logger.Info("User has logout web wechat, exit...\n")
-						syncChannel <- SyncChannelItem{
-							Code: SyncStatusPanic,
-							Err:  errors.New("Err1101: user has logout"),
-						}
-						return true
-					case "1100":
-						wxwb.logger.Info("sync host unavaliable, choose a new one...\n")
-						syncChannel <- SyncChannelItem{
-							Code: SyncStatusErrorOccurred,
-							Err:  errors.New("Err1100: sync host unavaliable"),
-						}
-						return false
-					}
 				}
 				// wxwb.logger.Infof("selector: %v\n", selector)
 				switch selector {

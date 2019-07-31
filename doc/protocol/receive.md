@@ -9,6 +9,8 @@
   - [接收动图](#%e6%8e%a5%e6%94%b6%e5%8a%a8%e5%9b%be)
   - [接收文件](#%e6%8e%a5%e6%94%b6%e6%96%87%e4%bb%b6)
   - [接收名片](#%e6%8e%a5%e6%94%b6%e5%90%8d%e7%89%87)
+  - [接收定位](#%e6%8e%a5%e6%94%b6%e5%ae%9a%e4%bd%8d)
+  - [接收撤回消息](#%e6%8e%a5%e6%94%b6%e6%92%a4%e5%9b%9e%e6%b6%88%e6%81%af)
 
 ---
 
@@ -146,14 +148,13 @@
 
 要下载声音可以通过如下接口下载
 
-注：**type参数用于请求缩略图，请求原图时不要添加该参数**
-
-| Key         | Value                                                     | Remark             |
-| ----------- | --------------------------------------------------------- | ------------------ |
-| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetvoice> |                    |
-| Method      | Get                                                       |                    |
-| Param       | msgid                                                     | 填消息的MsgID      |
-| Param       | skey                                                      | 填登陆信息中的skey |
+| Key         | Value                                                     | Remark                   |
+| ----------- | --------------------------------------------------------- | ------------------------ |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetvoice> |                          |
+| Method      | Get                                                       |                          |
+| Header      | Range: bytes=0-                                           | 很隐蔽，一不小心要漏掉了 |
+| Param       | msgid                                                     | 填消息的MsgID            |
+| Param       | skey                                                      | 填登陆信息中的skey       |
 
 **Response:**
 
@@ -222,12 +223,13 @@
 
 注：**type参数用于请求缩略图，请求原图时不要添加该参数**
 
-| Key         | Value                                                     | Remark             |
-| ----------- | --------------------------------------------------------- | ------------------ |
-| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetvideo> |                    |
-| Method      | Get                                                       |                    |
-| Param       | msgid                                                     | 填消息的MsgID      |
-| Param       | skey                                                      | 填登陆信息中的skey |
+| Key         | Value                                                     | Remark                   |
+| ----------- | --------------------------------------------------------- | ------------------------ |
+| Request URL | <https://{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxgetvideo> |                          |
+| Method      | Get                                                       |                          |
+| Header      | Range: bytes=0-                                           | 很隐蔽，一不小心要漏掉了 |
+| Param       | msgid                                                     | 填消息的MsgID            |
+| Param       | skey                                                      | 填登陆信息中的skey       |
 
 **Response:**
 
@@ -475,3 +477,134 @@
 ```
 
 现在收到名片后无法添加为联系人or关注，所以没有后续处理了
+
+---
+
+## 接收定位
+
+定位的Msg本体如下，其与文字消息的MsgType相同
+
+``` json
+{
+    "MsgId": "790000000000000",
+    "FromUserName": "@xxxxxxxxxxxxxxxx",
+    "ToUserName": "@xxxxxxxxx",
+    "MsgType": 1,
+    // 地名，然后后面接着获取地址地图截图的url
+    "Content": "深圳市xxxx:<br/>/cgi-bin/mmwebwx-bin/webwxgetpubliclinkimg?url=xxx&msgid=790000000000000&pictype=location",
+    "Status": 3,
+    "ImgStatus": 1,
+    "CreateTime": 1560000000,
+    "VoiceLength": 0,
+    "PlayLength": 0,
+    "FileName": "",
+    "FileSize": "",
+    "MediaId": "",
+    "Url": "http://apis.map.qq.com/uri/v1/geocoder?coord=22.000000,113.000000", // 跳转向定位的链接，内含腾讯系的坐标
+    "AppMsgType": 0,
+    "StatusNotifyCode": 0,
+    "StatusNotifyUserName": "",
+    "RecommendInfo": {
+        "UserName": "",
+        "NickName": "",
+        "QQNum": 0,
+        "Province": "",
+        "City": "",
+        "Content": "",
+        "Signature": "",
+        "Alias": "",
+        "Scene": 0,
+        "VerifyFlag": 0,
+        "AttrStatus": 0,
+        "Sex": 0,
+        "Ticket": "",
+        "OpCode": 0
+    },
+    "ForwardFlag": 0,
+    "AppInfo": {
+        "AppID": "",
+        "Type": 0
+    },
+    "HasProductId": 0,
+    "Ticket": "",
+    "ImgHeight": 0,
+    "ImgWidth": 0,
+    "SubMsgType": 48, // 可能这个是关键
+    "NewMsgId": 790000000000000,
+    // OriContent中包含一个xml，内含经纬度、地名等信息
+    "OriContent": "<?xml version=\"1.0\"?>\n<msg>\n\t<location x=\"22.000000\" y=\"113.000000\" scale=\"16\" label=\"深圳市xxxx\" maptype=\"0\" poiname=\"[位置]\" poiid=\"\" />\n</msg>\n",
+    "EncryFileName": ""
+}
+```
+
+如果要获取地址地图截图，将Content中地名后面的uri拼接到{{apiDomain}}后面即可
+
+---
+
+## 接收撤回消息
+
+当收到撤回消息是，Msg本体如下，MsgType=10002
+
+``` json
+{
+    "MsgId": "55000000000000000",
+    "FromUserName": "@xxxxxxxxxxxxxxxxxxx",
+    "ToUserName": "@xxxxxxxxxxxxxxxxxxx",
+    "MsgType": 10002,
+    "Content": "&lt;sysmsg type=\"revokemsg\"&gt;<br/>\t&lt;revokemsg&gt;<br/>\t\t&lt;session&gt;wxid_xxxxxxx&lt;/session&gt;<br/>\t\t&lt;oldmsgid&gt;1660000000&lt;/oldmsgid&gt;<br/>\t\t&lt;msgid&gt;41000000000000000&lt;/msgid&gt;<br/>\t\t&lt;replacemsg&gt;&lt;![CDATA[\"xx\" 撤回了一条消息]]&gt;&lt;/replacemsg&gt;<br/>\t&lt;/revokemsg&gt;<br/>&lt;/sysmsg&gt;<br/>",
+    "Status": 4,
+    "ImgStatus": 1,
+    "CreateTime": 1560000000,
+    "VoiceLength": 0,
+    "PlayLength": 0,
+    "FileName": "",
+    "FileSize": "",
+    "MediaId": "",
+    "Url": "",
+    "AppMsgType": 0,
+    "StatusNotifyCode": 0,
+    "StatusNotifyUserName": "",
+    "RecommendInfo": {
+        "UserName": "",
+        "NickName": "",
+        "QQNum": 0,
+        "Province": "",
+        "City": "",
+        "Content": "",
+        "Signature": "",
+        "Alias": "",
+        "Scene": 0,
+        "VerifyFlag": 0,
+        "AttrStatus": 0,
+        "Sex": 0,
+        "Ticket": "",
+        "OpCode": 0
+    },
+    "ForwardFlag": 0,
+    "AppInfo": {
+        "AppID": "",
+        "Type": 0
+    },
+    "HasProductId": 0,
+    "Ticket": "",
+    "ImgHeight": 0,
+    "ImgWidth": 0,
+    "SubMsgType": 0,
+    "NewMsgId": 55000000000000000,
+    "OriContent": "",
+    "EncryFileName": ""
+}
+```
+
+撤回消息中很重要的被撤回的MsgID在消息content中的xml里，将content进行Unescape后得进行html渲染（主要是\t和br换行）到如下xml对象
+
+``` xml
+<sysmsg type=\"revokemsg\">
+    <revokemsg>
+        <session>wxid_xxxxxxx</session>
+        <oldmsgid>1660000000</oldmsgid>
+        <msgid>41000000000000000</msgid><!--就这条最重要，这条标记着被撤回的消息的ID-->
+        <replacemsg><![CDATA[\"xx\" 撤回了一条消息]]></replacemsg>
+    </revokemsg>
+</sysmsg>
+```

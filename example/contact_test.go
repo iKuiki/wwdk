@@ -30,7 +30,7 @@ func TestContact(t *testing.T) {
 			fmt.Println("init finish")
 		case wwdk.LoginStatusGotContact:
 			fmt.Println("got contact")
-		case wwdk.LoginStatusGotBatchContact:
+		case wwdk.LoginStatusBatchGotContact:
 			fmt.Println("got batch contact")
 			break
 		case wwdk.LoginStatusErrorOccurred:

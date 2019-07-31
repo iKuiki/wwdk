@@ -2,38 +2,15 @@ package wwdk
 
 import (
 	"fmt"
+	"github.com/ikuiki/wwdk/api"
 
 	"github.com/ikuiki/storer"
 	"github.com/kataras/golog"
-	"github.com/pkg/errors"
-
-	// "crypto/tls"
-	"net"
-	"net/http"
-	"net/http/cookiejar"
 
 	"time"
 
 	"github.com/ikuiki/wwdk/datastruct"
-	"github.com/ikuiki/wwdk/tool"
 )
-
-// wechatCookie 微信登陆后的cookie凭据，登陆后的消息同步等操作需要此凭据
-type wechatCookie struct {
-	Wxsid      string
-	Wxuin      string // 应该是用户的唯一识别号，同一个用户每次登陆此字段都相同
-	Uvid       string
-	DataTicket string
-	AuthTicket string
-	// loadTime   string // 登陆时间(10位时间戳字符串)
-}
-
-type wechatLoginInfo struct {
-	cookie     wechatCookie
-	syncKey    *datastruct.SyncKey
-	sKey       string
-	PassTicket string
-}
 
 // WechatRunInfo 微信运行信息
 type WechatRunInfo struct {
@@ -67,56 +44,27 @@ type userInfo struct {
 	contactList map[string]datastruct.Contact
 }
 
-// apiRuntime 微信web客户端运行时信息
-type apiRuntime struct {
-	userAgent string
-	apiDomain string // 当前的apiDomain，从用户扫码登陆后返回的RedirectURL中解析
-	client    *http.Client
-	deviceID  string // 由客户端生成，为e+15位随机数
-}
-
 // WechatWeb 微信网页版客户端实例
 type WechatWeb struct {
-	userInfo    userInfo        // 用户信息
-	apiRuntime  apiRuntime      // wechat客户端运行时信息
-	loginInfo   wechatLoginInfo // 登陆信息
-	runInfo     WechatRunInfo   // 运行统计信息
-	loginStorer storer.Storer   // 存储器，如果有赋值，则用于记录登录信息
-	logger      *golog.Logger   // 日志输出器
-	mediaStorer MediaStorer     // 媒体存储器，用于处理微信的媒体信息（如用户头像、发送的图片、视频、音频等
+	userInfo    userInfo         // 用户信息
+	api         api.WechatwebAPI // 微信网页版的api实现
+	runInfo     WechatRunInfo    // 运行统计信息
+	loginStorer storer.Storer    // 存储器，如果有赋值，则用于记录登录信息
+	logger      *golog.Logger    // 日志输出器
+	mediaStorer MediaStorer      // 媒体存储器，用于处理微信的媒体信息（如用户头像、发送的图片、视频、音频等
 }
 
 // NewWechatWeb 生成微信网页版客户端实例
 func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
-	jar, err := cookiejar.New(nil)
+	a, err := api.NewWechatwebAPI()
 	if err != nil {
-		return &WechatWeb{}, err
+		return nil, err
 	}
 	w := &WechatWeb{
 		userInfo: userInfo{
 			contactList: make(map[string]datastruct.Contact),
 		},
-		apiRuntime: apiRuntime{
-			userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
-			deviceID:  "e" + tool.GetRandomStringFromNum(15),
-			apiDomain: "wx.qq.com", // 默认域名
-			client: &http.Client{
-				Transport: &http.Transport{
-					Dial: (&net.Dialer{
-						Timeout: 1 * time.Minute,
-					}).Dial,
-					TLSHandshakeTimeout: 1 * time.Minute,
-					// TLSClientConfig: &tls.Config{
-					// 	InsecureSkipVerify: true,
-					// },
-					// Proxy: func(_ *http.Request) (*url.URL, error) {
-					// 	return url.Parse("http://127.0.0.1:8888") //根据定义Proxy func(*Request) (*url.URL, error)这里要返回url.URL
-					// },
-				},
-				Jar:     jar,
-				Timeout: 1 * time.Minute,
-			},
-		},
+		api: a,
 		runInfo: WechatRunInfo{
 			StartAt: time.Now(),
 		},
@@ -136,45 +84,4 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 		}
 	}
 	return w, nil
-}
-
-func (wxwb *WechatWeb) baseRequest() (baseRequest *datastruct.BaseRequest) {
-	return &datastruct.BaseRequest{
-		Uin:      wxwb.loginInfo.cookie.Wxuin,
-		Sid:      wxwb.loginInfo.cookie.Wxsid,
-		Skey:     wxwb.loginInfo.sKey,
-		DeviceID: wxwb.apiRuntime.deviceID,
-	}
-}
-
-// refreshCookie 根据response更新cookie
-func (wxwb *WechatWeb) refreshCookie(cookies []*http.Cookie) {
-	for _, c := range cookies {
-		switch c.Name {
-		case "wxuin":
-			wxwb.loginInfo.cookie.Wxuin = c.Value
-		case "wxsid":
-			wxwb.loginInfo.cookie.Wxsid = c.Value
-		case "webwxuvid":
-			wxwb.loginInfo.cookie.Uvid = c.Value
-		case "webwx_data_ticket":
-			wxwb.loginInfo.cookie.DataTicket = c.Value
-		case "webwx_auth_ticket":
-			wxwb.loginInfo.cookie.AuthTicket = c.Value
-		}
-	}
-	// 如有必要，记录login信息到storer
-	wxwb.writeLoginInfo()
-}
-
-// 统一请求
-func (wxwb *WechatWeb) request(req *http.Request) (resp *http.Response, err error) {
-	if req == nil {
-		return nil, errors.New("request is nil")
-	}
-	resp, err = wxwb.apiRuntime.client.Do(req)
-	if err == nil {
-		wxwb.refreshCookie(resp.Cookies())
-	}
-	return
 }
