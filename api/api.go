@@ -73,17 +73,22 @@ type WechatwebAPI interface {
 
 	// 序列号与反序列化
 
+	// SetLoginModifyNotifyChan 设置登陆信息变更通知管道
+	SetLoginModifyNotifyChan(notifyChan chan<- bool)
+	// Marshal 序列号
 	Marshal() (data []byte, err error)
+	// Unmarshal 反序列化
 	Unmarshal(data []byte) (err error)
 }
 
 // wechatwebAPI 微信网页版api
 type wechatwebAPI struct {
-	userAgent string
-	apiDomain string // 当前的apiDomain，从用户扫码登陆后返回的RedirectURL中解析
-	client    *http.Client
-	deviceID  string // 由客户端生成，为e+15位随机数
-	loginInfo LoginInfo
+	userAgent             string
+	apiDomain             string // 当前的apiDomain，从用户扫码登陆后返回的RedirectURL中解析
+	client                *http.Client
+	deviceID              string // 由客户端生成，为e+15位随机数
+	loginInfo             LoginInfo
+	loginModifyNotifyChan chan<- bool // 如果登陆消息发生变更，则向此chan中插入一个值
 }
 
 // MustNewWechatwebAPI 假定一定能创建创建WechatwebAPI
@@ -150,6 +155,16 @@ func (api *wechatwebAPI) request(req *http.Request) (resp *http.Response, err er
 	resp, err = api.client.Do(req)
 	if err == nil {
 		api.refreshCookie(resp.Cookies())
+	}
+	// 如果设置了存储信息变更通知管道，则向管道中发送信号
+	if api.loginModifyNotifyChan != nil {
+		// 加入一个select来防止阻塞
+		select {
+		case api.loginModifyNotifyChan <- true:
+			// 发送成功
+		default:
+			// 上个还未处理
+		}
 	}
 	return
 }

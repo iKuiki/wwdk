@@ -107,14 +107,8 @@ func main() {
 					// 处理图片信息
 					processImageMessage(wx, msg)
 				case datastruct.AnimationEmotionsMsg:
-					// 反序列化表情信息附加信息
-					var emojiContent appmsg.EmotionMsgContent
-					err := xml.Unmarshal([]byte(msg.GetContent()), &emojiContent)
-					if err != nil {
-						panic(errors.New("Unmarshal message content to struct: " + err.Error()))
-					}
 					// 处理表情信息
-					processEmojiMessage(wx, msg, emojiContent)
+					processEmojiMessage(wx, msg)
 				case datastruct.RevokeMsg:
 					// 反序列化撤回消息附加信息
 					var revokeContent appmsg.RevokeMsgContent
@@ -146,7 +140,7 @@ func main() {
 func processTextMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
-		log.Println("getContact error: " + err.Error())
+		log.Printf("msg[%d]%s getContact[%s] error: %v\n", msg.MsgType, msg.Content, msg.FromUserName, err)
 		return
 	}
 	log.Printf("Recived a text msg from %s: %s", from.NickName, msg.Content)
@@ -173,7 +167,7 @@ func processTextMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 func processImageMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
-		log.Println("getContact error: " + err.Error())
+		log.Printf("msg[%d] getContact[%s] error: %v\n", msg.MsgType, msg.FromUserName, err)
 		return
 	}
 	filename, err := app.SaveMessageImage(*msg)
@@ -185,20 +179,20 @@ func processImageMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 }
 
 // ProcessEmojiMessage set Emoji message Handle
-func processEmojiMessage(app *wwdk.WechatWeb, msg *datastruct.Message, emojiContent appmsg.EmotionMsgContent) {
+func processEmojiMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
-		log.Println("getContact error: " + err.Error())
+		log.Printf("msg[%d] getContact[%s] error: %v\n", msg.MsgType, msg.FromUserName, err)
 		return
 	}
-	log.Printf("Recived a emotion from %s url: %s\n", from.NickName, emojiContent.Emoji.CdnURL)
+	log.Printf("Recived a emotion from %s content: %s\n", from.NickName, msg.Content)
 }
 
 // ProcessRevokeMessage set revoke message handle
 func processRevokeMessage(app *wwdk.WechatWeb, msg *datastruct.Message, revokeContent appmsg.RevokeMsgContent) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
-		log.Println("getContact error: " + err.Error())
+		log.Printf("msg[%d] getContact[%s] error: %v\n", msg.MsgType, msg.FromUserName, err)
 		return
 	}
 	log.Printf("With %s chat: %s", from.NickName, revokeContent.RevokeMsg.ReplaceMsg)
@@ -208,7 +202,7 @@ func processRevokeMessage(app *wwdk.WechatWeb, msg *datastruct.Message, revokeCo
 func processVideoMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
-		log.Println("getContact error: " + err.Error())
+		log.Printf("msg[%d] getContact[%s] error: %v\n", msg.MsgType, msg.FromUserName, err)
 		return
 	}
 	filename, err := app.SaveMessageVideo(*msg)
@@ -223,7 +217,7 @@ func processVideoMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 func processVoiceMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
-		log.Println("getContact error: " + err.Error())
+		log.Printf("msg[%d] getContact[%s] error: %v\n", msg.MsgType, msg.FromUserName, err)
 		return
 	}
 	filename, err := app.SaveMessageVoice(*msg)
