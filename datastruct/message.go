@@ -2,6 +2,7 @@ package datastruct
 
 import (
 	"github.com/pkg/errors"
+	"regexp"
 	"strings"
 )
 
@@ -104,7 +105,9 @@ func (msg Message) GetMemberUserName() (userName string, err error) {
 		if splitIndex == -1 {
 			err = errors.New("userName not found")
 		} else {
-			userName = msg.Content[:splitIndex]
+			if match, _ := regexp.MatchString("^@\\w+$", msg.Content[:splitIndex]); match {
+				userName = msg.Content[:splitIndex]
+			}
 		}
 	} else {
 		err = errors.New("this message is not chatroon message")
@@ -119,7 +122,9 @@ func (msg Message) GetMemberMsgContent() (content string, err error) {
 		if splitIndex == -1 {
 			err = errors.New("content not found")
 		} else {
-			content = msg.Content[splitIndex+1:]
+			if match, _ := regexp.MatchString("^@\\w+$", msg.Content[:splitIndex]); match {
+				content = msg.Content[splitIndex+1:]
+			}
 		}
 	} else {
 		err = errors.New("this message is not chatroon message")
