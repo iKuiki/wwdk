@@ -143,3 +143,26 @@ func (api *wechatwebAPI) WebwxInit() (user *datastruct.User, contactList []datas
 	api.loginInfo.SKey = respStruct.SKey
 	return
 }
+
+// Logout 退出登录
+func (api *wechatwebAPI) Logout() (body []byte, err error) {
+	params := url.Values{}
+	params.Set("redirect", "0")
+	params.Set("type", "1")
+	params.Set("skey", api.loginInfo.SKey)
+	form := url.Values{}
+	form.Set("sid", api.loginInfo.Wxsid)
+	form.Set("uin", api.loginInfo.Wxuin)
+	resp, err := api.client.PostForm("https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxlogout?"+params.Encode(), form)
+	if err != nil {
+		err = errors.New("request error: " + err.Error())
+		return
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = errors.New("request error: " + err.Error())
+		return
+	}
+	return
+}

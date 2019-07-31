@@ -22,6 +22,8 @@ type WechatwebAPI interface {
 	WebwxNewLoginPage(redirectURL string) (body []byte, err error)
 	// WebwxInit 初始化微信
 	WebwxInit() (user *datastruct.User, contactList []datastruct.Contact, body []byte, err error)
+	// Logout 退出登录
+	Logout() (body []byte, err error)
 
 	// 联系人部分
 
