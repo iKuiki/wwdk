@@ -1,19 +1,11 @@
 package wwdk
 
 import (
-	"bytes"
-	"encoding/json"
-	"encoding/xml"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/pkg/errors"
 
-	"github.com/ikuiki/wwdk/conf"
 	"github.com/ikuiki/wwdk/datastruct"
-	"github.com/ikuiki/wwdk/tool"
 )
 
 // LoginChannelItem 登录时channel内返回的东西
@@ -43,29 +35,16 @@ const (
 	LoginStatusInitFinish LoginStatus = 5
 	// LoginStatusGotContact 已获取到联系人
 	LoginStatusGotContact LoginStatus = 6
-	// LoginStatusGotBatchContact 已获取到群聊成员
-	LoginStatusGotBatchContact LoginStatus = 7
+	// LoginStatusBatchGotContact 已获取到群聊成员
+	LoginStatusBatchGotContact LoginStatus = 7
 )
 
-// TODO: delete
+// 获取uuid用于扫码
 func (wxwb *WechatWeb) getUUID(loginChannel chan<- LoginChannelItem) (uuid string) {
-	params := url.Values{}
-	params.Set("appid", conf.AppID)
-	params.Set("fun", "new")
-	params.Set("lang", conf.Lang)
-	params.Set("_", tool.GetWxTimeStamp())
-	req, _ := http.NewRequest("GET", "https://login."+wxwb.apiRuntime.apiDomain+"/jslogin?"+params.Encode(), nil)
-	resp, err := wxwb.request(req)
+	uuid, _, err := wxwb.api.JsLogin()
 	if err != nil {
-		panic(errors.New("request error: " + err.Error()))
+		panic(err)
 	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	ret := tool.ExtractWxWindowRespond(string(body))
-	if ret["window.QRLogin.code"] != "200" {
-		panic(errors.New("window.QRLogin.code = " + ret["window.QRLogin.code"]))
-	}
-	uuid = ret["window.QRLogin.uuid"]
 	loginChannel <- LoginChannelItem{
 		Code: LoginStatusWaitForScan,
 		Msg:  "https://login.weixin.qq.com/l/" + uuid,
@@ -76,37 +55,26 @@ func (wxwb *WechatWeb) getUUID(loginChannel chan<- LoginChannelItem) (uuid strin
 // waitForScan 等待用户扫描二维码登陆
 // 当扫码超时、扫码失败时，应当从getUUID方法重新开始
 func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannelItem) (redirectURL string) {
-	var ret map[string]string
 	tip := "1"
 	for true {
-		// TODO: delete
 		redirectURL = func() (redirectURL string) {
-			params := url.Values{}
-			params.Set("tip", tip)
-			tip = "0" // 在第二次轮询的时候tip就为0了
-			params.Set("uuid", uuid)
-			params.Set("_", tool.GetWxTimeStamp())
-			req, _ := http.NewRequest(`GET`, "https://login."+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/login?"+params.Encode(), nil)
-			resp, err := wxwb.request(req)
+			code, avatar, redirectURL, _, err := wxwb.api.Login(uuid, tip)
 			if err != nil {
-				wxwb.logger.Infof("waitForScan request error: %v\n", err)
-				return "" // return empty for continue
+				panic(err)
 			}
-			defer resp.Body.Close()
-			body, _ := ioutil.ReadAll(resp.Body)
-			ret = tool.ExtractWxWindowRespond(string(body))
-			switch ret["window.code"] {
+			// tip = "0" // 在第二次轮询的时候tip就为0了
+			switch code {
 			case "200": // 确认登陆
 				wxwb.logger.Info("Login success\n")
 				loginChannel <- LoginChannelItem{
 					Code: LoginStatusScanedFinish,
 				}
-				return ret["window.redirect_uri"]
+				return redirectURL
 			case "201": // 用户已扫码
 				wxwb.logger.Info("Scan success, waiting for login\n")
 				loginChannel <- LoginChannelItem{
 					Code: LoginStatusScanedWaitForLogin,
-					Msg:  ret["window.userAvatar"],
+					Msg:  avatar,
 				}
 				return "" // continue
 			case "400": // 登陆失败(二维码失效)
@@ -114,7 +82,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannel
 			case "408": // 等待登陆
 				time.Sleep(500 * time.Microsecond)
 			default:
-				panic(errors.New("Login fail: unknown response code: " + ret["window.code"]))
+				panic(errors.New("Login fail: unknown response code: " + code))
 			}
 			return
 		}()
@@ -125,147 +93,63 @@ func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannel
 	return redirectURL
 }
 
-// TODO: delete
+// 完成登陆,获取登陆凭据
 func (wxwb *WechatWeb) getCookie(redirectURL string, loginChannel chan<- LoginChannelItem) {
-	req, _ := http.NewRequest(`GET`, redirectURL+"&fun=new", nil) // 统一不加version=v2了
-	resp, err := wxwb.request(req)
+	_, err := wxwb.api.WebwxNewLoginPage(redirectURL)
 	if err != nil {
-		panic(errors.New("getCookie request error: " + err.Error()))
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(errors.New("Read respond body error: " + err.Error()))
-	}
-	var bodyResp datastruct.GetCookieRespond
-	err = xml.Unmarshal(body, &bodyResp)
-	if err != nil {
-		panic(errors.New("Unmarshal respond xml error: " + err.Error()))
+		panic(err)
 	}
 	loginChannel <- LoginChannelItem{
 		Code: LoginStatusGotCookie,
 	}
-	wxwb.loginInfo.sKey = bodyResp.Skey
-	wxwb.loginInfo.PassTicket = bodyResp.PassTicket
 }
 
-// TODO: delete
+// 初始化微信,获取当前登陆用户\部分联系人
 func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
-	data, err := json.Marshal(datastruct.WxInitRequestBody{
-		BaseRequest: wxwb.baseRequest(),
-	})
+	user, contactList, _, err := wxwb.api.WebwxInit()
 	if err != nil {
-		panic(errors.New("json.Marshal error: " + err.Error()))
-	}
-	params := url.Values{}
-	params.Set("pass_ticket", wxwb.loginInfo.PassTicket)
-	// params.Set("skey", wxwb.loginInfo.sKey)
-	params.Set("r", tool.GetWxTimeStamp())
-	// resp, err := wxwb.apiRuntime.client.Post("https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
-	// 	"application/json;charset=UTF-8",
-	// 	bytes.NewReader(data))
-
-	req, err := http.NewRequest("POST",
-		"https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxinit?"+params.Encode(),
-		bytes.NewReader(data))
-	if err != nil {
-		panic(errors.New("create request error: " + err.Error()))
-	}
-	resp, err := wxwb.request(req)
-	if err != nil {
-		panic(errors.New("do request error: " + err.Error()))
-	}
-	defer resp.Body.Close()
-
-	respStruct := datastruct.WxInitRespond{}
-	body, _ := ioutil.ReadAll(resp.Body)
-	err = json.Unmarshal(body, &respStruct)
-	if err != nil {
-		panic(errors.New("respond json Unmarshal to struct fail: " + err.Error()))
-	}
-	if respStruct.BaseResponse.Ret != 0 {
-		panic(errors.Errorf("respond ret(%d) error: %s", respStruct.BaseResponse.Ret, string(body)))
+		panic(err)
 	}
 	loginChannel <- LoginChannelItem{
 		Code: LoginStatusInitFinish,
 	}
-	for _, contact := range respStruct.ContactList {
+	wxwb.userInfo.user = user
+	for _, contact := range contactList {
 		wxwb.userInfo.contactList[contact.UserName] = contact
 	}
-	wxwb.userInfo.user = respStruct.User
-	wxwb.loginInfo.syncKey = respStruct.SyncKey
-	wxwb.loginInfo.sKey = respStruct.SKey
 }
 
 // 获取联系人
 // 注：坑！此处获取到的居然不是完整的联系人，必须和init中获取到的合并后才是完整的联系人列表
 func (wxwb *WechatWeb) getContactList() (err error) {
-	params := url.Values{}
-	params.Set("r", tool.GetWxTimeStamp())
-	resp, err := wxwb.apiRuntime.client.Get("https://" + wxwb.apiRuntime.apiDomain + "/cgi-bin/mmwebwx-bin/webwxgetcontact?" + params.Encode())
-	if err != nil {
-		return errors.New("request error: " + err.Error())
+	contactList, _, err := wxwb.api.GetContact()
+	if err == nil {
+		for _, contact := range contactList {
+			wxwb.userInfo.contactList[contact.UserName] = contact
+		}
 	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	respStruct := datastruct.GetContactRespond{}
-	err = json.Unmarshal(body, &respStruct)
-	if err != nil {
-		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
-	}
-	if respStruct.BaseResponse.Ret != 0 {
-		return errors.Errorf("respond ret error(%d): %s", respStruct.BaseResponse.Ret, string(body))
-	}
-	for _, contact := range respStruct.MemberList {
-		wxwb.userInfo.contactList[contact.UserName] = contact
-	}
-	return nil
+	return
 }
 
 // 获取群聊的成员
-func (wxwb *WechatWeb) getBatchContact() (err error) {
-	dataStruct := datastruct.BatchGetContactRequest{
-		BaseRequest: wxwb.baseRequest(),
-	}
+func (wxwb *WechatWeb) batchGetContact() (err error) {
+	var itemList []datastruct.BatchGetContactRequestListItem
 	for _, contact := range wxwb.userInfo.contactList {
 		if contact.IsChatroom() {
-			dataStruct.List = append(dataStruct.List, datastruct.BatchGetContactRequestListItem{
+			itemList = append(itemList, datastruct.BatchGetContactRequestListItem{
 				UserName: contact.UserName,
 			})
 		}
 	}
-	dataStruct.Count = int64(len(dataStruct.List))
-	if dataStruct.Count == 0 {
-		return nil
-	}
-	data, err := json.Marshal(dataStruct)
-	if err != nil {
-		return errors.New("json.Marshal error: " + err.Error())
-	}
-	params := url.Values{}
-	params.Set("type", "ex")
-	params.Set("r", tool.GetWxTimeStamp())
-	resp, err := wxwb.apiRuntime.client.Post("https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?"+params.Encode(),
-		"application/json;charset=UTF-8",
-		bytes.NewReader(data))
-	if err != nil {
-		return errors.New("request error: " + err.Error())
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	respStruct := datastruct.BatchGetContactResponse{}
-	err = json.Unmarshal(body, &respStruct)
-	if err != nil {
-		return errors.New("respond json Unmarshal to struct fail: " + err.Error())
-	}
-	if respStruct.BaseResponse.Ret != 0 {
-		return errors.Errorf("respond ret error(%d): %s", respStruct.BaseResponse.Ret, string(body))
-	}
-	for _, contact := range respStruct.ContactList {
-		if c, ok := wxwb.userInfo.contactList[contact.UserName]; ok {
-			c.MemberCount = contact.MemberCount
-			c.MemberList = contact.MemberList
-			c.EncryChatRoomID = contact.EncryChatRoomID
-			wxwb.userInfo.contactList[c.UserName] = c
+	contactList, _, err := wxwb.api.BatchGetContact(itemList)
+	if err == nil {
+		for _, contact := range contactList {
+			if c, ok := wxwb.userInfo.contactList[contact.UserName]; ok {
+				c.MemberCount = contact.MemberCount
+				c.MemberList = contact.MemberList
+				c.EncryChatRoomID = contact.EncryChatRoomID
+				wxwb.userInfo.contactList[c.UserName] = c
+			}
 		}
 	}
 	return
@@ -309,11 +193,6 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 			wxwb.resetLoginInfo()
 			uuid := wxwb.getUUID(loginChannel)
 			redirectURL := wxwb.waitForScan(uuid, loginChannel)
-			// 解析apiDomain版本
-			u, _ := url.Parse(redirectURL)
-			wxwb.apiRuntime.apiDomain = u.Host
-			wxwb.logger.Info("apiDomain decided: ", u.Host)
-			// panic(redirectUrl)
 			wxwb.getCookie(redirectURL, loginChannel)
 			wxwb.wxInit(loginChannel)
 			err := wxwb.getContactList()
@@ -334,7 +213,7 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 		// if err != nil {
 		// 	return errors.New("StatusNotify error: " + err.Error())
 		// }
-		err := wxwb.getBatchContact()
+		err := wxwb.batchGetContact()
 		if err != nil {
 			loginChannel <- LoginChannelItem{
 				Code: LoginStatusErrorOccurred,
@@ -343,7 +222,7 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 			return
 		}
 		loginChannel <- LoginChannelItem{
-			Code: LoginStatusGotBatchContact,
+			Code: LoginStatusBatchGotContact,
 		}
 		wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.userInfo.user.NickName, len(wxwb.userInfo.contactList))
 		// 如有必要，记录login信息到storer
@@ -353,17 +232,6 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 
 // Logout 退出登录
 func (wxwb *WechatWeb) Logout() (err error) {
-	params := url.Values{}
-	params.Set("redirect", "0")
-	params.Set("type", "1")
-	params.Set("skey", wxwb.loginInfo.sKey)
-	form := url.Values{}
-	form.Set("sid", wxwb.loginInfo.cookie.Wxsid)
-	form.Set("uin", wxwb.loginInfo.cookie.Wxuin)
-	resp, err := wxwb.apiRuntime.client.PostForm("https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxlogout?"+params.Encode(), form)
-	if err != nil {
-		return errors.New("request error: " + err.Error())
-	}
-	defer resp.Body.Close()
-	return nil
+	_, err = wxwb.api.Logout()
+	return
 }

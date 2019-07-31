@@ -60,8 +60,10 @@ func (api *wechatwebAPI) Login(uuid, tip string) (code, userAvatar, redirectURL 
 	ret := tool.ExtractWxWindowRespond(string(body))
 	code, userAvatar, redirectURL = ret["window.code"], ret["window.userAvatar"], ret["window.redirect_uri"]
 	// 根据返回的redirectURL变更apiDomain
-	u, _ := url.Parse(redirectURL)
-	api.apiDomain = u.Host
+	if redirectURL != "" {
+		u, _ := url.Parse(redirectURL)
+		api.apiDomain = u.Host
+	}
 	return
 }
 
