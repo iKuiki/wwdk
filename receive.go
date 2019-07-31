@@ -54,6 +54,7 @@ func (wxwb *WechatWeb) getMessage() (gmResp datastruct.WebwxSyncRespond, err err
 }
 
 // SaveMessageImage 保存消息图片到指定位置
+// TODO: delete
 func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string, err error) {
 	params := url.Values{}
 	params.Set("MsgID", msg.MsgID)
@@ -80,6 +81,7 @@ func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 }
 
 // SaveMessageVoice 保存消息声音到指定位置
+// TODO: delete
 func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string, err error) {
 	if msg.MsgType != datastruct.VoiceMsg {
 		return "", errors.New("Message type wrong")
@@ -109,6 +111,7 @@ func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string
 }
 
 // SaveMessageVideo 保存消息视频到指定位置
+// TODO: delete
 func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string, err error) {
 	if msg.MsgType != datastruct.LittleVideoMsg {
 		return "", errors.New("Message type wrong")
@@ -142,6 +145,7 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 }
 
 // SaveContactImg 保存联系人头像
+// TODO: delete
 func (wxwb *WechatWeb) SaveContactImg(contact datastruct.Contact) (filename string, err error) {
 	req, err := http.NewRequest("GET", "https://"+wxwb.apiRuntime.apiDomain+contact.HeadImgURL+wxwb.loginInfo.sKey, nil)
 	if err != nil {
@@ -168,6 +172,7 @@ func (wxwb *WechatWeb) SaveContactImg(contact datastruct.Contact) (filename stri
 }
 
 // SaveUserImg 保存登陆用户的头像
+// TODO: delete
 func (wxwb *WechatWeb) SaveUserImg(user datastruct.User) (filename string, err error) {
 	req, err := http.NewRequest("GET", "https://"+wxwb.apiRuntime.apiDomain+user.HeadImgURL, nil)
 	if err != nil {
@@ -194,6 +199,7 @@ func (wxwb *WechatWeb) SaveUserImg(user datastruct.User) (filename string, err e
 }
 
 // SaveMemberImg 保存群成员的头像
+// TODO: delete
 func (wxwb *WechatWeb) SaveMemberImg(member datastruct.Member, chatroomID string) (filename string, err error) {
 	req, err := http.NewRequest("GET", "https://"+wxwb.apiRuntime.apiDomain+"/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username="+member.UserName+"&chatroomid="+chatroomID+"&skey=", nil)
 	if err != nil {
