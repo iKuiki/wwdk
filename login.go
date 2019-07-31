@@ -62,7 +62,7 @@ func (wxwb *WechatWeb) waitForScan(uuid string, loginChannel chan<- LoginChannel
 			if err != nil {
 				panic(err)
 			}
-			// tip = "0" // 在第二次轮询的时候tip就为0了
+			tip = "0" // 在第二次轮询的时候tip就为0了
 			switch code {
 			case "200": // 确认登陆
 				wxwb.logger.Info("Login success\n")

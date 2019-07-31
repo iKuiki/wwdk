@@ -144,6 +144,9 @@ func (api *wechatwebAPI) request(req *http.Request) (resp *http.Response, err er
 	if req == nil {
 		return nil, errors.New("request is nil")
 	}
+	if api.userAgent != "" {
+		req.Header.Set("User-Agent", api.userAgent)
+	}
 	resp, err = api.client.Do(req)
 	if err == nil {
 		api.refreshCookie(resp.Cookies())

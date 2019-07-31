@@ -46,8 +46,10 @@ func (api *wechatwebAPI) JsLogin() (uuid string, body []byte, err error) {
 // @return redirectURL 用户确认登陆后返回重定向地址
 func (api *wechatwebAPI) Login(uuid, tip string) (code, userAvatar, redirectURL string, body []byte, err error) {
 	params := url.Values{}
+	params.Set("loginicon", "true")
 	params.Set("tip", tip)
 	params.Set("uuid", uuid)
+	// params.Set("r", strconv.FormatInt(^(time.Now().Unix()), 10))
 	params.Set("_", tool.GetWxTimeStamp())
 	req, _ := http.NewRequest(`GET`, "https://login."+api.apiDomain+"/cgi-bin/mmwebwx-bin/login?"+params.Encode(), nil)
 	resp, err := api.request(req)
