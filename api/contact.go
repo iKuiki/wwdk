@@ -14,7 +14,7 @@ import (
 // GetContact 获取联系人
 // 注：坑！此处获取到的居然不是完整的联系人，必须和init中获取到的合并后才是完整的联系人列表
 // @return contact 联系人列表（需要与wxInit获得的列表合并才是完整联系人列表）
-func (api *WechatwebAPI) GetContact() (contactList []datastruct.Contact, body []byte, err error) {
+func (api *wechatwebAPI) GetContact() (contactList []datastruct.Contact, body []byte, err error) {
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
 	resp, err := api.client.Get("https://" + api.apiDomain + "/cgi-bin/mmwebwx-bin/webwxgetcontact?" + params.Encode())
@@ -42,7 +42,7 @@ func (api *WechatwebAPI) GetContact() (contactList []datastruct.Contact, body []
 // 在需要获取群成员时，或者是通过群成员UserName与群ChatRoomID获取群成员信息的时候可以调用此方法
 // @Param contactItemList 要获取的联系人的信息，获取好友与群成员要填UserName，获取群成员中非好友的联系人的信息需要带群的ChatRoomID
 // @return contactList 要获取的联系人的信息
-func (api *WechatwebAPI) BatchGetContact(contactItemList []datastruct.BatchGetContactRequestListItem) (contactList []datastruct.Contact, body []byte, err error) {
+func (api *wechatwebAPI) BatchGetContact(contactItemList []datastruct.BatchGetContactRequestListItem) (contactList []datastruct.Contact, body []byte, err error) {
 	dataStruct := datastruct.BatchGetContactRequest{
 		BaseRequest: api.baseRequest(),
 		List:        contactItemList,
@@ -85,7 +85,7 @@ func (api *WechatwebAPI) BatchGetContact(contactItemList []datastruct.BatchGetCo
 // ModifyUserRemakName 修改联系人备注
 // @param userName 要修改的联系人的UserName
 // @param remarkName 新的备注
-func (api *WechatwebAPI) ModifyUserRemakName(userName, remarkName string) (body []byte, err error) {
+func (api *wechatwebAPI) ModifyUserRemakName(userName, remarkName string) (body []byte, err error) {
 	murReq := datastruct.ModifyRemarkRequest{
 		BaseRequest: api.baseRequest(),
 		CmdID:       2,
