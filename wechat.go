@@ -46,12 +46,13 @@ type userInfo struct {
 
 // WechatWeb 微信网页版客户端实例
 type WechatWeb struct {
-	userInfo    userInfo         // 用户信息
-	api         api.WechatwebAPI // 微信网页版的api实现
-	runInfo     WechatRunInfo    // 运行统计信息
-	loginStorer storer.Storer    // 存储器，如果有赋值，则用于记录登录信息
-	logger      *golog.Logger    // 日志输出器
-	mediaStorer MediaStorer      // 媒体存储器，用于处理微信的媒体信息（如用户头像、发送的图片、视频、音频等
+	userInfo    userInfo               // 用户信息
+	api         api.WechatwebAPI       // 微信网页版的api实现
+	runInfo     WechatRunInfo          // 运行统计信息
+	loginStorer storer.Storer          // 存储器，如果有赋值，则用于记录登录信息
+	logger      *golog.Logger          // 日志输出器
+	mediaStorer MediaStorer            // 媒体存储器，用于处理微信的媒体信息（如用户头像、发送的图片、视频、音频等
+	syncChannel chan<- SyncChannelItem // 同步通道，方便除sync方法外发生同步
 }
 
 // NewWechatWeb 生成微信网页版客户端实例
