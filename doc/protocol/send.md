@@ -32,7 +32,7 @@
         "Skey":"@crypt_a6xxxxxx_6xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         "DeviceID":"e980000000000000"
     },
-    "Code":1,
+    "Code":1, // 此处的Code含义还需要判断，见过的Code包括1、3，目前发现的规律是，如果Code为3，则FromUserName=ToUserName，即自己发给自己
     "FromUserName":"@ae820581771d028ec2540c22b57ee02289811811caa08ec8d88e7cdb0f04502e", // 自己的用户id
     "ToUserName":"@4f460c580a3798ed6ed571593f694f72", // 目标用户id
     "ClientMsgId":1508393667441 // 直接使用13位时间戳填充即可
@@ -110,6 +110,23 @@ Body (json):
     "ClientMsgId": "14900000000000000" // 当时的本地消息ID
 }
 ```
+
+**Response:**
+
+没啥意义的Json
+
+``` json
+{
+    "BaseResponse": {
+        "Ret": 0,
+        "ErrMsg": ""
+    },
+    "Introduction": "你可以撤回2分钟内发送的消息（部分旧版本微信不支持这个功能）。",
+    "SysWording": ""
+}
+```
+
+---
 
 ## 转发被撤回的图片消息
 

@@ -4,25 +4,17 @@ package wwdk
 
 import (
 	"encoding/json"
+	"github.com/ikuiki/wwdk/api"
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/pkg/errors"
-	"net/http"
-	"net/http/cookiejar"
-	"net/url"
 )
 
 // storeLoginInfo 用于储存的登录信息
 type storeLoginInfo struct {
-	Cookies     map[string][]*http.Cookie
-	Cookie      wechatCookie
-	SyncKey     *datastruct.SyncKey
-	SKey        string
-	PassTicket  string
-	RunInfo     WechatRunInfo    // 运行统计信息
-	DeviceID    string           // 由客户端生成，为e+15位随机数
-	APIDomain   string           // 当前的apiDomain，从RedirectURL中解析
-	User        *datastruct.User // 用户信息
-	ContactList map[string]datastruct.Contact
+	APIMarshaled []byte
+	RunInfo      WechatRunInfo    // 运行统计信息
+	User         *datastruct.User // 用户信息
+	ContactList  map[string]datastruct.Contact
 }
 
 // 重置登录信息
@@ -37,13 +29,7 @@ func (wxwb *WechatWeb) resetLoginInfo() (err error) {
 	if wxwb.loginStorer != nil {
 		wxwb.loginStorer.Truncate()
 	}
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	wxwb.apiRuntime.client.Jar = jar
-	// 重置loginInfo
-	wxwb.loginInfo = wechatLoginInfo{}
+	wxwb.api = api.MustNewWechatwebAPI()
 	// 重置runInfo
 	wxwb.runInfo = WechatRunInfo{
 		StartAt: wxwb.runInfo.StartAt,
@@ -64,29 +50,16 @@ func (wxwb *WechatWeb) writeLoginInfo() (err error) {
 			err = errors.Errorf("panic recovered: %+v", r)
 		}
 	}()
-	cookieMap := make(map[string][]*http.Cookie)
-	for _, host := range []string{
-		wxwb.apiRuntime.apiDomain,
-		"webpush." + wxwb.apiRuntime.apiDomain,
-		"file." + wxwb.apiRuntime.apiDomain,
-		// "login." + wxwb.apiRuntime.apiDomain,
-		".qq.com",
-	} {
-		u, _ := url.Parse("https://" + host)
-		cookieMap[host] = wxwb.apiRuntime.client.Jar.Cookies(u)
+	apiMarshaled, err := wxwb.api.Marshal()
+	if err != nil {
+		return errors.WithStack(err)
 	}
 	if wxwb.loginStorer != nil {
 		storeInfo := storeLoginInfo{
-			Cookies:     cookieMap,
-			Cookie:      wxwb.loginInfo.cookie,
-			SyncKey:     wxwb.loginInfo.syncKey,
-			SKey:        wxwb.loginInfo.sKey,
-			PassTicket:  wxwb.loginInfo.PassTicket,
-			User:        wxwb.userInfo.user,
-			ContactList: wxwb.userInfo.contactList,
-			DeviceID:    wxwb.apiRuntime.deviceID,
-			APIDomain:   wxwb.apiRuntime.apiDomain,
-			RunInfo:     wxwb.runInfo,
+			APIMarshaled: apiMarshaled,
+			User:         wxwb.userInfo.user,
+			ContactList:  wxwb.userInfo.contactList,
+			RunInfo:      wxwb.runInfo,
 		}
 		data, err := json.Marshal(storeInfo)
 		if err != nil {
@@ -118,30 +91,21 @@ func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 		if err != nil {
 			return false, errors.WithStack(err)
 		}
-		if storeInfo.DeviceID == "" || storeInfo.User == nil {
-			// 只要deviceID或userInfo中的User为空
+		err = wxwb.api.Unmarshal(storeInfo.APIMarshaled)
+		if err != nil {
+			if err == api.ErrEmptyLoginInfo {
+				// api恢复时其内部关键信息为空
+				// 判定为未读取到登录信息
+				return false, nil
+			}
+			return false, errors.WithStack(err)
+		}
+		if storeInfo.User == nil {
+			// 只要userInfo中的User为空
 			// 则判定为未读取到登陆信息
 			return false, nil
 		}
 		// 认为读取到了登陆信息，则开始还原
-		wxwb.apiRuntime.deviceID = storeInfo.DeviceID
-		wxwb.apiRuntime.apiDomain = storeInfo.APIDomain
-		for _, host := range []string{
-			wxwb.apiRuntime.apiDomain,
-			"webpush." + wxwb.apiRuntime.apiDomain,
-			"file." + wxwb.apiRuntime.apiDomain,
-			// "login." + wxwb.apiRuntime.apiDomain,
-			".qq.com",
-		} {
-			u, _ := url.Parse("https://" + host)
-			wxwb.apiRuntime.client.Jar.SetCookies(u, storeInfo.Cookies[host])
-		}
-		wxwb.loginInfo = wechatLoginInfo{
-			cookie:     storeInfo.Cookie,
-			syncKey:    storeInfo.SyncKey,
-			sKey:       storeInfo.SKey,
-			PassTicket: storeInfo.PassTicket,
-		}
 		{
 			// 先暂存StartAt，对StartAt不做覆盖
 			started := wxwb.runInfo.StartAt
