@@ -71,6 +71,7 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 		logger:      golog.Default.Clone(),
 		mediaStorer: NewLocalMediaStorer("./"),
 	}
+	w.logger.NewLine = true
 	for _, c := range configs {
 		switch c.(type) {
 		case storer.Storer:
