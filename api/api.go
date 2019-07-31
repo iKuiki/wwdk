@@ -68,6 +68,11 @@ type WechatwebAPI interface {
 	SaveContactImg(headImgURL string) (imgData []byte, err error)
 	// SaveMemberImg 保存群成员的头像
 	SaveMemberImg(userName, chatroomID string) (imgData []byte, err error)
+
+	// 序列号与反序列化
+
+	Marshal() (data []byte, err error)
+	Unmarshal(data []byte) (err error)
 }
 
 // wechatwebAPI 微信网页版api
@@ -79,12 +84,21 @@ type wechatwebAPI struct {
 	loginInfo LoginInfo
 }
 
+// MustNewWechatwebAPI 假定一定能创建创建WechatwebAPI
+func MustNewWechatwebAPI() (wechatAPI WechatwebAPI) {
+	wechatAPI, err := NewWechatwebAPI()
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
 // NewWechatwebAPI 创建WechatwebAPI
 func NewWechatwebAPI() (wechatAPI WechatwebAPI, err error) {
 	// 创建cookie jar用于持久化cookie
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		return &wechatwebAPI{}, err
+		return
 	}
 	return &wechatwebAPI{
 		userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
