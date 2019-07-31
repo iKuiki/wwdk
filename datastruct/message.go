@@ -100,7 +100,7 @@ func (msg Message) IsChatroom() bool {
 // GetMemberUserName 获取群组消息的发件人
 func (msg Message) GetMemberUserName() (userName string, err error) {
 	if msg.IsChatroom() {
-		splitIndex := strings.Index(msg.Content, ":")
+		splitIndex := strings.Index(msg.Content, ":<br/>")
 		if splitIndex == -1 {
 			err = errors.New("userName not found")
 		} else {
@@ -115,14 +115,11 @@ func (msg Message) GetMemberUserName() (userName string, err error) {
 // GetMemberMsgContent 获取群组消息的内容
 func (msg Message) GetMemberMsgContent() (content string, err error) {
 	if msg.IsChatroom() {
-		splitIndex := strings.Index(msg.Content, ":")
+		splitIndex := strings.Index(msg.Content, ":<br/>")
 		if splitIndex == -1 {
 			err = errors.New("content not found")
 		} else {
 			content = msg.Content[splitIndex+1:]
-			if strings.HasPrefix(content, "<br/>") {
-				content = content[5:]
-			}
 		}
 	} else {
 		err = errors.New("this message is not chatroon message")
