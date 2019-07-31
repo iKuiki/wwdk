@@ -95,6 +95,7 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 							Code: SyncStatusPanic,
 							Err:  errors.New("Err1101: user has logout"),
 						}
+						return true
 					}
 					wxwb.logger.Infof("SyncCheck error: %s\n", err.Error())
 					syncChannel <- SyncChannelItem{
