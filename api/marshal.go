@@ -20,6 +20,10 @@ type wechatwebAPIMarshalData struct {
 	CookieMap map[string][]*http.Cookie
 }
 
+func (api *wechatwebAPI) SetLoginModifyNotifyChan(notifyChan chan<- bool) {
+	api.loginModifyNotifyChan = notifyChan
+}
+
 func (api *wechatwebAPI) Marshal() (data []byte, err error) {
 	// 储存cookie
 	cookieMap := make(map[string][]*http.Cookie)
