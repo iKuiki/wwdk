@@ -227,6 +227,15 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 		wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.userInfo.user.NickName, len(wxwb.userInfo.contactList))
 		// 如有必要，记录login信息到storer
 		wxwb.writeLoginInfo()
+		notifyChan := make(chan bool)
+		wxwb.api.SetLoginModifyNotifyChan(notifyChan)
+		// 新建协程用于检测登陆信息修改，如果检测到修改则保存登陆信息
+		go func(notifyChan <-chan bool) {
+			// 检测到修改，保存
+			for range notifyChan {
+				wxwb.writeLoginInfo()
+			}
+		}(notifyChan)
 	}()
 }
 
