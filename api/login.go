@@ -16,7 +16,7 @@ import (
 // JsLogin 获取uuid
 // 初次打开时调用，获取uuid
 // @return uuid 获取到的uuid
-func (api *WechatwebAPI) JsLogin() (uuid string, body []byte, err error) {
+func (api *wechatwebAPI) JsLogin() (uuid string, body []byte, err error) {
 	params := url.Values{}
 	params.Set("appid", conf.AppID)
 	params.Set("fun", "new")
@@ -44,7 +44,7 @@ func (api *WechatwebAPI) JsLogin() (uuid string, body []byte, err error) {
 // @return code 返回的windows.code，状态码
 // @return userAvatar 当用户扫码后返回用户头像
 // @return redirectURL 用户确认登陆后返回重定向地址
-func (api *WechatwebAPI) Login(tip, uuid string) (code, userAvatar, redirectURL string, body []byte, err error) {
+func (api *wechatwebAPI) Login(tip, uuid string) (code, userAvatar, redirectURL string, body []byte, err error) {
 	params := url.Values{}
 	params.Set("tip", tip)
 	params.Set("uuid", uuid)
@@ -65,7 +65,7 @@ func (api *WechatwebAPI) Login(tip, uuid string) (code, userAvatar, redirectURL 
 // WebwxNewLoginPage 获取登陆凭据
 // 用户扫码确认登陆后，获取登陆凭据
 // @param redirectURL 当用户扫码确认登陆后获取到的redirectURL
-func (api *WechatwebAPI) WebwxNewLoginPage(redirectURL string) (body []byte, err error) {
+func (api *wechatwebAPI) WebwxNewLoginPage(redirectURL string) (body []byte, err error) {
 	req, _ := http.NewRequest(`GET`, redirectURL+"&fun=new", nil) // 统一不加version=v2了
 	resp, err := api.request(req)
 	if err != nil {
@@ -93,7 +93,7 @@ func (api *WechatwebAPI) WebwxNewLoginPage(redirectURL string) (body []byte, err
 // 当获取到登陆凭证后，即可调用此接口初始化微信获取基本信息
 // @return user 当前登陆的用户的信息
 // @return contactList 部分联系人列表⚠️此列表不全，要和后面获取联系人的列表合并，切记切记
-func (api *WechatwebAPI) WebwxInit() (user *datastruct.User, contactList []datastruct.Contact, body []byte, err error) {
+func (api *wechatwebAPI) WebwxInit() (user *datastruct.User, contactList []datastruct.Contact, body []byte, err error) {
 	reqBody, err := json.Marshal(datastruct.WxInitRequestBody{
 		BaseRequest: api.baseRequest(),
 	})

@@ -21,7 +21,7 @@ var (
 // 轮询微信服务器，如果有新的状态，会通过此接口返回需要同步的信息
 // @return retCode 状态码，正常为0
 // @return selector 状态机，根据此项判定是否需要拉去新信息
-func (api *WechatwebAPI) SyncCheck() (retCode, selector string, body []byte, err error) {
+func (api *wechatwebAPI) SyncCheck() (retCode, selector string, body []byte, err error) {
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
 	params.Set("sid", api.loginInfo.Wxsid)
@@ -59,7 +59,7 @@ func (api *WechatwebAPI) SyncCheck() (retCode, selector string, body []byte, err
 // WebwxSync 同步消息
 // 如果检查同步接口返回有新消息需要同步，通过此接口从服务器中获取新消息
 // @return syncResp 同步状态返回值
-func (api *WechatwebAPI) WebwxSync() (modContacts []datastruct.Contact,
+func (api *wechatwebAPI) WebwxSync() (modContacts []datastruct.Contact,
 	delContacts []datastruct.WebwxSyncRespondDelContactListItem,
 	addMessages []datastruct.Message,
 	body []byte, err error) {

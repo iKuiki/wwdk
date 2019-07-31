@@ -12,7 +12,7 @@ import (
 // ModifyChatRoomTopic 修改聊天室标题
 // @param userName 要修改的群的UserName
 // @param remarkName 新的群名
-func (api *WechatwebAPI) ModifyChatRoomTopic(userName, newTopic string) (body []byte, err error) {
+func (api *wechatwebAPI) ModifyChatRoomTopic(userName, newTopic string) (body []byte, err error) {
 	mctReq := datastruct.ModifyChatRoomTopicRequest{
 		BaseRequest:  api.baseRequest(),
 		NewTopic:     newTopic,

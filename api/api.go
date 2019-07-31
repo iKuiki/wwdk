@@ -11,7 +11,67 @@ import (
 )
 
 // WechatwebAPI 微信网页版api
-type WechatwebAPI struct {
+type WechatwebAPI interface {
+	// 登陆部分
+
+	// JsLogin 获取uuid
+	JsLogin() (uuid string, body []byte, err error)
+	// Login 等待用户扫码登陆
+	Login(tip, uuid string) (code, userAvatar, redirectURL string, body []byte, err error)
+	// WebwxNewLoginPage 获取登陆凭据
+	WebwxNewLoginPage(redirectURL string) (body []byte, err error)
+	// WebwxInit 初始化微信
+	WebwxInit() (user *datastruct.User, contactList []datastruct.Contact, body []byte, err error)
+
+	// 联系人部分
+
+	// GetContact 获取联系人
+	GetContact() (contactList []datastruct.Contact, body []byte, err error)
+	// BatchGetContact 获取群聊的成员
+	BatchGetContact(contactItemList []datastruct.BatchGetContactRequestListItem) (contactList []datastruct.Contact, body []byte, err error)
+	// ModifyUserRemakName 修改联系人备注
+	ModifyUserRemakName(userName, remarkName string) (body []byte, err error)
+
+	// 聊天室部分
+
+	// ModifyChatRoomTopic 修改聊天室标题
+	ModifyChatRoomTopic(userName, newTopic string) (body []byte, err error)
+
+	// 同步部分
+
+	// SyncCheck 检查同步
+	SyncCheck() (retCode, selector string, body []byte, err error)
+	// WebwxSync 同步消息
+	WebwxSync() (modContacts []datastruct.Contact,
+		delContacts []datastruct.WebwxSyncRespondDelContactListItem,
+		addMessages []datastruct.Message,
+		body []byte, err error)
+
+	// 发送部分
+
+	// StatusNotify 消息已读通知
+	StatusNotify(fromUserName, toUserName string, code int64) (body []byte, err error)
+	// SendTextMessage 发送消息
+	SendTextMessage(fromUserName, toUserName, content string) (MsgID, LocalID string, body []byte, err error)
+	// SendRevokeMessage 撤回消息
+	SendRevokeMessage(toUserName, svrMsgID, clientMsgID string) (body []byte, err error)
+
+	// 接收部分
+
+	// SaveMessageImage 下载图片消息
+	SaveMessageImage(msgID string) (imgData []byte, err error)
+	// SaveMessageVoice 下载音频消息
+	SaveMessageVoice(msgID string) (voiceData []byte, err error)
+	// SaveMessageVideo 下载视频消息
+	SaveMessageVideo(msgID string) (videoData []byte, err error)
+	// SaveContactImg 保存联系人头像
+	SaveContactImg(headImgURL string) (imgData []byte, err error)
+	// SaveMemberImg 保存群成员的头像
+	SaveMemberImg(userName, chatroomID string) (imgData []byte, err error)
+}
+
+// wechatwebAPI 微信网页版api
+type wechatwebAPI struct {
 	userAgent string
 	apiDomain string // 当前的apiDomain，从用户扫码登陆后返回的RedirectURL中解析
 	client    *http.Client
@@ -20,13 +80,13 @@ type WechatwebAPI struct {
 }
 
 // NewWechatwebAPI 创建WechatwebAPI
-func NewWechatwebAPI() (wechatAPI *WechatwebAPI, err error) {
+func NewWechatwebAPI() (wechatAPI WechatwebAPI, err error) {
 	// 创建cookie jar用于持久化cookie
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		return &WechatwebAPI{}, err
+		return &wechatwebAPI{}, err
 	}
-	return &WechatwebAPI{
+	return &wechatwebAPI{
 		userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
 		deviceID:  "e" + tool.GetRandomStringFromNum(15),
 		apiDomain: "wx.qq.com", // 默认域名
@@ -64,7 +124,7 @@ type LoginInfo struct {
 }
 
 // 统一请求
-func (api *WechatwebAPI) request(req *http.Request) (resp *http.Response, err error) {
+func (api *wechatwebAPI) request(req *http.Request) (resp *http.Response, err error) {
 	if req == nil {
 		return nil, errors.New("request is nil")
 	}
@@ -76,7 +136,7 @@ func (api *WechatwebAPI) request(req *http.Request) (resp *http.Response, err er
 }
 
 // refreshCookie 根据response更新cookie
-func (api *WechatwebAPI) refreshCookie(cookies []*http.Cookie) {
+func (api *wechatwebAPI) refreshCookie(cookies []*http.Cookie) {
 	for _, c := range cookies {
 		switch c.Name {
 		case "wxuin":
@@ -94,7 +154,7 @@ func (api *WechatwebAPI) refreshCookie(cookies []*http.Cookie) {
 	// TODO: 在wwdk包做退出前保存
 }
 
-func (api *WechatwebAPI) baseRequest() (baseRequest *datastruct.BaseRequest) {
+func (api *wechatwebAPI) baseRequest() (baseRequest *datastruct.BaseRequest) {
 	return &datastruct.BaseRequest{
 		Uin:      api.loginInfo.Wxuin,
 		Sid:      api.loginInfo.Wxsid,

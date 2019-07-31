@@ -12,7 +12,7 @@ import (
 // 将消息的图片下载回来
 // @param msgID 要下载的图片消息的MsgID
 // @return imgData 下载到的图片的二进制数据
-func (api *WechatwebAPI) SaveMessageImage(msgID string) (imgData []byte, err error) {
+func (api *wechatwebAPI) SaveMessageImage(msgID string) (imgData []byte, err error) {
 	params := url.Values{}
 	params.Set("MsgID", msgID)
 	params.Set("skey", api.loginInfo.SKey)
@@ -45,7 +45,7 @@ func (api *WechatwebAPI) SaveMessageImage(msgID string) (imgData []byte, err err
 // 将消息的音频下载回来
 // @param msgID 要下载的音频消息的MsgID
 // @return imgData 下载到的音频的二进制数据
-func (api *WechatwebAPI) SaveMessageVoice(msgID string) (voiceData []byte, err error) {
+func (api *wechatwebAPI) SaveMessageVoice(msgID string) (voiceData []byte, err error) {
 	params := url.Values{}
 	params.Set("MsgID", msgID)
 	params.Set("skey", api.loginInfo.SKey)
@@ -77,7 +77,7 @@ func (api *WechatwebAPI) SaveMessageVoice(msgID string) (voiceData []byte, err e
 // 将消息的视频下载回来
 // @param msgID 要下载的视频消息的MsgID
 // @return videoData 下载到的视频的二进制数据
-func (api *WechatwebAPI) SaveMessageVideo(msgID string) (videoData []byte, err error) {
+func (api *wechatwebAPI) SaveMessageVideo(msgID string) (videoData []byte, err error) {
 	params := url.Values{}
 	params.Set("msgid", msgID)
 	params.Set("skey", api.loginInfo.SKey)
@@ -105,7 +105,7 @@ func (api *WechatwebAPI) SaveMessageVideo(msgID string) (videoData []byte, err e
 // 根据头像地址保存头像
 // @param headImgURL 联系人头像地址
 // @return imgData 下载的头像的二进制图片数据
-func (api *WechatwebAPI) SaveContactImg(headImgURL string) (imgData []byte, err error) {
+func (api *wechatwebAPI) SaveContactImg(headImgURL string) (imgData []byte, err error) {
 	// 貌似时不需要带skey的，不如做个判断好了
 	if strings.HasSuffix(headImgURL, "&skey=") {
 		headImgURL = headImgURL + api.loginInfo.SKey
@@ -133,7 +133,7 @@ func (api *WechatwebAPI) SaveContactImg(headImgURL string) (imgData []byte, err 
 // @param userName 群成员的UserName
 // @param chatroomID 群的EncryChatRoomId
 // @return imgData 下载的头像的二进制图片数据
-func (api *WechatwebAPI) SaveMemberImg(userName, chatroomID string) (imgData []byte, err error) {
+func (api *wechatwebAPI) SaveMemberImg(userName, chatroomID string) (imgData []byte, err error) {
 	req, err := http.NewRequest("GET", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxgeticon?seq=0&username="+userName+"&chatroomid="+chatroomID+"&skey=", nil)
 	if err != nil {
 		err = errors.New("create request error: " + err.Error())

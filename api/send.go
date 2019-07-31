@@ -16,7 +16,7 @@ import (
 // @param fromUserName 自己的UserName
 // @param toUserName 已读的联系人的UserName
 // @param code 用途未知，目前发现的时登陆完毕调用时此处填3（from和to的username都一样）其余时候都是1
-func (api *WechatwebAPI) StatusNotify(fromUserName, toUserName string, code int64) (body []byte, err error) {
+func (api *wechatwebAPI) StatusNotify(fromUserName, toUserName string, code int64) (body []byte, err error) {
 	msgID, _ := strconv.ParseInt(tool.GetWxTimeStamp(), 10, 64)
 	data := datastruct.StatusNotifyRequest{
 		BaseRequest:  api.baseRequest(),
@@ -64,7 +64,7 @@ func (api *WechatwebAPI) StatusNotify(fromUserName, toUserName string, code int6
 // @param content 文字消息内容
 // @return MsgID 消息的服务器ID（发送后由服务器生成）
 // @return LocalID 消息本地ID（本地生成的）
-func (api *WechatwebAPI) SendTextMessage(fromUserName, toUserName, content string) (MsgID, LocalID string, body []byte, err error) {
+func (api *wechatwebAPI) SendTextMessage(fromUserName, toUserName, content string) (MsgID, LocalID string, body []byte, err error) {
 	msgReq := datastruct.SendMessageRequest{
 		BaseRequest: api.baseRequest(),
 		Msg: &datastruct.SendMessage{
@@ -117,7 +117,7 @@ func (api *WechatwebAPI) SendTextMessage(fromUserName, toUserName, content strin
 // @param toUserName 要发送的目标联系人的UserName
 // @param svrMsgID 消息的服务器ID（发送后由服务器生成）
 // @param clientMsgID 消息本地ID（本地生成的）
-func (api *WechatwebAPI) SendRevokeMessage(toUserName, svrMsgID, clientMsgID string) (body []byte, err error) {
+func (api *wechatwebAPI) SendRevokeMessage(toUserName, svrMsgID, clientMsgID string) (body []byte, err error) {
 	srmReq := datastruct.RevokeMessageRequest{
 		BaseRequest: api.baseRequest(),
 		ClientMsgID: clientMsgID,
