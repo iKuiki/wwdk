@@ -17,7 +17,7 @@ type WechatwebAPI interface {
 	// JsLogin 获取uuid
 	JsLogin() (uuid string, body []byte, err error)
 	// Login 等待用户扫码登陆
-	Login(tip, uuid string) (code, userAvatar, redirectURL string, body []byte, err error)
+	Login(uuid, tip string) (code, userAvatar, redirectURL string, body []byte, err error)
 	// WebwxNewLoginPage 获取登陆凭据
 	WebwxNewLoginPage(redirectURL string) (body []byte, err error)
 	// WebwxInit 初始化微信

@@ -39,12 +39,12 @@ func (api *wechatwebAPI) JsLogin() (uuid string, body []byte, err error) {
 
 // Login 等待用户扫码登陆
 // 获取uuid后就可以生成二维码等用户扫码了
-// @param tip tip参数，一般第一轮为1，第二轮开始就为0
 // @param uuid getUuid接口获取到的uuid
+// @param tip tip参数，一般第一轮为1，第二轮开始就为0
 // @return code 返回的windows.code，状态码
 // @return userAvatar 当用户扫码后返回用户头像
 // @return redirectURL 用户确认登陆后返回重定向地址
-func (api *wechatwebAPI) Login(tip, uuid string) (code, userAvatar, redirectURL string, body []byte, err error) {
+func (api *wechatwebAPI) Login(uuid, tip string) (code, userAvatar, redirectURL string, body []byte, err error) {
 	params := url.Values{}
 	params.Set("tip", tip)
 	params.Set("uuid", uuid)
