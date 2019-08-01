@@ -1,7 +1,7 @@
 package wwdk
 
 import (
-	"github.com/pkg/errors"
+	"github.com/getsentry/sentry-go"
 
 	"github.com/ikuiki/wwdk/datastruct"
 )
@@ -10,6 +10,7 @@ import (
 func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string, err error) {
 	d, err := wxwb.api.SaveMessageImage(msg.MsgID)
 	if err != nil {
+		wxwb.captureException(err, "SaveMessageImage fatal", sentry.LevelError)
 		return
 	}
 	filename, err = wxwb.mediaStorer.Storer(MediaFile{
@@ -18,7 +19,8 @@ func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 		BinaryContent: d,
 	})
 	if err != nil {
-		return "", errors.New("mediaStorer.Storer error: " + err.Error())
+		wxwb.captureException(err, "MediaStorer.Storer fatal", sentry.LevelError)
+		return
 	}
 	return filename, nil
 }
@@ -27,6 +29,7 @@ func (wxwb *WechatWeb) SaveMessageImage(msg datastruct.Message) (filename string
 func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string, err error) {
 	d, err := wxwb.api.SaveMessageVoice(msg.MsgID)
 	if err != nil {
+		wxwb.captureException(err, "SaveMessageVoice fatal", sentry.LevelError)
 		return
 	}
 	filename, err = wxwb.mediaStorer.Storer(MediaFile{
@@ -35,7 +38,8 @@ func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string
 		BinaryContent: d,
 	})
 	if err != nil {
-		return "", errors.New("mediaStorer.Storer error: " + err.Error())
+		wxwb.captureException(err, "MediaStorer.Storer fatal", sentry.LevelError)
+		return
 	}
 	return filename, nil
 }
@@ -44,6 +48,7 @@ func (wxwb *WechatWeb) SaveMessageVoice(msg datastruct.Message) (filename string
 func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string, err error) {
 	d, err := wxwb.api.SaveMessageVideo(msg.MsgID)
 	if err != nil {
+		wxwb.captureException(err, "SaveMessageVideo fatal", sentry.LevelError)
 		return
 	}
 	filename, err = wxwb.mediaStorer.Storer(MediaFile{
@@ -52,7 +57,8 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 		BinaryContent: d,
 	})
 	if err != nil {
-		return "", errors.New("mediaStorer.Storer error: " + err.Error())
+		wxwb.captureException(err, "MediaStorer.Storer fatal", sentry.LevelError)
+		return
 	}
 	return filename, nil
 }
@@ -61,6 +67,7 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 func (wxwb *WechatWeb) SaveContactImg(contact datastruct.Contact) (filename string, err error) {
 	d, err := wxwb.api.SaveContactImg(contact.HeadImgURL)
 	if err != nil {
+		wxwb.captureException(err, "SaveContactImg fatal", sentry.LevelError)
 		return
 	}
 	filename, err = wxwb.mediaStorer.Storer(MediaFile{
@@ -69,7 +76,8 @@ func (wxwb *WechatWeb) SaveContactImg(contact datastruct.Contact) (filename stri
 		BinaryContent: d,
 	})
 	if err != nil {
-		return "", errors.New("mediaStorer.Storer error: " + err.Error())
+		wxwb.captureException(err, "MediaStorer.Storer fatal", sentry.LevelError)
+		return
 	}
 	return filename, nil
 }
@@ -78,6 +86,7 @@ func (wxwb *WechatWeb) SaveContactImg(contact datastruct.Contact) (filename stri
 func (wxwb *WechatWeb) SaveUserImg(user datastruct.User) (filename string, err error) {
 	d, err := wxwb.api.SaveContactImg(user.HeadImgURL)
 	if err != nil {
+		wxwb.captureException(err, "SaveUserImg fatal", sentry.LevelError)
 		return
 	}
 	filename, err = wxwb.mediaStorer.Storer(MediaFile{
@@ -86,7 +95,8 @@ func (wxwb *WechatWeb) SaveUserImg(user datastruct.User) (filename string, err e
 		BinaryContent: d,
 	})
 	if err != nil {
-		return "", errors.New("mediaStorer.Storer error: " + err.Error())
+		wxwb.captureException(err, "MediaStorer.Storer fatal", sentry.LevelError)
+		return
 	}
 	return filename, nil
 }
@@ -96,6 +106,7 @@ func (wxwb *WechatWeb) SaveUserImg(user datastruct.User) (filename string, err e
 func (wxwb *WechatWeb) SaveMemberImg(member datastruct.Member, chatroomID string) (filename string, err error) {
 	d, err := wxwb.api.SaveMemberImg(member.UserName, chatroomID)
 	if err != nil {
+		wxwb.captureException(err, "SaveMemberImg fatal", sentry.LevelError)
 		return
 	}
 	filename, err = wxwb.mediaStorer.Storer(MediaFile{
@@ -104,7 +115,8 @@ func (wxwb *WechatWeb) SaveMemberImg(member datastruct.Member, chatroomID string
 		BinaryContent: d,
 	})
 	if err != nil {
-		return "", errors.New("mediaStorer.Storer error: " + err.Error())
+		wxwb.captureException(err, "MediaStorer.Storer fatal", sentry.LevelError)
+		return
 	}
 	return filename, nil
 }

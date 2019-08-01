@@ -1,6 +1,7 @@
 package wwdk
 
 import (
+	"github.com/getsentry/sentry-go"
 	"github.com/pkg/errors"
 	"html"
 	"runtime/debug"
@@ -12,8 +13,16 @@ import (
 func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message, syncChannel chan<- SyncChannelItem) (err error) {
 	defer func() {
 		// 防止外部方法导致的崩溃
-		if err := recover(); err != nil {
-			wxwb.logger.Errorf("messageProcesser panic: %v\n", err)
+		if e := recover(); e != nil {
+			var eErr error
+			if err, ok := e.(error); ok {
+				eErr = err
+			}
+			wxwb.captureException(eErr, "MessageProcesser panic", sentry.LevelError,
+				extraData{"panicItem", e},
+				extraData{"msg", msg},
+			)
+			wxwb.logger.Errorf("messageProcesser panic: %v\n", e)
 			wxwb.logger.Errorf("message data: %v\n", msg)
 			wxwb.logger.Errorf("Stack: %s\n", string(debug.Stack()))
 		}

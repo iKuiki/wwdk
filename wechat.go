@@ -1,8 +1,10 @@
 package wwdk
 
 import (
-	"fmt"
+	"github.com/getsentry/sentry-go"
 	"github.com/ikuiki/wwdk/api"
+	"github.com/pkg/errors"
+	"reflect"
 
 	"github.com/ikuiki/storer"
 	"github.com/kataras/golog"
@@ -53,6 +55,7 @@ type WechatWeb struct {
 	logger      *golog.Logger          // 日志输出器
 	mediaStorer MediaStorer            // 媒体存储器，用于处理微信的媒体信息（如用户头像、发送的图片、视频、音频等
 	syncChannel chan<- SyncChannelItem // 同步通道，方便除sync方法外发生同步
+	sentryHub   *sentry.Hub            // 用来进行错误追踪的hub，bindClient后生效
 }
 
 // NewWechatWeb 生成微信网页版客户端实例
@@ -71,18 +74,35 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 		},
 		logger:      golog.Default.Clone(),
 		mediaStorer: NewLocalMediaStorer("./"),
+		sentryHub:   sentry.NewHub(nil, sentry.NewScope()),
+	}
+	{
+		w.sentryHub.Scope().SetTags(map[string]string{
+			"wwdk_version": Version,
+		})
+		// 设置sentry的tag与extra
+		w.sentryHub.Scope().SetExtras(map[string]interface{}{
+			"package":      "github.com/iKuiki/wwdk",
+			"wwdk_version": Version,
+		})
 	}
 	w.logger.NewLine = true
 	for _, c := range configs {
 		switch c.(type) {
 		case storer.Storer:
+			w.sentryHub.Scope().SetExtra("loginStore", reflect.TypeOf(c).String())
 			w.loginStorer = c.(storer.Storer)
 		case *golog.Logger:
 			w.logger = c.(*golog.Logger)
 		case MediaStorer:
+			w.sentryHub.Scope().SetExtra("mediaStorer", reflect.TypeOf(c).String())
 			w.mediaStorer = c.(MediaStorer)
+		case *sentry.Client:
+			w.sentryHub.BindClient(c.(*sentry.Client))
 		default:
-			return &WechatWeb{}, fmt.Errorf("unknown config: %#v", c)
+			err = errors.Errorf("unknown config type(%s): %#v", reflect.TypeOf(c).String(), c)
+			w.captureException(err, "Unknown wwdk config", sentry.LevelWarning)
+			return nil, err
 		}
 	}
 	return w, nil

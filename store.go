@@ -4,6 +4,7 @@ package wwdk
 
 import (
 	"encoding/json"
+	"github.com/getsentry/sentry-go"
 	"github.com/ikuiki/wwdk/api"
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/pkg/errors"
@@ -19,13 +20,8 @@ type storeLoginInfo struct {
 
 // 重置登录信息
 func (wxwb *WechatWeb) resetLoginInfo() (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			wxwb.logger.Infof("Recovered in resetLoginInfo: %v\n", r)
-			wxwb.runInfo.PanicCount++
-			err = errors.Errorf("panic recovered: %+v", r)
-		}
-	}()
+	// 此处如果panic，不应当阻止其传播
+	// 如果发生panic，是影响到逻辑的panic
 	if wxwb.loginStorer != nil {
 		wxwb.loginStorer.Truncate()
 	}
@@ -45,6 +41,11 @@ func (wxwb *WechatWeb) resetLoginInfo() (err error) {
 func (wxwb *WechatWeb) writeLoginInfo() (err error) {
 	defer func() {
 		if r := recover(); r != nil {
+			var eErr error
+			if err, ok := r.(error); ok {
+				eErr = err
+			}
+			wxwb.captureException(eErr, "WriteLoginInfo panic", sentry.LevelError, extraData{"panicItem", r})
 			wxwb.logger.Infof("Recovered in writeLoginInfo: %v\n", r)
 			wxwb.runInfo.PanicCount++
 			err = errors.Errorf("panic recovered: %+v", r)
@@ -76,6 +77,11 @@ func (wxwb *WechatWeb) writeLoginInfo() (err error) {
 func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 	defer func() {
 		if r := recover(); r != nil {
+			var eErr error
+			if err, ok := r.(error); ok {
+				eErr = err
+			}
+			wxwb.captureException(eErr, "ReadLoginInfo panic", sentry.LevelError, extraData{"panicItem", r})
 			wxwb.logger.Infof("Recovered in readLoginInfo: %v\n", r)
 			wxwb.runInfo.PanicCount++
 			err = errors.Errorf("panic recovered: %+v", r)
