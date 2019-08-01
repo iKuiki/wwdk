@@ -2,7 +2,6 @@ package wwdk
 
 import (
 	"github.com/getsentry/sentry-go"
-	"github.com/pkg/errors"
 	"html"
 	"runtime/debug"
 	"strings"
@@ -59,7 +58,8 @@ func (wxwb *WechatWeb) messageProcesser(msg *datastruct.Message, syncChannel cha
 			Message: msg,
 		}
 	default:
-		return errors.Errorf("Unknown MsgType %v: %#v", msg.MsgType, msg)
+		wxwb.captureException(nil, "Unknown MsgType", sentry.LevelWarning, extraData{"msgType", msg.MsgType}, extraData{"msg", msg})
+		wxwb.logger.Infof("Unknown MsgType %v: %#v", msg.MsgType, msg)
 	}
 	return nil
 }
