@@ -151,7 +151,7 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 func (wxwb *WechatWeb) getContactList() (err error) {
 	contactList, body, err := wxwb.api.GetContact()
 	if err != nil {
-		wxwb.captureException(err, "WXWeb GetContact fail", sentry.LevelError, extraData{"body", string(body)})
+		wxwb.captureException(err, "GetContact fail", sentry.LevelError, extraData{"body", string(body)})
 		return
 	}
 	for _, contact := range contactList {
@@ -172,7 +172,7 @@ func (wxwb *WechatWeb) batchGetContact() (err error) {
 	}
 	contactList, body, err := wxwb.api.BatchGetContact(itemList)
 	if err != nil {
-		wxwb.captureException(err, "WXWeb BatchGetContact fail", sentry.LevelError, extraData{"body", string(body)})
+		wxwb.captureException(err, "BatchGetContact fail", sentry.LevelError, extraData{"body", string(body)})
 		return
 	}
 	for _, contact := range contactList {
@@ -202,7 +202,7 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 			if e := recover(); e != nil {
 				if f, ok := e.(fatalInfo); ok {
 					// 发生了panic
-					wxwb.captureException(f.Err, "WXWeb login "+f.Msg+" fatal", sentry.LevelError, extraData{"body", string(f.Body)})
+					wxwb.captureException(f.Err, "Login "+f.Msg+" fatal", sentry.LevelError, extraData{"body", string(f.Body)})
 					loginChannel <- LoginChannelItem{
 						Code: LoginStatusErrorOccurred,
 						Err:  f.Err,
@@ -210,13 +210,13 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 				}
 				if err, ok := e.(error); ok {
 					// 发生了panic
-					wxwb.captureException(err, "WXWeb Login fatal", sentry.LevelError)
+					wxwb.captureException(err, "Login fatal", sentry.LevelError)
 					loginChannel <- LoginChannelItem{
 						Code: LoginStatusErrorOccurred,
 						Err:  err,
 					}
 				} else {
-					wxwb.captureException(nil, "WXWeb Login fatal", sentry.LevelError)
+					wxwb.captureException(nil, "Login fatal", sentry.LevelError)
 					wxwb.logger.Errorf("WechatWeb.Login panic: \n%+v\n", e)
 				}
 			}
@@ -290,7 +290,7 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 func (wxwb *WechatWeb) Logout() (err error) {
 	body, err := wxwb.api.Logout()
 	if err != nil {
-		wxwb.captureException(err, "WXWeb Logout fatal", sentry.LevelError, extraData{"body", string(body)})
+		wxwb.captureException(err, "Logout fatal", sentry.LevelError, extraData{"body", string(body)})
 	}
 	return
 }
