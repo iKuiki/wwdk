@@ -101,7 +101,7 @@ func NewWechatWeb(configs ...interface{}) (wxweb *WechatWeb, err error) {
 			w.sentryHub.BindClient(c.(*sentry.Client))
 		default:
 			err = errors.Errorf("unknown config type(%s): %#v", reflect.TypeOf(c).String(), c)
-			w.captureException(err, "Unknown wwdk config", "wwdk.NewWechatWeb", sentry.LevelWarning)
+			w.captureException(err, "Unknown wwdk config", sentry.LevelWarning)
 			return nil, err
 		}
 	}
