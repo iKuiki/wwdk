@@ -3,6 +3,7 @@ package api_test
 import (
 	"github.com/ikuiki/wwdk/datastruct"
 	"testing"
+	"time"
 )
 
 // 测试获取联系人的方法
@@ -44,12 +45,30 @@ func TestBatchGetContact(t *testing.T) {
 // 期望：返回err=nil
 func TestModifyContactRemark(t *testing.T) {
 	contact, skip := getTestContact("TestModifyContactRemark", false)
-	if !skip {
-		remark := contact.RemarkName
-		if remark == "" {
-			remark = contact.NickName
+	if skip {
+		t.SkipNow()
+	}
+	remark := contact.RemarkName
+	if remark == "" {
+		remark = contact.NickName
+	}
+	_, err := client.ModifyUserRemakName(contact.UserName, remark+"2")
+	checkErrorIsNil(err)
+	for {
+		select {
+		case mCon := <-modContactChan:
+			if mCon.UserName == contact.UserName {
+				if mCon.RemarkName != remark+"2" {
+					t.Fatalf("modify user remark fail, except %s, got %s\n",
+						remark+"2",
+						mCon.RemarkName,
+					)
+				}
+				t.Logf("valid user remark has change to %s\n", mCon.RemarkName)
+				return
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("wait for modify notify timeout")
 		}
-		_, err := client.ModifyUserRemakName(contact.UserName, remark+"2")
-		checkErrorIsNil(err)
 	}
 }
