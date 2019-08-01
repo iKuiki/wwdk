@@ -1,3 +1,7 @@
+github.com/getsentry/sentry-go v0.2.1 h1:zCyr8wS1NQM7ixbWNh8lBRMlQZSM3aMXQCqXgCDwI44=
+github.com/getsentry/sentry-go v0.2.1/go.mod h1:2QfSdvxz4IZGyB5izm1TtADFhlhfj1Dcesrg8+A/T9Y=
+github.com/go-errors/errors v1.0.1 h1:LUHzmkK3GUKUrL/1gfBUxAHzcev3apQlezX/+O7ma6w=
+github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=
 github.com/ikuiki/storer v1.0.0 h1:grhfosXRFWUHFM6YZyzmu1iM5/0CIBgeePz6osrZptg=
 github.com/ikuiki/storer v1.0.0/go.mod h1:Nt3q8HMrpuS/knoHqboMQ5FJlg7WBhhykz5kGijnhKE=
 github.com/kataras/golog v0.0.0-20180321173939-03be10146386 h1:VT6AeCHO/mc+VedKBMhoqb5eAK8B1i9F6nZl7EGlHvA=
@@ -8,6 +12,8 @@ github.com/mdp/qrterminal v0.1.2 h1:mxDuioxCrp3Ll9EyzywbzygMTvaZLWWVagwT1lLBCA8=
 github.com/mdp/qrterminal v0.1.2/go.mod h1:JHFxKzeFy8lXGu3bkkAZ4EwpmxWtm2laIs1MVvWoBt0=
 github.com/mdp/rsc v0.0.0-20160131164516-90f07065088d h1:j7DAJd/z/JtaXjFtlrLV8NHflBsg1rkrTqAJNLqMWBE=
 github.com/mdp/rsc v0.0.0-20160131164516-90f07065088d/go.mod h1:fIxvRMy+xQMcJGz9JAV25fJOKMRF1VQY/P8Mrni5XJA=
+github.com/pingcap/errors v0.11.1 h1:BXFZ6MdDd2U1uJUa2sRAWTmm+nieEzuyYM0R4aUTcC8=
+github.com/pingcap/errors v0.11.1/go.mod h1:Oi8TUi2kEtXXLMJk9l1cGmz20kV3TaQ0usTwv5KuLY8=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 golang.org/x/sys v0.0.0-20190712062909-fae7ac547cb7 h1:LepdCS8Gf/MVejFIt8lsiexZATdoGVyp5bcyS+rYoUI=
