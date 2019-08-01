@@ -223,7 +223,10 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 		}()
 		// 尝试使用已存在的登录信息登录
 		logined := false
-		readed, _ := wxwb.readLoginInfo()
+		readed, err := wxwb.readLoginInfo()
+		if err != nil {
+			wxwb.captureException(err, "ReadLoginInfo", sentry.LevelError)
+		}
 		if readed {
 			wxwb.logger.Info("loaded stored login info")
 			if wxwb.getContactList() == nil {
@@ -260,7 +263,7 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 		// if err != nil {
 		// 	return errors.New("StatusNotify error: " + err.Error())
 		// }
-		err := wxwb.batchGetContact()
+		err = wxwb.batchGetContact()
 		if err != nil {
 			loginChannel <- LoginChannelItem{
 				Code: LoginStatusErrorOccurred,
