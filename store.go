@@ -92,6 +92,10 @@ func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 		if err != nil {
 			return false, errors.WithStack(err)
 		}
+		if string(data) == "" {
+			// 登陆信息为空，不继续接下来的流程了
+			return false, nil
+		}
 		var storeInfo storeLoginInfo
 		err = json.Unmarshal(data, &storeInfo)
 		if err != nil {
