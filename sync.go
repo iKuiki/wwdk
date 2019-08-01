@@ -69,7 +69,7 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 				}
 				err = wxwb.messageProcesser(&msg, syncChannel)
 				if err != nil {
-					wxwb.captureException(err, "MessageProcesser error", sentry.LevelWarning, extraData{"msg", msg})
+					wxwb.captureException(err, "MessageProcesser error", sentry.LevelError, extraData{"msg", msg})
 					wxwb.logger.Infof("MessageProcesser error: %+v\n", err)
 					syncChannel <- SyncChannelItem{
 						Code: SyncStatusErrorOccurred,

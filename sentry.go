@@ -19,7 +19,7 @@ type extraData struct {
 // @param extras 附加数据，如果有附加数据会放进event的extras里
 func (wwdk *WechatWeb) captureException(err error, errType string, level sentry.Level, extras ...extraData) {
 	event := sentry.NewEvent()
-	event.Level = sentry.LevelWarning
+	event.Level = level
 	if err == nil {
 		event.Message = fmt.Sprintf("Called %s with nil value", callerFunctionName())
 		event.Exception = []sentry.Exception{{
