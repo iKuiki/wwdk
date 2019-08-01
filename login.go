@@ -225,7 +225,7 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 		logined := false
 		readed, err := wxwb.readLoginInfo()
 		if err != nil {
-			wxwb.captureException(err, "ReadLoginInfo", sentry.LevelError)
+			wxwb.captureException(err, "ReadLoginInfo error", sentry.LevelError)
 		}
 		if readed {
 			wxwb.logger.Info("loaded stored login info")
