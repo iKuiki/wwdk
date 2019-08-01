@@ -1,6 +1,7 @@
 package wwdk
 
 import (
+	"github.com/getsentry/sentry-go"
 	"github.com/ikuiki/wwdk/api"
 	"time"
 
@@ -39,8 +40,9 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 		// 方法结束时关闭channel
 		defer close(syncChannel)
 		getMessage := func() {
-			modContacts, delContacts, addMessage, _, err := wxwb.api.WebwxSync()
+			modContacts, delContacts, addMessage, body, err := wxwb.api.WebwxSync()
 			if err != nil {
+				wxwb.captureException(err, "WebwxSync fatal", sentry.LevelError, extraData{"body", string(body)})
 				wxwb.logger.Infof("WebwxSync error: %s\n", err.Error())
 				return
 			}
@@ -67,6 +69,7 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 				}
 				err = wxwb.messageProcesser(&msg, syncChannel)
 				if err != nil {
+					wxwb.captureException(err, "MessageProcesser error", sentry.LevelWarning, extraData{"msg", msg})
 					wxwb.logger.Infof("MessageProcesser error: %+v\n", err)
 					syncChannel <- SyncChannelItem{
 						Code: SyncStatusErrorOccurred,
@@ -80,6 +83,11 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 			isBreaked := func() (isBreaked bool) {
 				defer func() {
 					if r := recover(); r != nil {
+						var eErr error
+						if err, ok := r.(error); ok {
+							eErr = err
+						}
+						wxwb.captureException(eErr, "Sync loop panic", sentry.LevelError, extraData{"panicItem", r})
 						wxwb.logger.Infof("Recovered in Sync loop: %v\n", r)
 						wxwb.runInfo.PanicCount++
 						syncChannel <- SyncChannelItem{
@@ -88,7 +96,7 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 						}
 					}
 				}()
-				_, selector, _, err := wxwb.api.SyncCheck()
+				_, selector, body, err := wxwb.api.SyncCheck()
 				if err != nil {
 					if err == api.ErrLogout {
 						wxwb.logger.Info("User has logout web wechat, exit...\n")
@@ -98,6 +106,7 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 						}
 						return true
 					}
+					wxwb.captureException(err, "SyncCheck fatal", sentry.LevelError, extraData{"body", string(body)})
 					wxwb.logger.Infof("SyncCheck error: %s\n", err.Error())
 					syncChannel <- SyncChannelItem{
 						Code: SyncStatusErrorOccurred,
@@ -133,6 +142,7 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 					// wxwb.logger.Info("SyncCheck 2\n")
 					getMessage()
 				default:
+					wxwb.captureException(nil, "SyncCheck Unknow selector", sentry.LevelWarning, extraData{"selector", selector})
 					wxwb.logger.Infof("SyncCheck Unknow selector: %s\n", selector)
 					syncChannel <- SyncChannelItem{
 						Code: SyncStatusErrorOccurred,
