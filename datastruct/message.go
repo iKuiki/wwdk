@@ -123,7 +123,7 @@ func (msg Message) GetMemberMsgContent() (content string, err error) {
 			err = errors.New("content not found")
 		} else {
 			if match, _ := regexp.MatchString("^@\\w+$", msg.Content[:splitIndex]); match {
-				content = msg.Content[splitIndex+1:]
+				content = msg.Content[splitIndex+6:]
 			}
 		}
 	} else {
