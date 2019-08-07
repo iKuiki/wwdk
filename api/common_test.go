@@ -54,11 +54,13 @@ func login(client api.WechatwebAPI) {
 		}
 		checkErrorIsNil(err)
 	}
+	fmt.Println("user confirm login")
 	_, err = client.WebwxNewLoginPage(redirectURL)
 	checkErrorIsNil(err)
 	userPtr, contactList, _, err := client.WebwxInit()
 	checkErrorIsNil(err)
 	user = *userPtr
+	fmt.Println("user " + user.NickName + " login success")
 	for _, contact := range contactList {
 		contactMap[contact.UserName] = contact
 	}
@@ -66,7 +68,7 @@ func login(client api.WechatwebAPI) {
 	for _, contact := range contactList {
 		contactMap[contact.UserName] = contact
 	}
-	fmt.Println("user " + user.NickName + " login success")
+	fmt.Println("contact list fetched")
 }
 
 // 一个微型服务来维持sync与联系人列表

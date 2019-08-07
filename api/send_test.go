@@ -19,3 +19,16 @@ func TestSendAndRevoke(t *testing.T) {
 	_, err = client.SendRevokeMessage(contact.UserName, msgID, localID)
 	checkErrorIsNil(err)
 }
+
+// 测试发送消息已读通知
+func TestStatusNotify(t *testing.T) {
+	contact, skip := getTestContact("TestStatusNotify", anyContact)
+	if skip {
+		t.SkipNow()
+	}
+	fmt.Println("sleep a second")
+	time.Sleep(time.Second)
+	fmt.Println("now notify readed")
+	_, err := client.StatusNotify(user.UserName, contact.UserName, 1)
+	checkErrorIsNil(err)
+}
