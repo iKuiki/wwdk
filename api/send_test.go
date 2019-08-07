@@ -8,7 +8,7 @@ import (
 
 // 测试发送一次消息并撤回
 func TestSendAndRevoke(t *testing.T) {
-	contact, skip := getTestContact("TestSendAndRevoke", false)
+	contact, skip := getTestContact("TestSendAndRevoke", anyContact)
 	if skip {
 		t.SkipNow()
 	}

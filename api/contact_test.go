@@ -44,7 +44,7 @@ func TestBatchGetContact(t *testing.T) {
 // 为了不影响他人，需要先生成一个随机数，让对应联系人发过来确认
 // 期望：返回err=nil
 func TestModifyContactRemark(t *testing.T) {
-	contact, skip := getTestContact("TestModifyContactRemark", false)
+	contact, skip := getTestContact("TestModifyContactRemark", friendContact)
 	if skip {
 		t.SkipNow()
 	}

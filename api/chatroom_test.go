@@ -9,7 +9,7 @@ import (
 // 为了不影响他人，需要先生成一个随机数，让对应联系人发过来确认
 // 期望：返回err=nil
 func TestModifyChatroomTopic(t *testing.T) {
-	contact, skip := getTestContact("TestModifyChatroomTopic", true)
+	contact, skip := getTestContact("TestModifyChatroomTopic", chatroomContact)
 	if skip {
 		t.SkipNow()
 	}

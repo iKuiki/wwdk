@@ -113,14 +113,29 @@ func sync(client api.WechatwebAPI,
 	}()
 }
 
+// 联系人类型
+type contactType int32
+
+const (
+	// 任意联系人
+	anyContact contactType = 0
+	// 好友联系人
+	friendContact contactType = 1
+	// 聊天室联系人
+	chatroomContact contactType = 2
+)
+
 // 需要操作联系人时，为了不影响他人，需要先生成一个随机数，让对应联系人发过来确认
 // fnName是当前测试名称
 // isChatroom指定了是否是需要群
-func getTestContact(fnName string, isChatroom bool) (contact datastruct.Contact, skip bool) {
+func getTestContact(fnName string, cType contactType) (contact datastruct.Contact, skip bool) {
 	validCode := tool.GetRandomStringFromNum(4)
 	target := "contact"
-	if isChatroom {
-		target = "chatroom"
+	switch cType {
+	case friendContact:
+		target = "[friend] contact"
+	case chatroomContact:
+		target = "[chatroom] contact"
 	}
 	fmt.Printf("need to select a %s to test\n", target)
 	fmt.Printf("if you want to Run test function %s please send [run %s] via a %s\n",
@@ -138,11 +153,20 @@ func getTestContact(fnName string, isChatroom bool) (contact datastruct.Contact,
 			return contact, true
 		} else if msg.GetContent() == "run "+validCode {
 			contact = contactMap[msg.FromUserName]
-			if isChatroom == contact.IsChatroom() {
-				return contactMap[msg.FromUserName], false
-			} else {
-				fmt.Printf("please use a %s to send again", target)
+			// 检测该联系人是否符合所需要的类型
+			switch cType {
+			case friendContact:
+				if contact.IsChatroom() {
+					fmt.Printf("please use a %s to send again", target)
+					continue
+				}
+			case chatroomContact:
+				if !contact.IsChatroom() {
+					fmt.Printf("please use a %s to send again", target)
+					continue
+				}
 			}
+			return contactMap[msg.FromUserName], false
 		} else {
 			fmt.Printf("content [%s] mismatch\n", msg.GetContent())
 		}
