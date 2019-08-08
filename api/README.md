@@ -1,12 +1,14 @@
 # Web Wechat API
 
+![TestStatus](https://img.shields.io/badge/Test-Pass-brightgreen.svg?style=flat)
+
 这个包是对微信网页版API的最基本实现，近实现api的调用与返回，不含其余逻辑
 
 ## 实现的功能
 
 - [x] 获取好友列表
 - [x] 批量获取联系人信息
-- [ ] 接受好友请求
+- [x] 接受好友请求
 - [x] 修改好友备注
 - [ ] 好友拉群
 - [ ] 群成员添加
@@ -28,4 +30,4 @@
 
 ## TODO List
 
-- [ ] 单元测试
+- [x] 单元测试(当前完成的api都已添加单元测试)

@@ -1,13 +1,14 @@
 package api
 
 import (
-	"github.com/ikuiki/wwdk/datastruct"
-	"github.com/ikuiki/wwdk/tool"
-	"github.com/pkg/errors"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"time"
+
+	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/tool"
+	"github.com/pkg/errors"
 )
 
 // WechatwebAPI 微信网页版api
@@ -33,6 +34,8 @@ type WechatwebAPI interface {
 	BatchGetContact(contactItemList []datastruct.BatchGetContactRequestListItem) (contactList []datastruct.Contact, body []byte, err error)
 	// ModifyUserRemakName 修改联系人备注
 	ModifyUserRemakName(userName, remarkName string) (body []byte, err error)
+	// AcceptAddFriend 同意添加好友
+	AcceptAddFriend(userName, verifyTicket string) (body []byte, err error)
 
 	// 聊天室部分
 

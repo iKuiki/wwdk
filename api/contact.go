@@ -3,12 +3,13 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/ikuiki/wwdk/datastruct"
-	"github.com/ikuiki/wwdk/tool"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/tool"
+	"github.com/pkg/errors"
 )
 
 // GetContact 获取联系人
@@ -98,6 +99,60 @@ func (api *wechatwebAPI) ModifyUserRemakName(userName, remarkName string) (body 
 		return
 	}
 	req, err := http.NewRequest("POST", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxoplog", bytes.NewReader(reqBody))
+	if err != nil {
+		err = errors.New("create request error: " + err.Error())
+		return
+	}
+	resp, err := api.request(req)
+	if err != nil {
+		err = errors.New("request error: " + err.Error())
+		return
+	}
+	defer resp.Body.Close()
+	var murResp datastruct.ModifyRemarkRespond
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = errors.New("read response body error: " + err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &murResp)
+	if err != nil {
+		err = errors.New("UnMarshal respond json fail: " + err.Error())
+		return
+	}
+	if murResp.BaseResponse.Ret != 0 {
+		err = errors.Errorf("Respond error ret(%d): %s", murResp.BaseResponse.Ret, murResp.BaseResponse.ErrMsg)
+		return
+	}
+	return
+}
+
+// AcceptAddFriend 接受添加好友请求
+// 收到添加好友请求后可以调用此接口同意请求
+// @param userName 要接受的好友的userName
+// @param verifyTicket 收到添加好友请求时附带的接受操作的票据ticket
+func (api *wechatwebAPI) AcceptAddFriend(userName, verifyTicket string) (body []byte, err error) {
+	aafReq := datastruct.AcceptAddFriendRequest{
+		BaseRequest:        api.baseRequest(),
+		Opcode:             3,
+		VerifyUserListSize: 1,
+		VerifyUserList: []datastruct.AcceptAddFriendRequestUserListItem{
+			datastruct.AcceptAddFriendRequestUserListItem{
+				Value:            userName,
+				VerifyUserTicket: verifyTicket,
+			},
+		},
+		VerifyContent:  "",
+		SceneListCount: 1,
+		SceneList:      []int64{33},
+		Skey:           api.loginInfo.SKey,
+	}
+	reqBody, err := json.Marshal(aafReq)
+	if err != nil {
+		err = errors.New("Marshal reqBody to json fail: " + err.Error())
+		return
+	}
+	req, err := http.NewRequest("POST", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxverifyuser", bytes.NewReader(reqBody))
 	if err != nil {
 		err = errors.New("create request error: " + err.Error())
 		return

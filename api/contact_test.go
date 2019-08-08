@@ -1,9 +1,12 @@
 package api_test
 
 import (
-	"github.com/ikuiki/wwdk/datastruct"
+	"fmt"
 	"testing"
 	"time"
+
+	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/tool"
 )
 
 // 测试获取联系人的方法
@@ -15,6 +18,10 @@ func TestGetContact(t *testing.T) {
 		t.Fatal("getContact result empty")
 	}
 	t.Logf("got %d contacts", len(contacts))
+	for _, c := range contacts {
+		// 日常维护contactMap
+		contactMap[c.UserName] = c
+	}
 }
 
 // 测试批量获取联系人
@@ -38,6 +45,10 @@ func TestBatchGetContact(t *testing.T) {
 	if len(contactList) != len(itemList) {
 		t.Fatalf("batchGetContact list len(%d) diff with contacts(%d)", len(contactList), len(itemList))
 	}
+	for _, c := range contactList {
+		// 日常维护contactMap
+		contactMap[c.UserName] = c
+	}
 }
 
 // 测试修改一个联系人的备注
@@ -57,6 +68,8 @@ func TestModifyContactRemark(t *testing.T) {
 	for {
 		select {
 		case mCon := <-modContactChan:
+			// 日常维护contactMap
+			contactMap[mCon.UserName] = mCon
 			if mCon.UserName == contact.UserName {
 				if mCon.RemarkName != remark+"2" {
 					t.Fatalf("modify user remark fail, except %s, got %s\n",
@@ -69,6 +82,53 @@ func TestModifyContactRemark(t *testing.T) {
 			}
 		case <-time.After(5 * time.Second):
 			t.Fatal("wait for modify notify timeout")
+		}
+	}
+}
+
+// TestAcceptAddFriend 测试同意添加好友请求
+// 首先需要收到好友请求并且获取其中的username与ticket
+// 然后调用接受好友请求
+// 然后期待接受到获取到新好友的消息
+func TestAcceptAddFriend(t *testing.T) {
+	validCode := tool.GetRandomStringFromNum(4)
+	fmt.Println("please use a wechat add " + user.NickName + " to contact list")
+	fmt.Printf("if you want to Skip test this func please send [skip %s]\n", validCode)
+	var recommendInfo datastruct.MessageRecommendInfo
+	for {
+		// wait a add friend message
+		msg := <-addMessageChan
+		if msg.GetContent() == "skip "+validCode {
+			t.SkipNow()
+		} else {
+			if msg.FromUserName == "fmessage" && msg.MsgType == datastruct.AddFriendMsg {
+				recommendInfo = *msg.RecommendInfo
+				break
+			}
+		}
+	}
+	fmt.Printf("recive addFriend msg [%s]: %s\n",
+		recommendInfo.NickName,
+		recommendInfo.Content)
+	// Sleep 1 second for add friend message show on phone
+	time.Sleep(time.Second)
+	// now accept add friend
+	_, err := client.AcceptAddFriend(recommendInfo.UserName,
+		recommendInfo.Ticket)
+	checkErrorIsNil(err)
+	// 现在期待接到联系人添加的变更
+	for {
+		select {
+		case c := <-modContactChan:
+			// 日常维护contactMap
+			contactMap[c.UserName] = c
+			if c.UserName == recommendInfo.UserName {
+				t.Logf("verify new contact [%s] added\n", c.NickName)
+				return
+			}
+			// continue
+		case <-time.After(5 * time.Second):
+			t.Fatal("not receive contact modify msg")
 		}
 	}
 }

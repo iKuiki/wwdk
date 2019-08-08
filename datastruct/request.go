@@ -92,3 +92,21 @@ type ModifyChatRoomTopicRequest struct {
 	ChatRoomName string       `json:"ChatRoomName"`
 	NewTopic     string       `json:"NewTopic"`
 }
+
+// AcceptAddFriendRequest 接受添加好友请求
+type AcceptAddFriendRequest struct {
+	BaseRequest        *BaseRequest                         `json:"BaseRequest"`
+	Opcode             int64                                `json:"Opcode"`
+	SceneList          []int64                              `json:"SceneList"`
+	SceneListCount     int64                                `json:"SceneListCount"`
+	VerifyContent      string                               `json:"VerifyContent"`
+	VerifyUserList     []AcceptAddFriendRequestUserListItem `json:"VerifyUserList"`
+	VerifyUserListSize int64                                `json:"VerifyUserListSize"`
+	Skey               string                               `json:"skey"`
+}
+
+// AcceptAddFriendRequestUserListItem 接受添加好友请求的用户列表的单例
+type AcceptAddFriendRequestUserListItem struct {
+	Value            string `json:"Value"`
+	VerifyUserTicket string `json:"VerifyUserTicket"`
+}
