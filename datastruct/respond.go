@@ -127,27 +127,42 @@ type ModifyRemarkRespond struct {
 	BaseResponse *BaseResponse `json:"BaseResponse"`
 }
 
-// ModifyChatRoomTopicRespond 修改群名的返回
-type ModifyChatRoomTopicRespond struct {
-	BaseResponse *BaseResponse `json:"BaseResponse"`
-	MemberCount  int64         `json:"MemberCount"`
-	MemberList   []interface{} `json:"MemberList"`
-}
-
-// CreateChatroomResponse 创建聊天室的响应
-type CreateChatroomResponse struct {
+// CreateChatRoomResponse 创建聊天室的响应
+type CreateChatRoomResponse struct {
 	BaseResponse *BaseResponse                      `json:"BaseResponse"`
 	BlackList    string                             `json:"BlackList"`
 	ChatRoomName string                             `json:"ChatRoomName"`
 	MemberCount  int64                              `json:"MemberCount"`
-	MemberList   []CreateChatroomResponseMemberList `json:"MemberList"`
+	MemberList   []CreateChatRoomResponseMemberList `json:"MemberList"`
 	PYInitial    string                             `json:"PYInitial"`
 	QuanPin      string                             `json:"QuanPin"`
 	Topic        string                             `json:"Topic"`
 }
 
-// CreateChatroomResponseMemberList 创建聊天室响应的成员列表
-type CreateChatroomResponseMemberList struct {
+// CreateChatRoomResponseMemberList 创建聊天室响应的成员列表
+type CreateChatRoomResponseMemberList struct {
+	AttrStatus      int64  `json:"AttrStatus"`
+	DisplayName     string `json:"DisplayName"`
+	KeyWord         string `json:"KeyWord"`
+	MemberStatus    int64  `json:"MemberStatus"`
+	NickName        string `json:"NickName"`
+	PYInitial       string `json:"PYInitial"`
+	PYQuanPin       string `json:"PYQuanPin"`
+	RemarkPYInitial string `json:"RemarkPYInitial"`
+	RemarkPYQuanPin string `json:"RemarkPYQuanPin"`
+	Uin             int64  `json:"Uin"`
+	UserName        string `json:"UserName"`
+}
+
+// UpdateChatRoomResponse 更新聊天室后的响应(包括添加、移除联系人以及修改群名)
+type UpdateChatRoomResponse struct {
+	BaseResponse *BaseResponse                      `json:"BaseResponse"`
+	MemberCount  int64                              `json:"MemberCount"`
+	MemberList   []UpdateChatRoomResponseMemberList `json:"MemberList"`
+}
+
+// UpdateChatRoomResponseMemberList 更新聊天室后的响应的成员列表
+type UpdateChatRoomResponseMemberList struct {
 	AttrStatus      int64  `json:"AttrStatus"`
 	DisplayName     string `json:"DisplayName"`
 	KeyWord         string `json:"KeyWord"`

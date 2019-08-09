@@ -83,17 +83,17 @@ func (api *wechatwebAPI) BatchGetContact(contactItemList []datastruct.BatchGetCo
 	return
 }
 
-// ModifyUserRemakName 修改联系人备注
+// UpdateUserRemakName 修改联系人备注
 // @param userName 要修改的联系人的UserName
 // @param remarkName 新的备注
-func (api *wechatwebAPI) ModifyUserRemakName(userName, remarkName string) (body []byte, err error) {
-	murReq := datastruct.ModifyRemarkRequest{
+func (api *wechatwebAPI) UpdateUserRemakName(userName, remarkName string) (body []byte, err error) {
+	uurReq := datastruct.ModifyRemarkRequest{
 		BaseRequest: api.baseRequest(),
 		CmdID:       2,
 		RemarkName:  remarkName,
 		UserName:    userName,
 	}
-	reqBody, err := json.Marshal(murReq)
+	reqBody, err := json.Marshal(uurReq)
 	if err != nil {
 		err = errors.New("Marshal reqBody to json fail: " + err.Error())
 		return
@@ -109,19 +109,19 @@ func (api *wechatwebAPI) ModifyUserRemakName(userName, remarkName string) (body 
 		return
 	}
 	defer resp.Body.Close()
-	var murResp datastruct.ModifyRemarkRespond
+	var uurResp datastruct.ModifyRemarkRespond
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		err = errors.New("read response body error: " + err.Error())
 		return
 	}
-	err = json.Unmarshal(body, &murResp)
+	err = json.Unmarshal(body, &uurResp)
 	if err != nil {
 		err = errors.New("UnMarshal respond json fail: " + err.Error())
 		return
 	}
-	if murResp.BaseResponse.Ret != 0 {
-		err = errors.Errorf("Respond error ret(%d): %s", murResp.BaseResponse.Ret, murResp.BaseResponse.ErrMsg)
+	if uurResp.BaseResponse.Ret != 0 {
+		err = errors.Errorf("Respond error ret(%d): %s", uurResp.BaseResponse.Ret, uurResp.BaseResponse.ErrMsg)
 		return
 	}
 	return

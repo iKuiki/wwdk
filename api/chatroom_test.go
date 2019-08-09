@@ -13,7 +13,7 @@ func TestModifyChatroomTopic(t *testing.T) {
 	if skip {
 		t.SkipNow()
 	}
-	_, err := client.ModifyChatRoomTopic(contact.UserName, contact.NickName+"2")
+	_, err := client.UpdateChatRoomTopic(contact.UserName, contact.NickName+"2")
 	checkErrorIsNil(err)
 	for {
 		select {

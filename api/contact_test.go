@@ -63,7 +63,7 @@ func TestModifyContactRemark(t *testing.T) {
 	if remark == "" {
 		remark = contact.NickName
 	}
-	_, err := client.ModifyUserRemakName(contact.UserName, remark+"2")
+	_, err := client.UpdateUserRemakName(contact.UserName, remark+"2")
 	checkErrorIsNil(err)
 	for {
 		select {

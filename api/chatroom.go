@@ -19,13 +19,13 @@ func (api *wechatwebAPI) CreateChatroom(topic string, userNames []string) (chatr
 	if len(userNames) == 0 {
 		err = errors.New("userName list empty")
 	}
-	var memberList []datastruct.CreateChatroomRequestMemberList
+	var memberList []datastruct.MemberListItem
 	for _, userName := range userNames {
-		memberList = append(memberList, datastruct.CreateChatroomRequestMemberList{
+		memberList = append(memberList, datastruct.MemberListItem{
 			UserName: userName,
 		})
 	}
-	ccRequest := datastruct.CreateChatroomRequest{
+	ccRequest := datastruct.CreateChatRoomRequest{
 		BaseRequest: api.baseRequest(),
 		Topic:       topic,
 		MemberCount: int64(len(memberList)),
@@ -50,7 +50,7 @@ func (api *wechatwebAPI) CreateChatroom(topic string, userNames []string) (chatr
 		return
 	}
 	defer resp.Body.Close()
-	var ccResp datastruct.CreateChatroomResponse
+	var ccResp datastruct.CreateChatRoomResponse
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		err = errors.New("read response body error: " + err.Error())
@@ -69,39 +69,140 @@ func (api *wechatwebAPI) CreateChatroom(topic string, userNames []string) (chatr
 	return
 }
 
-// ModifyChatRoomTopic 修改聊天室标题
+// UpdateChatRoomTopic 修改聊天室标题
 // @param userName 要修改的群的UserName
 // @param remarkName 新的群名
-func (api *wechatwebAPI) ModifyChatRoomTopic(userName, newTopic string) (body []byte, err error) {
-	mctReq := datastruct.ModifyChatRoomTopicRequest{
+func (api *wechatwebAPI) UpdateChatRoomTopic(userName, newTopic string) (body []byte, err error) {
+	uctReq := datastruct.ModifyChatRoomTopicRequest{
 		BaseRequest:  api.baseRequest(),
 		NewTopic:     newTopic,
 		ChatRoomName: userName,
 	}
-	reqBody, err := json.Marshal(mctReq)
+	reqBody, err := json.Marshal(uctReq)
 	if err != nil {
-		return nil, errors.New("Marshal reqBody to json fail: " + err.Error())
+		err = errors.New("Marshal reqBody to json fail: " + err.Error())
+		return
 	}
-	req, err := http.NewRequest("POST", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxupdatechatroom?fun=modtopic", bytes.NewReader(reqBody))
+	params := url.Values{}
+	params.Set("fun", "modtopic")
+	params.Set("pass_ticket", api.loginInfo.PassTicket)
+	req, err := http.NewRequest("POST", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxupdatechatroom?"+params.Encode(), bytes.NewReader(reqBody))
 	if err != nil {
-		return nil, errors.New("create request error: " + err.Error())
+		err = errors.New("create request error: " + err.Error())
+		return
 	}
 	resp, err := api.request(req)
 	if err != nil {
-		return nil, errors.New("request error: " + err.Error())
+		err = errors.New("request error: " + err.Error())
+		return
 	}
 	defer resp.Body.Close()
-	var mctResp datastruct.ModifyChatRoomTopicRespond
+	var uctResp datastruct.UpdateChatRoomResponse
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.New("read response body error: " + err.Error())
+		err = errors.New("read response body error: " + err.Error())
+		return
 	}
-	err = json.Unmarshal(body, &mctResp)
+	err = json.Unmarshal(body, &uctResp)
 	if err != nil {
-		return nil, errors.New("UnMarshal respond json fail: " + err.Error())
+		err = errors.New("UnMarshal respond json fail: " + err.Error())
+		return
 	}
-	if mctResp.BaseResponse.Ret != 0 {
-		return nil, errors.Errorf("Respond error ret(%d): %s", mctResp.BaseResponse.Ret, mctResp.BaseResponse.ErrMsg)
+	if uctResp.BaseResponse.Ret != 0 {
+		err = errors.Errorf("Respond error ret(%d): %s", uctResp.BaseResponse.Ret, uctResp.BaseResponse.ErrMsg)
+		return
+	}
+	return
+}
+
+// UpdateChatRoomAddMember 更新聊天室：添加成员
+// @param chatroomUserName 要更新的聊天室的UserName
+// @param memberUserName 要添加的聊天室成员
+func (api *wechatwebAPI) UpdateChatRoomAddMember(chatroomUserName, memberUserName string) (body []byte, err error) {
+	ucaReq := datastruct.UpdateChatRoomAddMemberRequest{
+		BaseRequest:   api.baseRequest(),
+		ChatRoomName:  chatroomUserName,
+		AddMemberList: memberUserName,
+	}
+	reqBody, err := json.Marshal(ucaReq)
+	if err != nil {
+		err = errors.New("Marshal reqBody to json fail: " + err.Error())
+		return
+	}
+	params := url.Values{}
+	params.Set("fun", "addmember")
+	params.Set("pass_ticket", api.loginInfo.PassTicket)
+	req, err := http.NewRequest("POST", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxupdatechatroom?"+params.Encode(), bytes.NewReader(reqBody))
+	if err != nil {
+		err = errors.New("create request error: " + err.Error())
+		return
+	}
+	resp, err := api.request(req)
+	if err != nil {
+		err = errors.New("request error: " + err.Error())
+		return
+	}
+	defer resp.Body.Close()
+	var ucaResp datastruct.UpdateChatRoomResponse
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = errors.New("read response body error: " + err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &ucaResp)
+	if err != nil {
+		err = errors.New("UnMarshal respond json fail: " + err.Error())
+		return
+	}
+	if ucaResp.BaseResponse.Ret != 0 {
+		err = errors.Errorf("Respond error ret(%d): %s", ucaResp.BaseResponse.Ret, ucaResp.BaseResponse.ErrMsg)
+		return
+	}
+	return
+}
+
+// UpdateChatRoomDelMember 更新聊天室：移除成员
+// @param chatroomUserName 要更新的聊天室的UserName
+// @param memberUserName 要移除的聊天室成员
+func (api *wechatwebAPI) UpdateChatRoomDelMember(chatroomUserName, memberUserName string) (body []byte, err error) {
+	ucdReq := datastruct.UpdateChatRoomDelMemberRequest{
+		BaseRequest:   api.baseRequest(),
+		ChatRoomName:  chatroomUserName,
+		DelMemberList: memberUserName,
+	}
+	reqBody, err := json.Marshal(ucdReq)
+	if err != nil {
+		err = errors.New("Marshal reqBody to json fail: " + err.Error())
+		return
+	}
+	params := url.Values{}
+	params.Set("fun", "delmember")
+	params.Set("pass_ticket", api.loginInfo.PassTicket)
+	req, err := http.NewRequest("POST", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxupdatechatroom?"+params.Encode(), bytes.NewReader(reqBody))
+	if err != nil {
+		err = errors.New("create request error: " + err.Error())
+		return
+	}
+	resp, err := api.request(req)
+	if err != nil {
+		err = errors.New("request error: " + err.Error())
+		return
+	}
+	defer resp.Body.Close()
+	var ucdResp datastruct.UpdateChatRoomResponse
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = errors.New("read response body error: " + err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &ucdResp)
+	if err != nil {
+		err = errors.New("UnMarshal respond json fail: " + err.Error())
+		return
+	}
+	if ucdResp.BaseResponse.Ret != 0 {
+		err = errors.Errorf("Respond error ret(%d): %s", ucdResp.BaseResponse.Ret, ucdResp.BaseResponse.ErrMsg)
+		return
 	}
 	return
 }

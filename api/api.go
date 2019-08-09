@@ -32,15 +32,15 @@ type WechatwebAPI interface {
 	GetContact() (contactList []datastruct.Contact, body []byte, err error)
 	// BatchGetContact 获取群聊的成员
 	BatchGetContact(contactItemList []datastruct.BatchGetContactRequestListItem) (contactList []datastruct.Contact, body []byte, err error)
-	// ModifyUserRemakName 修改联系人备注
-	ModifyUserRemakName(userName, remarkName string) (body []byte, err error)
+	// UpdateUserRemakName 修改联系人备注
+	UpdateUserRemakName(userName, remarkName string) (body []byte, err error)
 	// AcceptAddFriend 同意添加好友
 	AcceptAddFriend(userName, verifyTicket string) (body []byte, err error)
 
 	// 聊天室部分
 
-	// ModifyChatRoomTopic 修改聊天室标题
-	ModifyChatRoomTopic(userName, newTopic string) (body []byte, err error)
+	// UpdateChatRoomTopic 修改聊天室标题
+	UpdateChatRoomTopic(userName, newTopic string) (body []byte, err error)
 
 	// 同步部分
 
