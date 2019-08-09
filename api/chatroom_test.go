@@ -1,7 +1,6 @@
 package api_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
@@ -62,11 +61,5 @@ func TestUpdateChatroom(t *testing.T) {
 	}
 	_, err = client.UpdateChatRoomAddMember(chatRoomUserName, contact3.UserName)
 	checkErrorIsNil(err)
-	fmt.Println("sleep 5 second...")
-	// 先休息5秒再移除
-	time.Sleep(5 * time.Second)
 	t.Log("UpdateChatroom AddMember successful")
-	// 测试将刚刚拉进来的人踢出去
-	_, err = client.UpdateChatRoomDelMember(chatRoomUserName, contact3.UserName)
-	checkErrorIsNil(err)
 }

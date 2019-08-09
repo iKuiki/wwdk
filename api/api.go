@@ -39,12 +39,12 @@ type WechatwebAPI interface {
 
 	// 聊天室部分
 
-	// CreateChatRoom 创建聊天室
+	// CreateChatRoom 创建聊天室, 第一个参数topic为新聊天室的名字，网页版已经不提供此功能了，强烈建议留空
 	CreateChatRoom(topic string, userNames []string) (chatroomUserName string, body []byte, err error)
 	// UpdateChatRoomAddMember 更新聊天室：添加群成员
 	UpdateChatRoomAddMember(chatroomUserName, memberUserName string) (body []byte, err error)
-	// UpdateChatRoomDelMember 更新聊天室：移除群成员
-	UpdateChatRoomDelMember(chatroomUserName, memberUserName string) (body []byte, err error)
+	// UpdateChatRoomDelMember 更新聊天室：移除群成员, 此网页版接口已失效，故移除
+	// UpdateChatRoomDelMember(chatroomUserName, memberUserName string) (body []byte, err error)
 	// UpdateChatRoomTopic 更新聊天室：修改群标题
 	UpdateChatRoomTopic(userName, newTopic string) (body []byte, err error)
 

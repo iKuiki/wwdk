@@ -13,7 +13,7 @@ import (
 )
 
 // CreateChatRoom 好友拉群创建聊天室
-// @param topic 新聊天室的标题
+// @param topic 新聊天室的标题，网页版已经不提供此功能了，强烈建议留空
 // @param userNames 要添加到新聊天室的用户名列表
 func (api *wechatwebAPI) CreateChatRoom(topic string, userNames []string) (chatroomUserName string, body []byte, err error) {
 	if len(userNames) == 0 {
