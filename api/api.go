@@ -39,7 +39,13 @@ type WechatwebAPI interface {
 
 	// 聊天室部分
 
-	// UpdateChatRoomTopic 修改聊天室标题
+	// CreateChatRoom 创建聊天室
+	CreateChatRoom(topic string, userNames []string) (chatroomUserName string, body []byte, err error)
+	// UpdateChatRoomAddMember 更新聊天室：添加群成员
+	UpdateChatRoomAddMember(chatroomUserName, memberUserName string) (body []byte, err error)
+	// UpdateChatRoomDelMember 更新聊天室：移除群成员
+	UpdateChatRoomDelMember(chatroomUserName, memberUserName string) (body []byte, err error)
+	// UpdateChatRoomTopic 更新聊天室：修改群标题
 	UpdateChatRoomTopic(userName, newTopic string) (body []byte, err error)
 
 	// 同步部分

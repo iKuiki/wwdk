@@ -12,10 +12,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CreateChatroom 好友拉群创建聊天室
+// CreateChatRoom 好友拉群创建聊天室
 // @param topic 新聊天室的标题
 // @param userNames 要添加到新聊天室的用户名列表
-func (api *wechatwebAPI) CreateChatroom(topic string, userNames []string) (chatroomUserName string, body []byte, err error) {
+func (api *wechatwebAPI) CreateChatRoom(topic string, userNames []string) (chatroomUserName string, body []byte, err error) {
 	if len(userNames) == 0 {
 		err = errors.New("userName list empty")
 	}
