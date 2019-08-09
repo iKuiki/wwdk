@@ -133,3 +133,30 @@ type ModifyChatRoomTopicRespond struct {
 	MemberCount  int64         `json:"MemberCount"`
 	MemberList   []interface{} `json:"MemberList"`
 }
+
+// CreateChatroomResponse 创建聊天室的响应
+type CreateChatroomResponse struct {
+	BaseResponse *BaseResponse                      `json:"BaseResponse"`
+	BlackList    string                             `json:"BlackList"`
+	ChatRoomName string                             `json:"ChatRoomName"`
+	MemberCount  int64                              `json:"MemberCount"`
+	MemberList   []CreateChatroomResponseMemberList `json:"MemberList"`
+	PYInitial    string                             `json:"PYInitial"`
+	QuanPin      string                             `json:"QuanPin"`
+	Topic        string                             `json:"Topic"`
+}
+
+// CreateChatroomResponseMemberList 创建聊天室响应的成员列表
+type CreateChatroomResponseMemberList struct {
+	AttrStatus      int64  `json:"AttrStatus"`
+	DisplayName     string `json:"DisplayName"`
+	KeyWord         string `json:"KeyWord"`
+	MemberStatus    int64  `json:"MemberStatus"`
+	NickName        string `json:"NickName"`
+	PYInitial       string `json:"PYInitial"`
+	PYQuanPin       string `json:"PYQuanPin"`
+	RemarkPYInitial string `json:"RemarkPYInitial"`
+	RemarkPYQuanPin string `json:"RemarkPYQuanPin"`
+	Uin             int64  `json:"Uin"`
+	UserName        string `json:"UserName"`
+}

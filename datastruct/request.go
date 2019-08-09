@@ -110,3 +110,17 @@ type AcceptAddFriendRequestUserListItem struct {
 	Value            string `json:"Value"`
 	VerifyUserTicket string `json:"VerifyUserTicket"`
 }
+
+// CreateChatroomRequest 创建聊天室请求
+type CreateChatroomRequest struct {
+	BaseRequest *BaseRequest                      `json:"BaseRequest"`
+	MemberCount int64                             `json:"MemberCount"`
+	MemberList  []CreateChatroomRequestMemberList `json:"MemberList"`
+	// 此处貌似可以输入新建的群的群名称，不过因为网页版并未提供，所以不建议使用
+	Topic string `json:"Topic"`
+}
+
+// CreateChatroomRequestMemberList 创建聊天室时的成员列表
+type CreateChatroomRequestMemberList struct {
+	UserName string `json:"UserName"`
+}

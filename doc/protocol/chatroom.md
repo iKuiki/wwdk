@@ -21,7 +21,7 @@
 
 **Body:**
 
-Body里MemberList为要添加进入群聊的联系人的UserName
+Body里MemberList为要添加进入群聊的联系人的UserName，不包括自己的UserName
 
 ``` json
 {
