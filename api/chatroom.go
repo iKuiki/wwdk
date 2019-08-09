@@ -16,8 +16,9 @@ import (
 // @param topic 新聊天室的标题，网页版已经不提供此功能了，强烈建议留空
 // @param userNames 要添加到新聊天室的用户名列表
 func (api *wechatwebAPI) CreateChatRoom(topic string, userNames []string) (chatroomUserName string, body []byte, err error) {
-	if len(userNames) == 0 {
-		err = errors.New("userName list empty")
+	if len(userNames) < 2 {
+		err = errors.New("userName list less then 2")
+		return
 	}
 	var memberList []datastruct.MemberListItem
 	for _, userName := range userNames {
@@ -63,6 +64,10 @@ func (api *wechatwebAPI) CreateChatRoom(topic string, userNames []string) (chatr
 	}
 	if ccResp.BaseResponse.Ret != 0 {
 		err = errors.Errorf("Respond error ret(%d): %s", ccResp.BaseResponse.Ret, ccResp.BaseResponse.ErrMsg)
+		return
+	}
+	if ccResp.ChatRoomName == "" {
+		err = errors.Errorf("Response ChatRoomName empty")
 		return
 	}
 	chatroomUserName = ccResp.ChatRoomName

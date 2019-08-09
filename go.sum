@@ -2,6 +2,8 @@ github.com/getsentry/sentry-go v0.2.1 h1:zCyr8wS1NQM7ixbWNh8lBRMlQZSM3aMXQCqXgCD
 github.com/getsentry/sentry-go v0.2.1/go.mod h1:2QfSdvxz4IZGyB5izm1TtADFhlhfj1Dcesrg8+A/T9Y=
 github.com/go-errors/errors v1.0.1 h1:LUHzmkK3GUKUrL/1gfBUxAHzcev3apQlezX/+O7ma6w=
 github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=
+github.com/ikuiki/go-component v0.0.0-20171218165758-b9f2562e71d1 h1:iEY90SGCz5OPklDVZr15NbE1gbAh5a5/69iN6miy56Y=
+github.com/ikuiki/go-component v0.0.0-20171218165758-b9f2562e71d1/go.mod h1:X6JegIiKSPdHyLC41UjlnpCZ5BFFEnz7hLpLU4vO094=
 github.com/ikuiki/storer v1.0.0 h1:grhfosXRFWUHFM6YZyzmu1iM5/0CIBgeePz6osrZptg=
 github.com/ikuiki/storer v1.0.0/go.mod h1:Nt3q8HMrpuS/knoHqboMQ5FJlg7WBhhykz5kGijnhKE=
 github.com/kataras/golog v0.0.0-20180321173939-03be10146386 h1:VT6AeCHO/mc+VedKBMhoqb5eAK8B1i9F6nZl7EGlHvA=

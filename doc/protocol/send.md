@@ -118,7 +118,7 @@ Body (json):
 ``` json
 {
     "BaseResponse": {
-        "Ret": 0,
+        "Ret": 0, // 已知如果在已经不存在的群发送消息，会返回1201
         "ErrMsg": ""
     },
     "Introduction": "你可以撤回2分钟内发送的消息（部分旧版本微信不支持这个功能）。",

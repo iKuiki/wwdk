@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/getsentry/sentry-go v0.2.1
+	github.com/ikuiki/go-component v0.0.0-20171218165758-b9f2562e71d1
 	github.com/ikuiki/storer v1.0.0
 	github.com/kataras/golog v0.0.0-20180321173939-03be10146386
 	github.com/kataras/pio v0.0.0-20190103105442-ea782b38602d // indirect
