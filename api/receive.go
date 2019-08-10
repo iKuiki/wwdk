@@ -101,6 +101,38 @@ func (api *wechatwebAPI) SaveMessageVideo(msgID string) (videoData []byte, err e
 	return
 }
 
+// SaveMessageFile 下载文件消息的文件本体
+// @param sender 发送消息的用户的UserName
+// @param mediaID 消息本体中的mediaID
+// @param fileName 消息本体中的文件名
+// @return fileData 下载到的文件的二进制数据
+func (api *wechatwebAPI) SaveMessageFile(sender, mediaID, fileName string) (fileData []byte, err error) {
+	params := url.Values{}
+	params.Set("sender", sender)
+	params.Set("mediaid", mediaID)
+	params.Set("encryfilename", fileName)
+	params.Set("fromuser", api.loginInfo.Wxuin)
+	params.Set("pass_ticket", api.loginInfo.PassTicket)
+	params.Set("webwx_data_ticket", api.loginInfo.DataTicket)
+	req, err := http.NewRequest("GET", "https://file."+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxgetmedia?"+params.Encode(), nil)
+	if err != nil {
+		err = errors.New("create request error: " + err.Error())
+		return
+	}
+	resp, err := api.client.Do(req)
+	if err != nil {
+		err = errors.New("request error: " + err.Error())
+		return
+	}
+	defer resp.Body.Close()
+	fileData, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = errors.New("Read io.ReadCloser error: " + err.Error())
+		return
+	}
+	return
+}
+
 // SaveContactImg 保存联系人头像
 // 根据头像地址保存头像
 // @param headImgURL 联系人头像地址
