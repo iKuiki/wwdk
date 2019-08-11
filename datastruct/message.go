@@ -15,6 +15,8 @@ const (
 	TextMsg MessageType = 1
 	// ImageMsg 图片消息
 	ImageMsg MessageType = 3
+	// AppMsg app消息(已知的有发送文件的消息
+	AppMsg MessageType = 6
 	// VoiceMsg 音频消息
 	VoiceMsg MessageType = 34
 	// AddFriendMsg 收到添加好友请求消息

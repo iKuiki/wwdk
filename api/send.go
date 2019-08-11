@@ -5,7 +5,9 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/xml"
 	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/datastruct/msgcontent"
 	"github.com/ikuiki/wwdk/tool"
 	"github.com/pkg/errors"
 	"io"
@@ -363,7 +365,7 @@ func (api *wechatwebAPI) SendVideoMessage(fromUserName, toUserName, mediaID stri
 	msgReq := datastruct.SendMessageRequest{
 		BaseRequest: api.baseRequest(),
 		Msg: &datastruct.SendMessage{
-			Type:         datastruct.ImageMsg,
+			Type:         datastruct.LittleVideoMsg,
 			MediaID:      mediaID,
 			FromUserName: fromUserName,
 			ToUserName:   toUserName,
@@ -420,8 +422,80 @@ func (api *wechatwebAPI) SendEmoticonMessage(fromUserName, toUserName, mediaID s
 	msgReq := datastruct.SendMessageRequest{
 		BaseRequest: api.baseRequest(),
 		Msg: &datastruct.SendMessage{
-			Type:         datastruct.ImageMsg,
+			Type:         datastruct.AnimationEmotionsMsg,
 			MediaID:      mediaID,
+			FromUserName: fromUserName,
+			ToUserName:   toUserName,
+			LocalID:      tool.GetWxTimeStamp(),
+			ClientMsgID:  tool.GetWxTimeStamp(),
+		},
+	}
+	reqBody, err := json.Marshal(msgReq)
+	if err != nil {
+		err = errors.New("Marshal reqBody to json fail: " + err.Error())
+		return
+	}
+	params := url.Values{}
+	params.Set("fun", "sys")
+	params.Set("pass_ticket", api.loginInfo.PassTicket)
+	req, err := http.NewRequest("POST", "https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxsendemoticon?"+params.Encode(), bytes.NewReader(reqBody))
+	if err != nil {
+		err = errors.New("create request error: " + err.Error())
+		return
+	}
+	resp, err := api.request(req)
+	if err != nil {
+		err = errors.New("request error: " + err.Error())
+		return
+	}
+	defer resp.Body.Close()
+	var smResp datastruct.SendMessageRespond
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = errors.New("read response body error: " + err.Error())
+		return
+	}
+	err = json.Unmarshal(body, &smResp)
+	if err != nil {
+		err = errors.New("UnMarshal respond json fail: " + err.Error())
+		return
+	}
+	if smResp.BaseResponse.Ret != 0 {
+		err = errors.Errorf("Respond error ret(%d): %s", smResp.BaseResponse.Ret, smResp.BaseResponse.ErrMsg)
+		return
+	}
+	MsgID, LocalID = smResp.MsgID, smResp.LocalID
+	return
+}
+
+// SendFileMessage 发送文件消息
+// @param fromUserName 自己的UserName
+// @param toUserName 要发送的目标联系人的UserName
+// @param mediaID 上传后的mediaID内容
+// @return MsgID 消息的服务器ID（发送后由服务器生成）
+// @return LocalID 消息本地ID（本地生成的）
+func (api *wechatwebAPI) SendFileMessage(fromUserName, toUserName,
+	mediaID, fileName string, fileSize int64) (MsgID, LocalID string, body []byte, err error) {
+	msgContentReq := msgcontent.AppMsgContent{
+		AppID: "wxeb7ec651dd0aefa9",
+		Title: fileName,
+		Type:  6,
+		AppAttach: &msgcontent.AppMsgContentAppAttach{
+			TotalLen: fileSize,
+			AttachID: mediaID,
+			FileExt:  path.Ext(fileName)[1:],
+		},
+	}
+	msgContentBody, err := xml.Marshal(msgContentReq)
+	if err != nil {
+		err = errors.WithStack(err)
+		return
+	}
+	msgReq := datastruct.SendMessageRequest{
+		BaseRequest: api.baseRequest(),
+		Msg: &datastruct.SendMessage{
+			Type:         datastruct.AppMsg,
+			Content:      string(msgContentBody),
 			FromUserName: fromUserName,
 			ToUserName:   toUserName,
 			LocalID:      tool.GetWxTimeStamp(),
