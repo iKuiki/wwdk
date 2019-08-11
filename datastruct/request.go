@@ -138,3 +138,17 @@ type UpdateChatRoomDelMemberRequest struct {
 	ChatRoomName  string       `json:"ChatRoomName"`
 	DelMemberList string       `json:"DelMemberList"`
 }
+
+// UploadMediaRequest 上传媒体请求
+type UploadMediaRequest struct {
+	BaseRequest   *BaseRequest `json:"BaseRequest"`
+	ClientMediaID int64        `json:"ClientMediaId"`
+	DataLen       int64        `json:"DataLen"`
+	FileMd5       string       `json:"FileMd5"`
+	FromUserName  string       `json:"FromUserName"`
+	MediaType     int64        `json:"MediaType"`
+	StartPos      int64        `json:"StartPos"`
+	ToUserName    string       `json:"ToUserName"`
+	TotalLen      int64        `json:"TotalLen"`
+	UploadType    int64        `json:"UploadType"`
+}

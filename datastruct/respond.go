@@ -175,3 +175,13 @@ type UpdateChatRoomResponseMemberList struct {
 	Uin             int64  `json:"Uin"`
 	UserName        string `json:"UserName"`
 }
+
+// UploadMediaResponse 上传媒体返回
+type UploadMediaResponse struct {
+	BaseResponse      *BaseResponse `json:"BaseResponse"`
+	CDNThumbImgHeight int64         `json:"CDNThumbImgHeight"`
+	CDNThumbImgWidth  int64         `json:"CDNThumbImgWidth"`
+	EncryFileName     string        `json:"EncryFileName"`
+	MediaID           string        `json:"MediaId"`
+	StartPos          int64         `json:"StartPos"`
+}

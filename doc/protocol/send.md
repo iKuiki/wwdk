@@ -137,20 +137,21 @@ Body (json):
 不管是发图片还是视频还是传文件，都要先将文件上传
 对于上传文件，Web微信使用统一的上传接口。上传接口因为要上传文件，所以使用了multipart表单的请求方式，并且大部分请求参数都在multipart表单中。请求如下
 
-| Key         | Value                                                             | Remark                                                     |
-| ----------- | ----------------------------------------------------------------- | ---------------------------------------------------------- |
-| Request URL | <https://file.{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxuploadmedia> |                                                            |
-| Method      | POST                                                              |                                                            |
-| Param       | f                                                                 | 填json                                                     |
-| multipart   | id                                                                | WU_FILE_?，其中?为自增数字，每上传一个文件自增1            |
-| multipart   | type                                                              | 文件的mine类型，详情见下表                                 |
-| multipart   | lastModifiedDate                                                  | 最后编辑时间,格式为Mon Jan 02 2006 15:04:05 GMT+0700 (MST) |
-| multipart   | size                                                              | 文件大小                                                   |
-| multipart   | mediatype                                                         | 文件类型，详见下表                                         |
-| multipart   | uploadmediarequest                                                | 文件上传请求，json封装的BaseRequest等信息,下详             |
-| multipart   | webwx_data_ticket                                                 | cookie中的数据ticket                                       |
-| multipart   | pass_ticket                                                       | 部分Domain需要传，保险起见可以都传                         |
-| multipart   | filename                                                          | 文件名以及要上传的文件本体                                 |
+| Key         | Value                                                             | Remark                                                                                     |
+| ----------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Request URL | <https://file.{{apiDomain}}/cgi-bin/mmwebwx-bin/webwxuploadmedia> |                                                                                            |
+| Method      | POST                                                              |                                                                                            |
+| Header      | Content-Type                                                      | 形如这样的，由multipart组件生成multipart/form-data; boundary=----WebKitFormBoundarxxxxxxxx |
+| Param       | f                                                                 | 填json                                                                                     |
+| multipart   | id                                                                | WU_FILE_?，其中?为自增数字，每上传一个文件自增1                                            |
+| multipart   | type                                                              | 文件的mine类型，详情见下表                                                                 |
+| multipart   | lastModifiedDate                                                  | 最后编辑时间,格式为Mon Jan 02 2006 15:04:05 GMT+0700 (MST)                                 |
+| multipart   | size                                                              | 文件大小                                                                                   |
+| multipart   | mediatype                                                         | 文件类型，详见下表                                                                         |
+| multipart   | uploadmediarequest                                                | 文件上传请求，json封装的BaseRequest等信息,下详                                             |
+| multipart   | webwx_data_ticket                                                 | cookie中的数据ticket                                                                       |
+| multipart   | pass_ticket                                                       | 部分Domain需要传，保险起见可以都传                                                         |
+| multipart   | filename                                                          | 文件名以及要上传的文件本体                                                                 |
 
 上面的type参数还有mediatype参数需要根据上传文件类型的不同而有不同，尝试后如下表
 

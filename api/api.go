@@ -66,6 +66,14 @@ type WechatwebAPI interface {
 	SendTextMessage(fromUserName, toUserName, content string) (MsgID, LocalID string, body []byte, err error)
 	// SendRevokeMessage 撤回消息
 	SendRevokeMessage(toUserName, svrMsgID, clientMsgID string) (body []byte, err error)
+	// UploadMedia 上传媒体
+	UploadMedia(fromUserName, toUserName, fileName string, mediaData []byte) (mediaID string, body []byte, err error)
+	// SendImageMessage 发送图片消息
+	SendImageMessage(fromUserName, toUserName, mediaID string) (MsgID, LocalID string, body []byte, err error)
+	// SendVideoMessage 发送视频消息
+	SendVideoMessage(fromUserName, toUserName, mediaID string) (MsgID, LocalID string, body []byte, err error)
+	// SendEmoticonMessage 发送动图消息
+	SendEmoticonMessage(fromUserName, toUserName, mediaID string) (MsgID, LocalID string, body []byte, err error)
 
 	// 接收部分
 
@@ -98,6 +106,7 @@ type wechatwebAPI struct {
 	deviceID              string // 由客户端生成，为e+15位随机数
 	loginInfo             LoginInfo
 	loginModifyNotifyChan chan<- bool // 如果登陆消息发生变更，则向此chan中插入一个值
+	uploadMediaIncrID     int64       // 上传媒体时自增的ID
 }
 
 // MustNewWechatwebAPI 假定一定能创建创建WechatwebAPI
