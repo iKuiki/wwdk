@@ -29,7 +29,7 @@ const (
 	AnimationEmotionsMsg MessageType = 47
 	// LinkMsg 链接消息类型，已知有转账、开始共享实时位置、合并转发聊天记录
 	LinkMsg MessageType = 49
-	// AppendMsg 拓展消息类型，已知有红包、停止共享实时位置
+	// AppendMsg 灰色无边框文字消息类型，已知有红包、停止共享实时位置
 	AppendMsg MessageType = 10000
 	// RevokeMsg 撤回消息
 	RevokeMsg MessageType = 10002
