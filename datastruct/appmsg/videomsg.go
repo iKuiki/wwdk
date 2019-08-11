@@ -4,12 +4,13 @@ import (
 	"encoding/xml"
 )
 
+// VideoMsgContentVideo 视频消息的Content中的video节点
 type VideoMsgContentVideo struct {
 	VideoMsg       xml.Name `xml:"videomsg"`
 	AesKey         string   `xml:"aeskey,attr"`
 	CdnThumBaesKey string   `xml:"cdnthumbaeskey,attr"`
-	CdnVideoUrl    string   `xml:"cdnvideourl,attr"`
-	CdnThumbUrl    string   `xml:"cdnthumburl,attr"`
+	CdnVideoURL    string   `xml:"cdnvideourl,attr"`
+	CdnThumbURL    string   `xml:"cdnthumburl,attr"`
 	Length         string   `xml:"length,attr"`
 	PlayLength     string   `xml:"playlength,attr"`
 	CdnThumbLength string   `xml:"cdnthumblength,attr"`
@@ -21,6 +22,7 @@ type VideoMsgContentVideo struct {
 	IsAd           string   `xml:"isad,attr"`
 }
 
+// VideoMsgContent 视频消息的Content
 type VideoMsgContent struct {
 	Msg      xml.Name              `xml:"msg"`
 	VideoMsg *VideoMsgContentVideo `xml:"videomsg"`
