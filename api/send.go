@@ -191,9 +191,11 @@ func (api *wechatwebAPI) UploadMedia(fromUserName, toUserName, fileName string, 
 	multiWriter := multipart.NewWriter(&bodyBuf)
 	// 设置multipart字段id
 	multiWriter.WriteField("id",
-		strconv.FormatInt(
+		"WU_FILE_"+strconv.FormatInt(
 			atomic.AddInt64(
 				&api.uploadMediaIncrID, 1), 10))
+	// 设置multipart字段name
+	multiWriter.WriteField("name", fileName)
 	// 设置multipart字段type
 	multiWriter.WriteField("type",
 		mime.TypeByExtension(extName))

@@ -74,6 +74,8 @@ type WechatwebAPI interface {
 	SendVideoMessage(fromUserName, toUserName, mediaID string) (MsgID, LocalID string, body []byte, err error)
 	// SendEmoticonMessage 发送动图消息
 	SendEmoticonMessage(fromUserName, toUserName, mediaID string) (MsgID, LocalID string, body []byte, err error)
+	// SendFileMessage 发送文件
+	SendFileMessage(fromUserName, toUserName, mediaID, fileName string, fileSize int64) (MsgID, LocalID string, body []byte, err error)
 
 	// 接收部分
 

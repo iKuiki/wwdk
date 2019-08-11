@@ -144,6 +144,7 @@ Body (json):
 | Header      | Content-Type                                                      | 形如这样的，由multipart组件生成multipart/form-data; boundary=----WebKitFormBoundarxxxxxxxx |
 | Param       | f                                                                 | 填json                                                                                     |
 | multipart   | id                                                                | WU_FILE_?，其中?为自增数字，每上传一个文件自增1                                            |
+| multipart   | name                                                              | 文件名                                                                                     |
 | multipart   | type                                                              | 文件的mine类型，详情见下表                                                                 |
 | multipart   | lastModifiedDate                                                  | 最后编辑时间,格式为Mon Jan 02 2006 15:04:05 GMT+0700 (MST)                                 |
 | multipart   | size                                                              | 文件大小                                                                                   |
