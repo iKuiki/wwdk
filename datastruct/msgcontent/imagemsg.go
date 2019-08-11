@@ -1,4 +1,4 @@
-package appmsg
+package msgcontent
 
 import (
 	"encoding/xml"
@@ -6,7 +6,7 @@ import (
 
 // ImageMsgContentImg 图片消息的content中的img节点
 type ImageMsgContentImg struct {
-	ImgName        xml.Name `xml:"img"`
+	XMLName        xml.Name `xml:"img"`
 	AesKey         string   `xml:"aeskey,attr"`
 	EncryVer       string   `xml:"encryver,attr"`
 	CdnThumbAesKey string   `xml:"cdnthumbaeskey,attr"`
@@ -25,6 +25,6 @@ type ImageMsgContentImg struct {
 
 // ImageMsgContent 图片消息的content
 type ImageMsgContent struct {
-	MsgName xml.Name            `xml:"msg"`
+	XMLName xml.Name            `xml:"msg"`
 	Img     *ImageMsgContentImg `xml:"img"`
 }

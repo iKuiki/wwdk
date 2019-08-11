@@ -1,4 +1,4 @@
-package appmsg
+package msgcontent
 
 import (
 	"encoding/xml"
@@ -6,7 +6,7 @@ import (
 
 // VideoMsgContentVideo 视频消息的Content中的video节点
 type VideoMsgContentVideo struct {
-	VideoMsg       xml.Name `xml:"videomsg"`
+	XMLName        xml.Name `xml:"videomsg"`
 	AesKey         string   `xml:"aeskey,attr"`
 	CdnThumBaesKey string   `xml:"cdnthumbaeskey,attr"`
 	CdnVideoURL    string   `xml:"cdnvideourl,attr"`
@@ -24,6 +24,6 @@ type VideoMsgContentVideo struct {
 
 // VideoMsgContent 视频消息的Content
 type VideoMsgContent struct {
-	Msg      xml.Name              `xml:"msg"`
+	XMLName  xml.Name              `xml:"msg"`
 	VideoMsg *VideoMsgContentVideo `xml:"videomsg"`
 }

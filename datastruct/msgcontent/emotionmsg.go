@@ -1,4 +1,4 @@
-package appmsg
+package msgcontent
 
 import (
 	"encoding/xml"
@@ -6,7 +6,7 @@ import (
 
 // EmotionMsgContentEmoji 动图消息的content中的emoji节点
 type EmotionMsgContentEmoji struct {
-	Emoji        xml.Name `xml:"emoji"`
+	XMLName      xml.Name `xml:"emoji"`
 	FromUserName string   `xml:"fromusername,attr"`
 	ToUserName   string   `xml:"tousername,attr"`
 	Type         string   `xml:"type,attr"`
@@ -35,14 +35,14 @@ type EmotionMsgContentEmoji struct {
 
 // EmotionMsgContentGameext 动图消息的content中的gameext节点
 type EmotionMsgContentGameext struct {
-	Gameext xml.Name `xml:"gameext"`
+	XMLName xml.Name `xml:"gameext"`
 	Type    string   `xml:"type,attr"`
 	Content string   `xml:"content,attr"`
 }
 
 // EmotionMsgContent 动图消息的content
 type EmotionMsgContent struct {
-	Msg     xml.Name                  `xml:"msg"`
+	XMLName xml.Name                  `xml:"msg"`
 	Emoji   *EmotionMsgContentEmoji   `xml:"emoji"`
 	Gameext *EmotionMsgContentGameext `xml:"gameext"`
 }
