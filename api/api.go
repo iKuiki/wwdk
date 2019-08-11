@@ -83,6 +83,8 @@ type WechatwebAPI interface {
 	SaveMessageVoice(msgID string) (voiceData []byte, err error)
 	// SaveMessageVideo 下载视频消息
 	SaveMessageVideo(msgID string) (videoData []byte, err error)
+	// SaveMessageFile 下载文件消息
+	SaveMessageFile(sender, mediaID, fileName string) (fileData []byte, err error)
 	// SaveContactImg 保存联系人头像
 	SaveContactImg(headImgURL string) (imgData []byte, err error)
 	// SaveMemberImg 保存群成员的头像
