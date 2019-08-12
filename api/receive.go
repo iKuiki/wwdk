@@ -1,6 +1,7 @@
 package api
 
 import (
+	"strconv"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
@@ -111,7 +112,7 @@ func (api *wechatwebAPI) SaveMessageFile(sender, mediaID, fileName string) (file
 	params.Set("sender", sender)
 	params.Set("mediaid", mediaID)
 	params.Set("encryfilename", fileName)
-	params.Set("fromuser", api.loginInfo.Wxuin)
+	params.Set("fromuser", strconv.FormatInt(api.loginInfo.Wxuin, 10))
 	params.Set("pass_ticket", api.loginInfo.PassTicket)
 	params.Set("webwx_data_ticket", api.loginInfo.DataTicket)
 	req, err := http.NewRequest("GET", "https://file."+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxgetmedia?"+params.Encode(), nil)

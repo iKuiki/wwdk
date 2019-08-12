@@ -5,7 +5,7 @@ type BaseRequest struct {
 	DeviceID string `json:"DeviceID"`
 	Sid      string `json:"Sid"`
 	Skey     string `json:"Skey"`
-	Uin      string `json:"Uin"`
+	Uin      int64  `json:"Uin"`
 }
 
 // WxInitRequestBody 微信初始化请求

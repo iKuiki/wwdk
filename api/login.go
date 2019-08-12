@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 // JsLogin 获取uuid
@@ -156,7 +157,7 @@ func (api *wechatwebAPI) Logout() (body []byte, err error) {
 	params.Set("skey", api.loginInfo.SKey)
 	form := url.Values{}
 	form.Set("sid", api.loginInfo.Wxsid)
-	form.Set("uin", api.loginInfo.Wxuin)
+	form.Set("uin", strconv.FormatInt(api.loginInfo.Wxuin, 10))
 	resp, err := api.client.PostForm("https://"+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxlogout?"+params.Encode(), form)
 	if err != nil {
 		err = errors.New("request error: " + err.Error())

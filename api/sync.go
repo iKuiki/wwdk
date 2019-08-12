@@ -1,6 +1,7 @@
 package api
 
 import (
+	"strconv"
 	"bytes"
 	"encoding/json"
 	"github.com/ikuiki/wwdk/datastruct"
@@ -25,7 +26,7 @@ func (api *wechatwebAPI) SyncCheck() (retCode, selector string, body []byte, err
 	params := url.Values{}
 	params.Set("r", tool.GetWxTimeStamp())
 	params.Set("sid", api.loginInfo.Wxsid)
-	params.Set("uin", api.loginInfo.Wxuin)
+	params.Set("uin", strconv.FormatInt(api.loginInfo.Wxuin, 10))
 	params.Set("deviceid", api.deviceID)
 	params.Set("synckey", tool.AssembleSyncKey(api.loginInfo.SyncKey))
 	params.Set("_", tool.GetWxTimeStamp())

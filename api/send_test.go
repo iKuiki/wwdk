@@ -63,7 +63,8 @@ func TestReceiveAndSendMediaMessage(t *testing.T) {
 			// 发送回去
 			mediaID, _, err := client.UploadMedia(user.UserName, contact.UserName, filename, body)
 			checkErrorIsNil(err)
-			client.SendImageMessage(user.UserName, contact.UserName, mediaID)
+			_, _, _, err = client.SendImageMessage(user.UserName, contact.UserName, mediaID)
+			checkErrorIsNil(err)
 			break
 		}
 	}
@@ -93,7 +94,8 @@ func TestReceiveAndSendMediaMessage(t *testing.T) {
 			// 发送回去
 			mediaID, _, err := client.UploadMedia(user.UserName, contact.UserName, filename, body)
 			checkErrorIsNil(err)
-			client.SendVideoMessage(user.UserName, contact.UserName, mediaID)
+			_, _, _, err = client.SendVideoMessage(user.UserName, contact.UserName, mediaID)
+			checkErrorIsNil(err)
 			break
 		}
 	}
@@ -110,7 +112,8 @@ func TestReceiveAndSendMediaMessage(t *testing.T) {
 			// 发送回去
 			mediaID, _, err := client.UploadMedia(user.UserName, contact.UserName, filename, body)
 			checkErrorIsNil(err)
-			client.SendEmoticonMessage(user.UserName, contact.UserName, mediaID)
+			_, _, _, err = client.SendEmoticonMessage(user.UserName, contact.UserName, mediaID)
+			checkErrorIsNil(err)
 			break
 		}
 	}
@@ -126,7 +129,8 @@ func TestReceiveAndSendMediaMessage(t *testing.T) {
 			// 发送回去
 			mediaID, _, err := client.UploadMedia(user.UserName, contact.UserName, msg.FileName, body)
 			checkErrorIsNil(err)
-			client.SendFileMessage(user.UserName, contact.UserName, mediaID, msg.FileName, int64(len(body)))
+			_, _, _, err = client.SendFileMessage(user.UserName, contact.UserName, mediaID, msg.FileName, int64(len(body)))
+			checkErrorIsNil(err)
 			break
 		}
 	}

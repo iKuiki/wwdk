@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/cookiejar"
+	"strconv"
 	"time"
 
 	"github.com/ikuiki/wwdk/datastruct"
@@ -159,7 +160,7 @@ type LoginInfo struct {
 	PassTicket string
 	// 以下更新时机都是刷新cookie时
 	Wxsid      string
-	Wxuin      string // 应该是用户的唯一识别号，同一个用户每次登陆此字段都相同
+	Wxuin      int64 // 应该是用户的唯一识别号，同一个用户每次登陆此字段都相同
 	Uvid       string
 	AuthTicket string
 	DataTicket string
@@ -196,7 +197,7 @@ func (api *wechatwebAPI) refreshCookie(cookies []*http.Cookie) {
 	for _, c := range cookies {
 		switch c.Name {
 		case "wxuin":
-			api.loginInfo.Wxuin = c.Value
+			api.loginInfo.Wxuin, _ = strconv.ParseInt(c.Value, 10, 64)
 		case "wxsid":
 			api.loginInfo.Wxsid = c.Value
 		case "webwxuvid":
