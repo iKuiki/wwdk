@@ -201,7 +201,7 @@ func (api *wechatwebAPI) UploadMedia(fromUserName, toUserName, fileName string, 
 		mime.TypeByExtension(extName))
 	// 设置multipart字段lastModifiedDate
 	multiWriter.WriteField("lastModifiedData",
-		time.Now().Format("Mon Jan 02 2006 15:04:05 GMT+0700 (MST)"))
+		time.Now().Format("Mon Jan 02 2006 15:04:05 GMT-0700 (MST)"))
 	// 设置multipart字段size
 	fileSize := int64(len(mediaData))
 	multiWriter.WriteField("size",
@@ -266,6 +266,7 @@ func (api *wechatwebAPI) UploadMedia(fromUserName, toUserName, fileName string, 
 		err = errors.WithStack(err)
 		return
 	}
+	multiWriter.Close()
 	// 构造请求
 	req, err := http.NewRequest("POST", "https://file."+api.apiDomain+"/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json", &bodyBuf)
 	if err != nil {
