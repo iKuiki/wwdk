@@ -38,21 +38,21 @@ func (wxwb *WechatWeb) SendRevokeMessage(svrMsgID, clientMsgID, toUserName strin
 	return
 }
 
-// ModifyUserRemakName 修改用户备注
-func (wxwb *WechatWeb) ModifyUserRemakName(userName, remarkName string) (err error) {
-	body, err := wxwb.api.ModifyUserRemakName(userName, remarkName)
+// UpdateUserRemakName 修改用户备注
+func (wxwb *WechatWeb) UpdateUserRemakName(userName, remarkName string) (err error) {
+	body, err := wxwb.api.UpdateUserRemakName(userName, remarkName)
 	if err != nil {
-		wxwb.captureException(err, "ModifyUserRemakName fatal", sentry.LevelError, extraData{"body", string(body)})
+		wxwb.captureException(err, "UpdateUserRemakName fatal", sentry.LevelError, extraData{"body", string(body)})
 		return
 	}
 	return
 }
 
-// ModifyChatRoomTopic 修改群名
-func (wxwb *WechatWeb) ModifyChatRoomTopic(userName, newTopic string) (err error) {
-	body, err := wxwb.api.ModifyChatRoomTopic(userName, newTopic)
+// UpdateChatRoomTopic 修改群名
+func (wxwb *WechatWeb) UpdateChatRoomTopic(userName, newTopic string) (err error) {
+	body, err := wxwb.api.UpdateChatRoomTopic(userName, newTopic)
 	if err != nil {
-		wxwb.captureException(err, "ModifyChatRoomTopic fatal", sentry.LevelError, extraData{"body", string(body)})
+		wxwb.captureException(err, "UpdateChatRoomTopic fatal", sentry.LevelError, extraData{"body", string(body)})
 		return
 	}
 	return

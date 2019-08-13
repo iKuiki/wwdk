@@ -4,17 +4,19 @@ package wwdk
 
 import (
 	"encoding/json"
+
 	"github.com/getsentry/sentry-go"
 	"github.com/ikuiki/wwdk/api"
 	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/runinfo"
 	"github.com/pkg/errors"
 )
 
 // storeLoginInfo 用于储存的登录信息
 type storeLoginInfo struct {
 	APIMarshaled []byte
-	RunInfo      WechatRunInfo    // 运行统计信息
-	User         *datastruct.User // 用户信息
+	RunInfo      runinfo.WechatRunInfo // 运行统计信息
+	User         *datastruct.User      // 用户信息
 	ContactList  map[string]datastruct.Contact
 }
 
@@ -27,7 +29,7 @@ func (wxwb *WechatWeb) resetLoginInfo() (err error) {
 	}
 	wxwb.api = api.MustNewWechatwebAPI()
 	// 重置runInfo
-	wxwb.runInfo = WechatRunInfo{
+	wxwb.runInfo = runinfo.WechatRunInfo{
 		StartAt: wxwb.runInfo.StartAt,
 	}
 	// 切记也要重置用户信息与联系人啊

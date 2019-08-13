@@ -2,6 +2,7 @@ package wwdk
 
 import (
 	"github.com/ikuiki/wwdk/datastruct"
+	"github.com/ikuiki/wwdk/runinfo"
 	"github.com/pkg/errors"
 )
 
@@ -100,6 +101,6 @@ func (wxwb *WechatWeb) GetContactList() (contacts []datastruct.Contact) {
 }
 
 // GetRunInfo 获取运行计数器信息
-func (wxwb *WechatWeb) GetRunInfo() (runinfo WechatRunInfo) {
+func (wxwb *WechatWeb) GetRunInfo() (runinfo runinfo.WechatRunInfo) {
 	return wxwb.runInfo
 }

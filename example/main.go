@@ -9,7 +9,7 @@ import (
 	"github.com/ikuiki/storer"
 	"github.com/ikuiki/wwdk"
 	"github.com/ikuiki/wwdk/datastruct"
-	"github.com/ikuiki/wwdk/datastruct/appmsg"
+	"github.com/ikuiki/wwdk/datastruct/msgcontent"
 	"github.com/mdp/qrterminal"
 	"github.com/pkg/errors"
 )
@@ -111,7 +111,7 @@ func main() {
 					processEmojiMessage(wx, msg)
 				case datastruct.RevokeMsg:
 					// 反序列化撤回消息附加信息
-					var revokeContent appmsg.RevokeMsgContent
+					var revokeContent msgcontent.RevokeMsgContent
 					err := xml.Unmarshal([]byte(msg.GetContent()), &revokeContent)
 					if err != nil {
 						panic(errors.New("Unmarshal message content to struct: " + err.Error()))
@@ -189,7 +189,7 @@ func processEmojiMessage(app *wwdk.WechatWeb, msg *datastruct.Message) {
 }
 
 // ProcessRevokeMessage set revoke message handle
-func processRevokeMessage(app *wwdk.WechatWeb, msg *datastruct.Message, revokeContent appmsg.RevokeMsgContent) {
+func processRevokeMessage(app *wwdk.WechatWeb, msg *datastruct.Message, revokeContent msgcontent.RevokeMsgContent) {
 	from, err := app.GetContact(msg.FromUserName)
 	if err != nil {
 		log.Printf("msg[%d] getContact[%s] error: %v\n", msg.MsgType, msg.FromUserName, err)
