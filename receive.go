@@ -63,6 +63,25 @@ func (wxwb *WechatWeb) SaveMessageVideo(msg datastruct.Message) (filename string
 	return filename, nil
 }
 
+// SaveMessageEmoticon 保存消息动图到指定位置
+func (wxwb *WechatWeb) SaveMessageEmoticon(msg datastruct.Message) (filename string, err error) {
+	d, err := wxwb.api.SaveMessageImage(msg.MsgID)
+	if err != nil {
+		wxwb.captureException(err, "SaveMessageImage fatal", sentry.LevelError)
+		return
+	}
+	filename, err = wxwb.mediaStorer.Storer(MediaFile{
+		MediaType:     MediaTypeMessageEmoticon,
+		FileName:      msg.MsgID + ".gif",
+		BinaryContent: d,
+	})
+	if err != nil {
+		wxwb.captureException(err, "MediaStorer.Storer fatal", sentry.LevelError)
+		return
+	}
+	return filename, nil
+}
+
 // SaveContactImg 保存联系人头像
 func (wxwb *WechatWeb) SaveContactImg(contact datastruct.Contact) (filename string, err error) {
 	d, err := wxwb.api.SaveContactImg(contact.HeadImgURL)
