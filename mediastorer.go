@@ -22,6 +22,10 @@ const (
 	MediaTypeMessageVoice MediaType = 12
 	// MediaTypeMessageVideo 信息视频媒体类型
 	MediaTypeMessageVideo MediaType = 13
+	// MediaTypeMessageEmoticon 信息动图媒体类型
+	MediaTypeMessageEmoticon MediaType = 14
+	// MediaTypeMessageFile 信息文件媒体类型
+	MediaTypeMessageFile MediaType = 15
 )
 
 // MediaFile 媒体文件
