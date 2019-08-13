@@ -14,3 +14,9 @@
 qrcode.jpg
 debug
 loginInfo.txt
+
+# ignore downloaded message media
+*.png
+*.mp3
+*.mp4
+*.gif
