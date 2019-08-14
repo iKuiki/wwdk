@@ -2,9 +2,10 @@ package wwdk
 
 import (
 	"fmt"
-	"github.com/getsentry/sentry-go"
 	"runtime"
 	"strings"
+
+	"github.com/getsentry/sentry-go"
 )
 
 type extraData struct {
@@ -38,9 +39,9 @@ func (wwdk *WechatWeb) captureException(err error, errType string, level sentry.
 			Stacktrace: stacktrace,
 		}}
 	}
-	if wwdk.userInfo.user != nil {
-		event.User.ID = wwdk.userInfo.user.UserName
-		event.User.Username = wwdk.userInfo.user.NickName
+	if wwdk.user != nil {
+		event.User.ID = wwdk.user.UserName
+		event.User.Username = wwdk.user.NickName
 		event.Extra["wwdk_login_at"] = wwdk.runInfo.LoginAt
 	}
 	event.Extra["wwdk_StartAt"] = wwdk.runInfo.StartAt

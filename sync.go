@@ -1,9 +1,10 @@
 package wwdk
 
 import (
+	"time"
+
 	"github.com/getsentry/sentry-go"
 	"github.com/ikuiki/wwdk/api"
-	"time"
 
 	"github.com/pkg/errors"
 
@@ -47,6 +48,8 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 				return
 			}
 			// 处理新增联系人
+			wxwb.contactManager.SetFriend(modContacts...)
+			// 并发送给channel
 			for _, contact := range modContacts {
 				wxwb.runInfo.ContactModifyCount++
 				wxwb.logger.Infof("Modify contact: %s\n", contact.NickName)
@@ -54,11 +57,10 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 					Code:    SyncStatusModifyContact,
 					Contact: &contact,
 				}
-				wxwb.userInfo.contactList[contact.UserName] = contact
 			}
 			// 处理删除的联系人
 			for _, delContact := range delContacts {
-				delete(wxwb.userInfo.contactList, delContact.UserName)
+				wxwb.contactManager.DelFriend(delContact.UserName)
 			}
 			// 新消息
 			for _, msg := range addMessage {

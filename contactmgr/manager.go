@@ -1,4 +1,4 @@
-package contact
+package contactmgr
 
 import (
 	stdErrors "errors"
@@ -52,6 +52,35 @@ type Manager interface {
 	// @return contact 联系人(Contact结构体形式)
 	// @return err 如果查无此人返回ErrNotFound
 	GetFriendByRemarkName(remarkName string) (contact datastruct.Contact, err error)
+	// GetFriendByAlias 通过alias获取contact
+	// @return contact 联系人(Contact结构体形式)
+	// @return err 如果查无此人返回ErrNotFound
+	GetFriendByAlias(alias string) (contact datastruct.Contact, err error)
+	// GetChatroomList 获取聊天室列表
+	// @return list 聊天室列表(Contact结构体形式)
+	// @return err 没有错误则为空
+	GetChatroomList() (list []datastruct.Contact, err error)
+	// FriendLength 当前好友数量
+	FriendLength() int
+	// ContactLength 当前联系人数量
+	ContactLength() int
+	// GetAllContacts 获取所有联系人(包括记录在案非好友的)
+	// @return list 联系人列表(Contact结构体形式)
+	GetAllContacts() (list []datastruct.Contact, err error)
+	// Contact2Friend 根据userName列表将contact设置为friend
+	// @param userNames 要设置为friend的contact的userName列表
+	// @return allFound 是否全部找到
+	// @return err 没有错误则为空
+	Contact2Friend(userNames ...string) (allFound bool, err error)
+}
+
+// MustNewManager 断言创建联系人管理器
+func MustNewManager() Manager {
+	manager, err := NewManager()
+	if err != nil {
+		panic(err)
+	}
+	return manager
 }
 
 // NewManager 创建联系人管理器
@@ -263,6 +292,9 @@ func (mgr *manager) GetFriendByNickName(nickname string) (contact datastruct.Con
 	for _, userName := range mgr.friendList { // 之所以对friendList执行for each而非对contactMap执行，是因为contactList太大了
 		if contact, ok := mgr.contactMap[userName]; ok {
 			if strings.Contains(strings.ToLower(contact.NickName), strings.ToLower(nickname)) {
+				if contact.IsChatroom() {
+					contact = mgr.fillChatroomMember(contact)
+				}
 				return contact, nil
 			}
 		}
@@ -282,10 +314,96 @@ func (mgr *manager) GetFriendByRemarkName(remarkName string) (contact datastruct
 	for _, userName := range mgr.friendList { // 之所以对friendList执行for each而非对contactMap执行，是因为contactList太大了
 		if contact, ok := mgr.contactMap[userName]; ok {
 			if strings.Contains(strings.ToLower(contact.RemarkName), strings.ToLower(remarkName)) {
+				if contact.IsChatroom() {
+					contact = mgr.fillChatroomMember(contact)
+				}
 				return contact, nil
 			}
 		}
 	}
 	err = ErrNotFound
+	return
+}
+
+// GetFriendByAlias 通过alias获取contact
+// @return contact 联系人(Contact结构体形式)
+// @return err 如果查无此人返回ErrNotFound
+func (mgr *manager) GetFriendByAlias(alias string) (contact datastruct.Contact, err error) {
+	mgr.friendLocker.RLock()
+	defer mgr.friendLocker.RUnlock()
+	mgr.contactLocker.RLock()
+	defer mgr.contactLocker.RUnlock()
+	for _, userName := range mgr.friendList { // 之所以对friendList执行for each而非对contactMap执行，是因为contactList太大了
+		if contact, ok := mgr.contactMap[userName]; ok {
+			if strings.Contains(strings.ToLower(contact.Alias), strings.ToLower(alias)) {
+				if contact.IsChatroom() {
+					contact = mgr.fillChatroomMember(contact)
+				}
+				return contact, nil
+			}
+		}
+	}
+	err = ErrNotFound
+	return
+}
+
+// GetChatroomList 获取聊天室列表
+// @return list 聊天室列表(Contact结构体形式)
+// @return err 没有错误则为空
+func (mgr *manager) GetChatroomList() (list []datastruct.Contact, err error) {
+	mgr.friendLocker.RLock()
+	defer mgr.friendLocker.RUnlock()
+	mgr.contactLocker.RLock()
+	defer mgr.contactLocker.RUnlock()
+	for _, userName := range mgr.friendList { // 之所以对friendList执行for each而非对contactMap执行，是因为contactList太大了
+		if contact, ok := mgr.contactMap[userName]; ok {
+			if contact.IsChatroom() {
+				list = append(list, mgr.fillChatroomMember(contact))
+			}
+		}
+	}
+	return
+}
+
+// FriendLength 当前好友数量
+func (mgr *manager) FriendLength() int {
+	mgr.friendLocker.RLock()
+	defer mgr.friendLocker.RUnlock()
+	return len(mgr.friendList)
+}
+
+// ContactLength 当前联系人数量
+func (mgr *manager) ContactLength() int {
+	mgr.contactLocker.RLock()
+	defer mgr.contactLocker.RUnlock()
+	return len(mgr.contactMap)
+}
+
+// GetAllContacts 获取所有联系人(包括记录在案非好友的)
+// @return list 联系人列表(Contact结构体形式)
+func (mgr *manager) GetAllContacts() (list []datastruct.Contact, err error) {
+	mgr.contactLocker.RLock()
+	defer mgr.contactLocker.RUnlock()
+	for _, contact := range mgr.contactMap {
+		list = append(list, contact)
+	}
+	return
+}
+
+// Contact2Friend 根据userName列表将contact设置为friend
+// @param userNames 要设置为friend的contact的userName列表
+// @return allFound 是否全部找到
+// @return err 没有错误则为空
+func (mgr *manager) Contact2Friend(userNames ...string) (allFound bool, err error) {
+	allFound = true
+	mgr.contactLocker.RLock()
+	defer mgr.contactLocker.RUnlock()
+	mgr.friendLocker.Lock()
+	defer mgr.friendLocker.Unlock()
+	for _, userName := range userNames {
+		if contact, ok := mgr.contactMap[userName]; ok {
+			mgr.friendList = append(mgr.friendList, contact.UserName)
+		}
+	}
 	return
 }

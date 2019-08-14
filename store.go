@@ -7,6 +7,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/ikuiki/wwdk/api"
+	"github.com/ikuiki/wwdk/contactmgr"
 	"github.com/ikuiki/wwdk/datastruct"
 	"github.com/ikuiki/wwdk/runinfo"
 	"github.com/pkg/errors"
@@ -17,7 +18,8 @@ type storeLoginInfo struct {
 	APIMarshaled []byte
 	RunInfo      runinfo.WechatRunInfo // 运行统计信息
 	User         *datastruct.User      // 用户信息
-	ContactList  map[string]datastruct.Contact
+	ContactList  []datastruct.Contact
+	FriendList   []string
 }
 
 // 重置登录信息
@@ -33,9 +35,7 @@ func (wxwb *WechatWeb) resetLoginInfo() (err error) {
 		StartAt: wxwb.runInfo.StartAt,
 	}
 	// 切记也要重置用户信息与联系人啊
-	wxwb.userInfo = userInfo{
-		contactList: make(map[string]datastruct.Contact),
-	}
+	wxwb.contactManager, err = contactmgr.NewManager()
 	return nil
 }
 
@@ -53,15 +53,28 @@ func (wxwb *WechatWeb) writeLoginInfo() (err error) {
 			err = errors.Errorf("panic recovered: %+v", r)
 		}
 	}()
-	apiMarshaled, err := wxwb.api.Marshal()
-	if err != nil {
-		return errors.WithStack(err)
-	}
 	if wxwb.loginStorer != nil {
+		apiMarshaled, err := wxwb.api.Marshal()
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		contactList, err := wxwb.contactManager.GetAllContacts()
+		if err != nil {
+			return err
+		}
+		friendList, err := wxwb.contactManager.GetFriendList()
+		if err != nil {
+			return err
+		}
+		var friendUserNames []string
+		for _, f := range friendList {
+			friendUserNames = append(friendUserNames, f.UserName)
+		}
 		storeInfo := storeLoginInfo{
 			APIMarshaled: apiMarshaled,
-			User:         wxwb.userInfo.user,
-			ContactList:  wxwb.userInfo.contactList,
+			User:         wxwb.user,
+			ContactList:  contactList,
+			FriendList:   friendUserNames,
 			RunInfo:      wxwb.runInfo,
 		}
 		data, err := json.Marshal(storeInfo)
@@ -125,10 +138,11 @@ func (wxwb *WechatWeb) readLoginInfo() (readed bool, err error) {
 			// 还原startat
 			wxwb.runInfo.StartAt = started
 		}
-		wxwb.userInfo.user = storeInfo.User
-		for _, contact := range storeInfo.ContactList {
-			wxwb.userInfo.contactList[contact.UserName] = contact
-		}
+		wxwb.user = storeInfo.User
+		// 还原ContactList
+		wxwb.contactManager.SetContact(storeInfo.ContactList...)
+		// 还原FriendList
+		wxwb.contactManager.Contact2Friend(storeInfo.FriendList...)
 		// 还原完成
 		return true, nil
 	}
