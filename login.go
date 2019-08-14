@@ -1,8 +1,9 @@
 package wwdk
 
 import (
-	"github.com/getsentry/sentry-go"
 	"time"
+
+	"github.com/getsentry/sentry-go"
 
 	"github.com/pkg/errors"
 
@@ -140,10 +141,9 @@ func (wxwb *WechatWeb) wxInit(loginChannel chan<- LoginChannelItem) {
 	loginChannel <- LoginChannelItem{
 		Code: LoginStatusInitFinish,
 	}
-	wxwb.userInfo.user = user
-	for _, contact := range contactList {
-		wxwb.userInfo.contactList[contact.UserName] = contact
-	}
+	wxwb.user = user
+	// 将好友添加进联系人列表
+	wxwb.contactManager.SetFriend(contactList...)
 }
 
 // 获取联系人
@@ -154,35 +154,29 @@ func (wxwb *WechatWeb) getContactList() (err error) {
 		wxwb.captureException(err, "GetContact fail", sentry.LevelError, extraData{"body", string(body)})
 		return
 	}
-	for _, contact := range contactList {
-		wxwb.userInfo.contactList[contact.UserName] = contact
-	}
+	// 将好友添加进联系人列表
+	wxwb.contactManager.SetFriend(contactList...)
 	return
 }
 
 // 获取群聊的成员
 func (wxwb *WechatWeb) batchGetContact() (err error) {
 	var itemList []datastruct.BatchGetContactRequestListItem
-	for _, contact := range wxwb.userInfo.contactList {
-		if contact.IsChatroom() {
-			itemList = append(itemList, datastruct.BatchGetContactRequestListItem{
-				UserName: contact.UserName,
-			})
-		}
+	chatrooms, err := wxwb.contactManager.GetChatroomList()
+	if err != nil {
+		return
+	}
+	for _, chatroom := range chatrooms {
+		itemList = append(itemList, datastruct.BatchGetContactRequestListItem{
+			UserName: chatroom.UserName,
+		})
 	}
 	contactList, body, err := wxwb.api.BatchGetContact(itemList)
 	if err != nil {
 		wxwb.captureException(err, "BatchGetContact fail", sentry.LevelError, extraData{"body", string(body)})
 		return
 	}
-	for _, contact := range contactList {
-		if c, ok := wxwb.userInfo.contactList[contact.UserName]; ok {
-			c.MemberCount = contact.MemberCount
-			c.MemberList = contact.MemberList
-			c.EncryChatRoomID = contact.EncryChatRoomID
-			wxwb.userInfo.contactList[c.UserName] = c
-		}
-	}
+	wxwb.contactManager.SetFriend(contactList...)
 	return
 }
 
@@ -232,7 +226,7 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 			if wxwb.getContactList() == nil {
 				// 获取联系人成功，则为已登陆状态
 				logined = true
-				wxwb.logger.Infof("reuse loginInfo [%s] logined at %v\n", wxwb.userInfo.user.NickName, wxwb.runInfo.LoginAt.Format("2006-01-02 15:04:05"))
+				wxwb.logger.Infof("reuse loginInfo [%s] logined at %v\n", wxwb.user.NickName, wxwb.runInfo.LoginAt.Format("2006-01-02 15:04:05"))
 			}
 		}
 		if !logined {
@@ -274,7 +268,7 @@ func (wxwb *WechatWeb) Login(loginChannel chan<- LoginChannelItem) {
 		loginChannel <- LoginChannelItem{
 			Code: LoginStatusBatchGotContact,
 		}
-		wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.userInfo.user.NickName, len(wxwb.userInfo.contactList))
+		wxwb.logger.Infof("User %s has Login Success, total %d contacts\n", wxwb.user.NickName, wxwb.contactManager.FriendLength())
 		// 如有必要，记录login信息到storer
 		wxwb.writeLoginInfo()
 		notifyChan := make(chan bool)

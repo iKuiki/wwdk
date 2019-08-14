@@ -6,7 +6,7 @@ import (
 
 // StatusNotify 消息已读通知
 func (wxwb *WechatWeb) StatusNotify(toUserName string, code int64) (err error) {
-	body, err := wxwb.api.StatusNotify(wxwb.userInfo.user.UserName, toUserName, code)
+	body, err := wxwb.api.StatusNotify(wxwb.user.UserName, toUserName, code)
 	if err != nil {
 		wxwb.captureException(err, "fatal", sentry.LevelError, extraData{"body", string(body)})
 		return
@@ -16,7 +16,7 @@ func (wxwb *WechatWeb) StatusNotify(toUserName string, code int64) (err error) {
 
 // SendTextMessage 发送消息
 func (wxwb *WechatWeb) SendTextMessage(toUserName, content string) (msgID, localID string, err error) {
-	msgID, localID, body, err := wxwb.api.SendTextMessage(wxwb.userInfo.user.UserName, toUserName, content)
+	msgID, localID, body, err := wxwb.api.SendTextMessage(wxwb.user.UserName, toUserName, content)
 	if err != nil {
 		wxwb.captureException(err, "SendTextMessage fatal", sentry.LevelError, extraData{"body", string(body)})
 		return
