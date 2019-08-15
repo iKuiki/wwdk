@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pkg/errors"
+	stdErrors "errors"
 )
 
 // MessageType 消息类型
@@ -48,6 +48,14 @@ const (
 	StartShareLocation AppMessageType = 17
 	// ReciveTransferAppmsg 收到转账
 	ReciveTransferAppmsg AppMessageType = 2000
+)
+
+// 错误声明
+var (
+	// ErrMemberContactNotFound 消息中未发现成员联系人(此情况一般是消息由用户本人发出)
+	ErrMemberContactNotFound = stdErrors.New("member contact not found")
+	// ErrNotChatroomMsg 对非chatroom消息调用了chatroom方法
+	ErrNotChatroomMsg = stdErrors.New("this message is not chatroon message")
 )
 
 // Message 微信消息结构体
@@ -113,12 +121,12 @@ func (msg Message) GetMemberUserName() (userName string, err error) {
 		re := regexp.MustCompile("^@\\w+:")
 		userName = re.FindString(msg.Content)
 		if userName == "" {
-			err = errors.New("contact not found")
+			err = ErrMemberContactNotFound
 		} else {
 			userName = userName[:len(userName)-1]
 		}
 	} else {
-		err = errors.New("this message is not chatroon message")
+		err = ErrNotChatroomMsg
 	}
 	return
 }
@@ -133,7 +141,7 @@ func (msg Message) GetMemberMsgContent() (content string, err error) {
 			content = strings.TrimPrefix(msg.Content, memberUserName+":")
 		}
 	} else {
-		err = errors.New("this message is not chatroon message")
+		err = ErrNotChatroomMsg
 	}
 	return
 }
