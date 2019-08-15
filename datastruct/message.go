@@ -1,6 +1,7 @@
 package datastruct
 
 import (
+	"html"
 	"regexp"
 	"strings"
 
@@ -109,13 +110,12 @@ func (msg Message) IsChatroom() bool {
 // GetMemberUserName 获取群组消息的发件人
 func (msg Message) GetMemberUserName() (userName string, err error) {
 	if msg.IsChatroom() {
-		splitIndex := strings.Index(msg.Content, ":<br/>")
-		if splitIndex == -1 {
-			err = errors.New("userName not found")
+		re := regexp.MustCompile("^@\\w+:")
+		userName = re.FindString(msg.Content)
+		if userName == "" {
+			err = errors.New("contact not found")
 		} else {
-			if match, _ := regexp.MatchString("^@\\w+$", msg.Content[:splitIndex]); match {
-				userName = msg.Content[:splitIndex]
-			}
+			userName = userName[:len(userName)-1]
 		}
 	} else {
 		err = errors.New("this message is not chatroon message")
@@ -126,16 +126,23 @@ func (msg Message) GetMemberUserName() (userName string, err error) {
 // GetMemberMsgContent 获取群组消息的内容
 func (msg Message) GetMemberMsgContent() (content string, err error) {
 	if msg.IsChatroom() {
-		splitIndex := strings.Index(msg.Content, ":<br/>")
-		if splitIndex == -1 {
-			err = errors.New("content not found")
+		memberUserName, err := msg.GetMemberUserName()
+		if err != nil {
+			content = msg.Content
 		} else {
-			if match, _ := regexp.MatchString("^@\\w+$", msg.Content[:splitIndex]); match {
-				content = msg.Content[splitIndex+6:]
-			}
+			content = strings.TrimPrefix(msg.Content, memberUserName+":")
 		}
 	} else {
 		err = errors.New("this message is not chatroon message")
+	}
+	return
+}
+
+// GetMemberMsgContentUnescape 获取群组消息的内容并解码
+func (msg Message) GetMemberMsgContentUnescape() (content string, err error) {
+	content, err = msg.GetMemberMsgContent()
+	if err == nil {
+		content = strings.Replace(html.UnescapeString(content), "<br/>", "\n", -1)
 	}
 	return
 }
@@ -146,5 +153,11 @@ func (msg Message) GetContent() (content string) {
 	if msg.IsChatroom() {
 		content, _ = msg.GetMemberMsgContent()
 	}
+	return
+}
+
+// GetContentUnescape 获取消息本地并解码，如果为群消息则尝试自动获取真实消息本体
+func (msg Message) GetContentUnescape() (content string) {
+	content = strings.Replace(html.UnescapeString(msg.Content), "<br/>", "\n", -1)
 	return
 }
