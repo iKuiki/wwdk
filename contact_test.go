@@ -1,45 +1,13 @@
-package main
+package wwdk_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
-
-	"github.com/ikuiki/wwdk"
-	"github.com/mdp/qrterminal"
 )
 
-func TestContact(t *testing.T) {
-	wx, err := wwdk.NewWechatWeb()
-	if err != nil {
-		panic("NewWechatWeb error: " + err.Error())
-	}
-	loginChan := make(chan wwdk.LoginChannelItem)
-	wx.Login(loginChan)
-	for item := range loginChan {
-		switch item.Code {
-		case wwdk.LoginStatusWaitForScan:
-			qrterminal.Generate(item.Msg, qrterminal.L, os.Stdout)
-		case wwdk.LoginStatusScanedWaitForLogin:
-			fmt.Println("scaned")
-		case wwdk.LoginStatusScanedFinish:
-			fmt.Println("accepted")
-		case wwdk.LoginStatusGotCookie:
-			fmt.Println("got cookie")
-		case wwdk.LoginStatusInitFinish:
-			fmt.Println("init finish")
-		case wwdk.LoginStatusGotContact:
-			fmt.Println("got contact")
-		case wwdk.LoginStatusBatchGotContact:
-			fmt.Println("got batch contact")
-			break
-		case wwdk.LoginStatusErrorOccurred:
-			panic(fmt.Sprintf("WxWeb Login error: %+v", item.Err))
-		default:
-			fmt.Printf("unknown code: %+v", item)
-		}
-	}
-	contacts := wx.GetContactList()
+func TestGetContact(t *testing.T) {
+	contacts, err := webwx.GetContactList()
+	assertErrIsNil(err)
 	fmt.Println("")
 	for _, v := range contacts {
 		fmt.Printf("%s 	Alias	: %v\n", v.NickName, v.Alias)
@@ -166,11 +134,11 @@ func TestContact(t *testing.T) {
 	}
 	fmt.Println("try to save user headImg")
 	for _, v := range contacts {
-		if f, e := wx.SaveContactImg(v); e != nil {
+		if f, e := webwx.SaveContactImg(v); e != nil {
 			fmt.Printf("Save head img for user %s error: %+v\n", v.NickName, e)
 		} else {
 			fmt.Printf("Save head img for user %s success: %s\n", v.NickName, f)
 		}
 	}
-	wx.Logout()
+
 }

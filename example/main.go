@@ -58,7 +58,10 @@ func main() {
 		}
 	}
 	// 获取联系人
-	contacts := wx.GetContactList()
+	contacts, err := wx.GetContactList()
+	if err != nil {
+		panic(err)
+	}
 	// 创建联系人username->Contact映射
 	contactMap := make(map[string]datastruct.Contact)
 	for _, v := range contacts {

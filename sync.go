@@ -102,6 +102,11 @@ func (wxwb *WechatWeb) StartServe(syncChannel chan<- SyncChannelItem) {
 				if err != nil {
 					if err == api.ErrLogout {
 						wxwb.logger.Info("User has logout web wechat, exit...\n")
+						// 关闭登录消息通知管道
+						wxwb.api.CloseLoginModifyNotifyChan()
+						// 清空登录记录
+						wxwb.loginStorer.Truncate()
+						// 对外发送通知
 						syncChannel <- SyncChannelItem{
 							Code: SyncStatusPanic,
 							Err:  errors.New("Err1101: user has logout"),

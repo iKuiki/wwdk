@@ -2,14 +2,16 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
+	stdErrors "errors"
 	"net/http"
 	"net/url"
+
+	"github.com/pkg/errors"
 )
 
 var (
 	// ErrEmptyLoginInfo 登陆信息为空
-	ErrEmptyLoginInfo = errors.New("empty login info")
+	ErrEmptyLoginInfo = stdErrors.New("empty login info")
 )
 
 type wechatwebAPIMarshalData struct {
@@ -22,6 +24,16 @@ type wechatwebAPIMarshalData struct {
 
 func (api *wechatwebAPI) SetLoginModifyNotifyChan(notifyChan chan<- bool) {
 	api.loginModifyNotifyChan = notifyChan
+}
+
+func (api *wechatwebAPI) CloseLoginModifyNotifyChan() (err error) {
+	if api.loginModifyNotifyChan == nil {
+		return errors.New("login modify notify channel is nil")
+	}
+	// 为了避免次关闭关闭后将chan设置为nil
+	close(api.loginModifyNotifyChan)
+	api.loginModifyNotifyChan = nil
+	return
 }
 
 func (api *wechatwebAPI) Marshal() (data []byte, err error) {

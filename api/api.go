@@ -97,6 +97,8 @@ type WechatwebAPI interface {
 
 	// SetLoginModifyNotifyChan 设置登陆信息变更通知管道
 	SetLoginModifyNotifyChan(notifyChan chan<- bool)
+	// CloseLoginModifyNotifyChan 关闭登录信息变更通知管道(比如失去登录态时应当关闭此管道)
+	CloseLoginModifyNotifyChan() (err error)
 	// Marshal 序列号
 	Marshal() (data []byte, err error)
 	// Unmarshal 反序列化
