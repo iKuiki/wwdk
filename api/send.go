@@ -216,7 +216,7 @@ func (api *wechatwebAPI) UploadMedia(fromUserName, toUserName, fileName string, 
 		mediaType = "pic"
 	case ".jpg":
 		mediaType = "pic"
-	case "mp4":
+	case ".mp4":
 		mediaType = "video"
 	}
 	multiWriter.WriteField("mediatype", mediaType)
